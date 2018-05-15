@@ -1,0 +1,55 @@
+{
+  "name": "geostyler-sld-parser",
+  "version": "0.1.4",
+  "description": "GeoStyler Style Parser implementation for SLD",
+  "main": "build/dist/SldStyleParser.js",
+  "files": [
+    "build",
+    "index.d.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/terrestris/geostyler-sld-parser.git"
+  },
+  "keywords": [
+    "geostyler",
+    "parser",
+    "style",
+    "sld"
+  ],
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/terrestris/geostyler-sld-parser/issues"
+  },
+  "homepage": "https://github.com/terrestris/geostyler-sld-parser#readme",
+  "dependencies": {
+    "geostyler-style": "0.1.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "pretest": "npm run lint",
+    "test": "jest",
+    "lint": "tslint --project tsconfig.json --config tslint.json",
+    "release": "np --no-yarn"
+  },
+  "devDependencies": {
+    "@types/jest": "22.2.3",
+    "@types/node": "10.0.9",
+    "jest": "22.4.3",
+    "np": "2.20.1",
+    "ts-jest": "22.4.6",
+    "tslint": "5.10.0",
+    "typescript": "2.8.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "/src/.*\\.spec.(ts|js)$"
+  }
+}
