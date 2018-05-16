@@ -11,6 +11,8 @@
       <Title>SLD Cook Book: Simple Point</Title>
       <FeatureTypeStyle>
         <Rule>
+          <MinScaleDenominator>10000</MinScaleDenominator>
+          <MaxScaleDenominator>20000</MaxScaleDenominator>
           <ogc:Filter>
             <And>
                <PropertyIsEqualTo>

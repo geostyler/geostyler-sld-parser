@@ -5,7 +5,8 @@ import {
   Rule,
   ComparisonOperator,
   CombinationOperator,
-  StyleType
+  StyleType,
+  ScaleDenominator
 } from 'geostyler-style';
 
 import {
@@ -129,6 +130,17 @@ class SldStyleParser implements StyleParser {
 
   /**
    *
+   * @param sldRule
+   */
+  getScaleDenominatorFromRule(sldRule: any): ScaleDenominator {
+    return {
+      min: parseFloat(sldRule.MinScaleDenominator[0]),
+      max: parseFloat(sldRule.MaxScaleDenominator[0])
+    };
+  }
+
+  /**
+   *
    * @param sldObject
    */
   getRulesFromSldObject(sldObject: any): Rule[] {
@@ -140,11 +152,11 @@ class SldStyleParser implements StyleParser {
         userStyle.FeatureTypeStyle.forEach((featureTypeStyle: any) => {
           featureTypeStyle.Rule.forEach((sldRule: any) => {
             const filter: Filter = this.getFilterFromRule(sldRule);
-            // const scaleDenominator: ScaleDenominator = this.getScaleDenominatorFromRule();
+            const scaleDenominator: ScaleDenominator = this.getScaleDenominatorFromRule(sldRule);
             // const symbolizer: Symbolizer = this.getSymbolizerFromRule();
             const rule = {
               filter,
-              // scaleDenominator,
+              scaleDenominator,
               // symbolizer
             };
             rules.push(rule);
