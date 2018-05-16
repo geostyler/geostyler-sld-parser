@@ -4,7 +4,10 @@
     "outDir": "build/dist",
     "module": "commonjs",
     "target": "es5",
-    "lib": ["es6", "dom"],
+    "lib": [
+      "dom",
+      "es7"
+    ],
     "sourceMap": true,
     "allowJs": true,
     "moduleResolution": "node",
