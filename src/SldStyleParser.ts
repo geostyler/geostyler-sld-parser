@@ -6,7 +6,11 @@ import {
   ComparisonOperator,
   CombinationOperator,
   StyleType,
-  ScaleDenominator
+  ScaleDenominator,
+  PointSymbolizer,
+  Symbolizer,
+  CircleSymbolizer,
+  IconSymbolizer,
 } from 'geostyler-style';
 
 import {
@@ -16,6 +20,10 @@ import {
 import {
   DOMParser
 } from 'xmldom';
+
+import {
+  get as _get
+} from 'lodash';
 
 /**
  *
@@ -34,7 +42,7 @@ class SldStyleParser implements StyleParser {
 
   /**
    *
-   * @param sldObject
+   * @param sldString
    */
   getStyleTypeFromSldString(sldString: string): StyleType | undefined  {
     const symbolizers = [
@@ -59,6 +67,8 @@ class SldStyleParser implements StyleParser {
 
   /**
    *
+   * @param operator
+   * @param comparison
    */
   getFilterFromOperatorAndComparison(operator: string, comparison: any): Filter {
     let filter: Filter;
@@ -116,6 +126,7 @@ class SldStyleParser implements StyleParser {
 
   /**
    *
+   * @param sldRule
    */
   getFilterFromRule(sldRule: any): Filter {
     const {
@@ -141,6 +152,81 @@ class SldStyleParser implements StyleParser {
 
   /**
    *
+   * @param sldRule
+   */
+  getPointSymbolizerSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
+    let pointSymbolizer: PointSymbolizer = <PointSymbolizer> {};
+    const wellKnownName = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
+    const externalGrahphic = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
+    if (wellKnownName === 'circle') {
+      const strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
+      const circleSymbolizer: CircleSymbolizer = {
+        kind: 'Circle',
+        opacity: _get(sldSymbolizer, 'Graphic[0].Opacity[0]'), // Could also come from fill-opacity
+        radius: _get(sldSymbolizer, 'Graphic[0].Size[0]'),
+        color: _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[0]._')
+      };
+      strokeParams.forEach((param: any) => {
+        switch (param.$.name) {
+          case 'stroke':
+            circleSymbolizer.strokeColor = param._;
+            break;
+          case 'stroke-width':
+            circleSymbolizer.strokeWidth = param._;
+            break;
+          default:
+            break;
+        }
+      });
+      pointSymbolizer = circleSymbolizer;
+    } else if (externalGrahphic) {
+      const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
+      const iconSymbolizer: IconSymbolizer = {
+        kind: 'Icon',
+        opacity: _get(sldSymbolizer, 'Graphic[0].Opacity[0]'),
+        size: _get(sldSymbolizer, 'Graphic[0].Size[0]'),
+        image: onlineResource.$['xlink:href']
+      };
+      pointSymbolizer = iconSymbolizer;
+    } else {
+      throw new Error(`PointSymbolizer can not be parsed. Only "circle" is supported
+      as WellKnownName.`);
+    }
+
+    return pointSymbolizer;
+  }
+
+  /**
+   *
+   * @param sldRule
+   */
+  getSymbolizerFromRule(sldRule: any): Symbolizer {
+    let symbolizer: Symbolizer = <Symbolizer> {};
+    const sldSymbolizerName: string = Object.keys(sldRule).filter(key => key.endsWith('Symbolizer'))[0];
+    const sldSymbolizer = sldRule[sldSymbolizerName][0];
+
+    switch (sldSymbolizerName) {
+      case 'PointSymbolizer':
+        symbolizer = this.getPointSymbolizerSldSymbolizer(sldSymbolizer);
+        break;
+      case 'LineSymbolizer':
+        symbolizer.kind = 'Line';
+        break;
+      case 'TextSymbolizer':
+        symbolizer.kind = 'Text';
+        break;
+      case 'PolygonSymbolizer':
+        symbolizer.kind = 'Fill';
+        break;
+      default:
+        throw new Error('Failed to parse SymbolizerKind from SldRule');
+    }
+
+    return symbolizer;
+  }
+
+  /**
+   *
    * @param sldObject
    */
   getRulesFromSldObject(sldObject: any): Rule[] {
@@ -153,11 +239,11 @@ class SldStyleParser implements StyleParser {
           featureTypeStyle.Rule.forEach((sldRule: any) => {
             const filter: Filter = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator = this.getScaleDenominatorFromRule(sldRule);
-            // const symbolizer: Symbolizer = this.getSymbolizerFromRule();
+            const symbolizer: Symbolizer = this.getSymbolizerFromRule(sldRule);
             const rule = {
               filter,
               scaleDenominator,
-              // symbolizer
+              symbolizer
             };
             rules.push(rule);
           });
