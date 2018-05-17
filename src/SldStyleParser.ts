@@ -12,6 +12,7 @@ import {
   CircleSymbolizer,
   IconSymbolizer,
   LineSymbolizer,
+  FillSymbolizer,
 } from 'geostyler-style';
 
 import {
@@ -239,8 +240,10 @@ class SldStyleParser implements StyleParser {
    * @return {LineSymbolizer} The GeoStyler-Style LineSymbolizer
    */
   getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any): LineSymbolizer {
-    let lineSymbolizer: LineSymbolizer = <LineSymbolizer> {};
-    const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter');
+    let lineSymbolizer: LineSymbolizer = <LineSymbolizer> {
+      kind: 'Line'
+    };
+    const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
     if (cssParameters.length < 1) {
       throw new Error(`LineSymbolizer can not be parsed. No CssParameters detected.`);
     }
@@ -282,6 +285,52 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style FillSymbolizer from an SLD Symbolizer.
+   *
+   *
+   * @param {object} sldSymbolizer The SLD Symbolizer
+   * @return {FillSymbolizer} The GeoStyler-Style FillSymbolizer
+   */
+  getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): FillSymbolizer {
+    let fillSymbolizer: FillSymbolizer = <FillSymbolizer> {
+      kind: 'Fill'
+    };
+    const fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameter') || [];
+    const strokeCssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+
+    fillCssParameters.forEach((cssParameter: any) => {
+      const {
+        $: {
+          name
+        },
+        _: value
+      } = cssParameter;
+      switch (name) {
+        case 'fill':
+          fillSymbolizer.color = value;
+          break;
+        case 'fill-opacity':
+          fillSymbolizer.opacity = value;
+          break;
+        default:
+          break;
+      }
+    });
+    strokeCssParameters.forEach((cssParameter: any) => {
+      const {
+        $: {
+          name
+        },
+        _: value
+      } = cssParameter;
+      if (name === 'stroke') {
+        fillSymbolizer.outlineColor = value;
+      }
+    });
+    return fillSymbolizer;
+  }
+
+  /**
    * Get the GeoStyler-Style Symbolizer from an SLD Rule.
    *
    * Currently only one symbolizer per rule is supported.
@@ -304,7 +353,7 @@ class SldStyleParser implements StyleParser {
         symbolizer.kind = 'Text';
         break;
       case 'PolygonSymbolizer':
-        symbolizer.kind = 'Fill';
+        symbolizer = this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
         break;
       default:
         throw new Error('Failed to parse SymbolizerKind from SldRule');
