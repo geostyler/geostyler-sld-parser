@@ -27,7 +27,7 @@
     "@types/lodash": "4.14.108",
     "@types/xml2js": "0.4.2",
     "@types/xmldom": "0.1.29",
-    "geostyler-style": "0.1.0",
+    "geostyler-style": "0.2.0",
     "lodash": "4.17.10",
     "xml2js": "0.4.19",
     "xmldom": "0.1.27"
