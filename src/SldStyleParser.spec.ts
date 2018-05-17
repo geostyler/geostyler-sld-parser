@@ -13,7 +13,7 @@ describe('SldStyleParser implements StyleParser', () => {
       const styleParser = new SldStyleParser();
       expect(styleParser.readStyle).toBeDefined();
     });
-    it('can read a point SLD style', () => {
+    it('can read a SLD PointSymbolizer', () => {
       const styleParser = new SldStyleParser();
       expect.assertions(1);
       const sld = fs.readFileSync( './data/slds/point_simplepoint.sld', 'utf8');
@@ -22,7 +22,7 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toBeDefined();
         });
     });
-    it('can read a line SLD style', () => {
+    it('can read a SLD LineSymbolizer', () => {
       const styleParser = new SldStyleParser();
       expect.assertions(1);
       const sld = fs.readFileSync( './data/slds/line_simpleline.sld', 'utf8');
@@ -31,10 +31,19 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toBeDefined();
         });
     });
-    it('can read a fill SLD style', () => {
+    it('can read a SLD PolygonSymbolizer', () => {
       const styleParser = new SldStyleParser();
       expect.assertions(1);
       const sld = fs.readFileSync( './data/slds/polygon_transparentpolygon.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+        });
+    });
+    it('can read a SLD TextSymbolizer', () => {
+      const styleParser = new SldStyleParser();
+      expect.assertions(1);
+      const sld = fs.readFileSync( './data/slds/point_styledlabel.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();

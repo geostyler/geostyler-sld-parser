@@ -13,6 +13,7 @@ import {
   IconSymbolizer,
   LineSymbolizer,
   FillSymbolizer,
+  TextSymbolizer,
 } from 'geostyler-style';
 
 import {
@@ -287,6 +288,7 @@ class SldStyleParser implements StyleParser {
   /**
    * Get the GeoStyler-Style FillSymbolizer from an SLD Symbolizer.
    *
+   * PolygonSymbolizer Stroke is just partially supported.
    *
    * @param {object} sldSymbolizer The SLD Symbolizer
    * @return {FillSymbolizer} The GeoStyler-Style FillSymbolizer
@@ -331,6 +333,55 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style TextSymbolizer from an SLD Symbolizer.
+   *
+   * @param {object} sldSymbolizer The SLD Symbolizer
+   * @return {TextSymbolizer} The GeoStyler-Style TextSymbolizer
+   */
+  getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): TextSymbolizer {
+    let textSymbolizer: TextSymbolizer = <TextSymbolizer> {
+      kind: 'Text'
+    };
+    const fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
+    textSymbolizer.field = _get(sldSymbolizer, 'Label[0].PropertyName[0]');
+    textSymbolizer.color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
+    const displacement = _get(sldSymbolizer, 'LabelPlacement[0].PointPlacement[0].Displacement[0]');
+    if (displacement) {
+      const x = displacement.DisplacementX[0];
+      const y = displacement.DisplacementY[0];
+      textSymbolizer.offset = [
+        x ? parseFloat(x) : 0,
+        y ? parseFloat(y) : 0,
+      ];
+    }
+    fontCssParameters.forEach((cssParameter: any) => {
+      const {
+        $: {
+          name
+        },
+        _: value
+      } = cssParameter;
+      switch (name) {
+        case 'font-family':
+          textSymbolizer.font = value;
+          break;
+        case 'font-style':
+          // Currently not supported by GeoStyler Style
+          break;
+        case 'font-weight':
+          // Currently not supported by GeoStyler Style
+          break;
+        case 'font-size':
+          textSymbolizer.size = parseFloat(value);
+          break;
+        default:
+          break;
+      }
+    });
+    return textSymbolizer;
+  }
+
+  /**
    * Get the GeoStyler-Style Symbolizer from an SLD Rule.
    *
    * Currently only one symbolizer per rule is supported.
@@ -350,7 +401,7 @@ class SldStyleParser implements StyleParser {
         symbolizer = this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer);
         break;
       case 'TextSymbolizer':
-        symbolizer.kind = 'Text';
+        symbolizer = this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
         break;
       case 'PolygonSymbolizer':
         symbolizer = this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
