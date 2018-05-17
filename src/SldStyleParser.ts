@@ -26,25 +26,38 @@ import {
 } from 'lodash';
 
 /**
+ * This parser can be used with the GeoStyler.
+ * It implements the GeoStyler-Style StyleParser interface.
  *
+ * @class SldStyleParser
+ * @implements StyleParser
  */
 class SldStyleParser implements StyleParser {
 
   /**
-   * Strip all namespaces from the tags.
+   * The name Processor is passed as an option to the xml2js parser and modifies
+   * the tagName. It strips all namespaces from the tags.
    *
-   * @param name
+   * @param {string} name The originial tagName
+   * @return {string} The modified tagName
    */
-  tagNameProcessor(name: string) {
+  tagNameProcessor(name: string): string {
     const prefixMatch = new RegExp(/(?!xmlns)^.*:/);
     return name.replace(prefixMatch, '');
   }
 
   /**
+   * Get the GeoStyler-Style StyleType from the sldString. It searches for the
+   * first appearance of a SLD Symbolizer. Supported Symbolizers are:
+   * 'PointSymbolizer',
+   * 'LineSymbolizer',
+   * 'TextSymbolizer',
+   * 'PolygonSymbolizer'
    *
-   * @param sldString
+   * @param {string} sldString The SLD string
+   * @return {StyleType} The StyleType of the parsed SLD string
    */
-  getStyleTypeFromSldString(sldString: string): StyleType | undefined  {
+  getStyleTypeFromSldString(sldString: string): StyleType {
     const symbolizers = [
       'PointSymbolizer',
       'LineSymbolizer',
@@ -54,23 +67,23 @@ class SldStyleParser implements StyleParser {
     const parser = new DOMParser();
     const dom = parser.parseFromString(sldString);
     let styleType: StyleType;
-    const foundSymbolizers = symbolizers.filter(symbolizer => {
-      return dom.getElementsByTagName(symbolizer).length > 0;
+    const foundSymbolizers = symbolizers.filter(symb => {
+      return dom.getElementsByTagName(symb).length > 0;
     });
-    if (foundSymbolizers.length === 1) {
-      const symbolizer = foundSymbolizers[0].replace('Symbolizer', '');
-      styleType = symbolizer === 'Text' ? 'Point' : <StyleType> symbolizer;
-      return styleType;
-    }
-    return;
+    const symbolizer = foundSymbolizers[0].replace('Symbolizer', '');
+    styleType = symbolizer === 'Text' ? 'Point' : <StyleType> symbolizer;
+    return styleType;
   }
 
   /**
+   * Creates a GeoStyler-Style Filter from a given operator name and the js
+   * object representation (created with xml2js) of the SLD Filter.
    *
-   * @param operator
-   * @param comparison
+   * @param {string} sldOperatorName The Name of the SLD Filter Operator
+   * @param {object} sldFilter The SLD Filter
+   * @return {Filter} The GeoStyler-Style Filter
    */
-  getFilterFromOperatorAndComparison(operator: string, comparison: any): Filter {
+  getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): Filter {
     let filter: Filter;
     const negationOperator: string = 'Not';
     const combinationMap = {
@@ -89,27 +102,27 @@ class SldStyleParser implements StyleParser {
       PropertyIsNull: '='
     };
 
-    if (Object.keys(comparisonMap).includes(operator)) {
-      const comparisonOperator: ComparisonOperator = comparisonMap[operator];
-      const property: string = comparison.PropertyName[0];
-      const value = operator === 'PropertyIsNull' ? null : comparison.Literal[0];
+    if (Object.keys(comparisonMap).includes(sldOperatorName)) {
+      const comparisonOperator: ComparisonOperator = comparisonMap[sldOperatorName];
+      const property: string = sldFilter.PropertyName[0];
+      const value = sldOperatorName === 'PropertyIsNull' ? null : sldFilter.Literal[0];
       filter =  [
         comparisonOperator,
         property,
         value
       ];
-    } else if (Object.keys(combinationMap).includes(operator)) {
-      const combinationOperator: CombinationOperator = combinationMap[operator];
-      const filters: Filter[] = Object.keys(comparison).map((op) => {
-        return this.getFilterFromOperatorAndComparison(op, comparison[op][0]);
+    } else if (Object.keys(combinationMap).includes(sldOperatorName)) {
+      const combinationOperator: CombinationOperator = combinationMap[sldOperatorName];
+      const filters: Filter[] = Object.keys(sldFilter).map((op) => {
+        return this.getFilterFromOperatorAndComparison(op, sldFilter[op][0]);
       });
       filter = [
         combinationOperator,
         ...filters
       ];
-    } else if (operator === negationOperator) {
-      const negatedOperator = Object.keys(comparison)[0];
-      const negatedComparison = comparison[negatedOperator][0];
+    } else if (sldOperatorName === negationOperator) {
+      const negatedOperator = Object.keys(sldFilter)[0];
+      const negatedComparison = sldFilter[negatedOperator][0];
       const negatedFilter: Filter = this.getFilterFromOperatorAndComparison(
         negatedOperator,
         negatedComparison
@@ -125,8 +138,12 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style Filter from an SLD Rule.
    *
-   * @param sldRule
+   * Currently only supports one Filter per Rule.
+   *
+   * @param {object} sldRule The SLD Rule
+   * @return {Filter} The GeoStyler-Style Filter
    */
   getFilterFromRule(sldRule: any): Filter {
     const {
@@ -140,8 +157,10 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style ScaleDenominator from an SLD Rule.
    *
-   * @param sldRule
+   * @param {object} sldRule The SLD Rule
+   * @return {ScaleDenominator} The GeoStyler-Style ScaleDenominator
    */
   getScaleDenominatorFromRule(sldRule: any): ScaleDenominator {
     return {
@@ -151,8 +170,12 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style PointSymbolizer from an SLD Symbolizer.
    *
-   * @param sldRule
+   * The opacity of the Symbolizer is taken from the <Graphic>.
+   *
+   * @param {object} sldSymbolizer The SLD Symbolizer
+   * @return {PointSymbolizer} The GeoStyler-Style PointSymbolizer
    */
   getPointSymbolizerSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
     let pointSymbolizer: PointSymbolizer = <PointSymbolizer> {};
@@ -197,8 +220,12 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style Symbolizer from an SLD Rule.
    *
-   * @param sldRule
+   * Currently only one symbolizer per rule is supported.
+   *
+   * @param {object} sldRule The SLD Rule
+   * @return {Symbolizer} The GeoStyler-Style Symbolizer
    */
   getSymbolizerFromRule(sldRule: any): Symbolizer {
     let symbolizer: Symbolizer = <Symbolizer> {};
@@ -226,8 +253,12 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style Rule from an SLD Object (created with xml2js).
    *
-   * @param sldObject
+   * Currently only one symbolizer per rule is supported.
+   *
+   * @param {object} sldObject The object representation (created with xml2js)
+   * @return {Rule} The GeoStyler-Style Rule
    */
   getRulesFromSldObject(sldObject: any): Rule[] {
     const layers = sldObject.StyledLayerDescriptor.NamedLayer;
@@ -254,8 +285,10 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style Style from an SLD Object (created with xml2js).
    *
-   * @param {object} sldObject
+   * @param {object} sldObject The object representation (created with xml2js)
+   * @return {Style} The GeoStyler-Style Style
    */
   sldObjectToGeoStylerStyle(sldObject: object, type: StyleType): Style {
     const rules = this.getRulesFromSldObject(sldObject);
@@ -266,8 +299,12 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * The readStyle implementation of the GeoStyler-Style StyleParser interface.
+   * It reads a SLD as a string and returns a Promise.
+   * The Promise itself resolves with a GeoStyler-Style Style.
    *
-   * @param {string} sldString
+   * @param {string} sldString A SLD as a string.
+   * @return {Promise} The Promise resolving with the GeoStyler-Style Style
    */
   readStyle(sldString: string): Promise<Style> {
     return new Promise<Style>((resolve, reject) => {
@@ -290,16 +327,18 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * The writeStyle implementation of the GeoStyler-Style StyleParser interface.
+   * It reads a GeoStyler-Style Style and returns a Promise.
+   * The Promise itself resolves with a SLD string.
    *
-   * @param inputData
+   * @param {Style} geoStylerStyle A GeoStyler-Style Style.
+   * @return {Promise} The Promise resolving with the SLD as a string.
    */
   writeStyle(geoStylerStyle: Style): Promise<any> {
-    const promise = new Promise<any>((resolve, reject) => {
+    return new Promise<any>((resolve, reject) => {
       // TODO
       resolve();
     });
-
-    return promise;
   }
 
 }
