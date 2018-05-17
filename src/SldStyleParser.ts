@@ -11,6 +11,7 @@ import {
   Symbolizer,
   CircleSymbolizer,
   IconSymbolizer,
+  LineSymbolizer,
 } from 'geostyler-style';
 
 import {
@@ -145,10 +146,13 @@ class SldStyleParser implements StyleParser {
    * @param {object} sldRule The SLD Rule
    * @return {Filter} The GeoStyler-Style Filter
    */
-  getFilterFromRule(sldRule: any): Filter {
+  getFilterFromRule(sldRule: any): Filter | undefined {
     const {
       Filter: sldFilters
     } = sldRule;
+    if (!sldFilters) {
+      return;
+    }
     const sldFilter = sldFilters[0];
     const operator = Object.keys(sldFilter)[0];
     const comparison = sldFilter[operator][0];
@@ -162,10 +166,18 @@ class SldStyleParser implements StyleParser {
    * @param {object} sldRule The SLD Rule
    * @return {ScaleDenominator} The GeoStyler-Style ScaleDenominator
    */
-  getScaleDenominatorFromRule(sldRule: any): ScaleDenominator {
+  getScaleDenominatorFromRule(sldRule: any): ScaleDenominator | undefined {
+    let min: number | undefined;
+    let max: number | undefined;
+    if (sldRule.MinScaleDenominator) {
+      min = parseFloat(sldRule.MinScaleDenominator[0]);
+    }
+    if (sldRule.MaxScaleDenominator) {
+      max = parseFloat(sldRule.MaxScaleDenominator[0]);
+    }
     return {
-      min: parseFloat(sldRule.MinScaleDenominator[0]),
-      max: parseFloat(sldRule.MaxScaleDenominator[0])
+      min,
+      max
     };
   }
 
@@ -177,7 +189,7 @@ class SldStyleParser implements StyleParser {
    * @param {object} sldSymbolizer The SLD Symbolizer
    * @return {PointSymbolizer} The GeoStyler-Style PointSymbolizer
    */
-  getPointSymbolizerSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
+  getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
     let pointSymbolizer: PointSymbolizer = <PointSymbolizer> {};
     const wellKnownName = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
     const externalGrahphic = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
@@ -215,8 +227,58 @@ class SldStyleParser implements StyleParser {
       throw new Error(`PointSymbolizer can not be parsed. Only "circle" is supported
       as WellKnownName.`);
     }
-
     return pointSymbolizer;
+  }
+
+  /**
+   * Get the GeoStyler-Style LineSymbolizer from an SLD Symbolizer.
+   *
+   * Currently only the CssParameters are available.
+   *
+   * @param {object} sldSymbolizer The SLD Symbolizer
+   * @return {LineSymbolizer} The GeoStyler-Style LineSymbolizer
+   */
+  getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any): LineSymbolizer {
+    let lineSymbolizer: LineSymbolizer = <LineSymbolizer> {};
+    const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter');
+    if (cssParameters.length < 1) {
+      throw new Error(`LineSymbolizer can not be parsed. No CssParameters detected.`);
+    }
+    cssParameters.forEach((cssParameter: any) => {
+      const {
+        $: {
+          name
+        },
+        _: value
+      } = cssParameter;
+
+      switch (name) {
+        case 'stroke':
+          lineSymbolizer.color = value;
+          break;
+        case 'stroke-width':
+          lineSymbolizer.width = parseFloat(value);
+          break;
+        case 'stroke-opacity':
+          lineSymbolizer.opacity = parseFloat(value);
+          break;
+        case 'stroke-linejoin':
+          lineSymbolizer.join = value;
+          break;
+        case 'stroke-linecap':
+          lineSymbolizer.cap = value;
+          break;
+        case 'stroke-dasharray':
+          lineSymbolizer.dasharray = value;
+          break;
+        case 'stroke-dashoffset':
+          // Currently not supported by GeoStyler Style
+          break;
+        default:
+          break;
+      }
+    });
+    return lineSymbolizer;
   }
 
   /**
@@ -231,13 +293,12 @@ class SldStyleParser implements StyleParser {
     let symbolizer: Symbolizer = <Symbolizer> {};
     const sldSymbolizerName: string = Object.keys(sldRule).filter(key => key.endsWith('Symbolizer'))[0];
     const sldSymbolizer = sldRule[sldSymbolizerName][0];
-
     switch (sldSymbolizerName) {
       case 'PointSymbolizer':
-        symbolizer = this.getPointSymbolizerSldSymbolizer(sldSymbolizer);
+        symbolizer = this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer);
         break;
       case 'LineSymbolizer':
-        symbolizer.kind = 'Line';
+        symbolizer = this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer);
         break;
       case 'TextSymbolizer':
         symbolizer.kind = 'Text';
@@ -268,8 +329,8 @@ class SldStyleParser implements StyleParser {
       layer.UserStyle.forEach((userStyle: any) => {
         userStyle.FeatureTypeStyle.forEach((featureTypeStyle: any) => {
           featureTypeStyle.Rule.forEach((sldRule: any) => {
-            const filter: Filter = this.getFilterFromRule(sldRule);
-            const scaleDenominator: ScaleDenominator = this.getScaleDenominatorFromRule(sldRule);
+            const filter: Filter | undefined = this.getFilterFromRule(sldRule);
+            const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
             const symbolizer: Symbolizer = this.getSymbolizerFromRule(sldRule);
             const rule = {
               filter,
@@ -311,8 +372,8 @@ class SldStyleParser implements StyleParser {
       const options = {
         tagNameProcessors: [this.tagNameProcessor]
       };
-      const styleType: StyleType | undefined  = this.getStyleTypeFromSldString(sldString);
-      if (styleType) {
+      const styleType: StyleType = this.getStyleTypeFromSldString(sldString);
+      try {
         parseString(sldString, options, (err, result) => {
           if (err) {
             reject(`Error while parsing sldString: ${err}`);
@@ -320,8 +381,8 @@ class SldStyleParser implements StyleParser {
           const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(result, styleType);
           resolve(geoStylerStyle);
         });
-      } else {
-        reject('Could not determine style type.');
+      } catch (error) {
+        reject(error);
       }
     });
   }

@@ -13,10 +13,28 @@ describe('SldStyleParser implements StyleParser', () => {
       const styleParser = new SldStyleParser();
       expect(styleParser.readStyle).toBeDefined();
     });
-    it('can read the point_simplepoint.sld SLD style', () => {
+    it('can read a simple point SLD style', () => {
+      const styleParser = new SldStyleParser();
+      expect.assertions(1);
+      const sld = fs.readFileSync( './data/slds/point_simplepoint.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+        });
+    });
+    it('can read a simple point SLD style with a filter', () => {
       const styleParser = new SldStyleParser();
       expect.assertions(1);
       const sld = fs.readFileSync( './data/slds/point_simplepoint_filter.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+        });
+    });
+    it('can read a simple line SLD style', () => {
+      const styleParser = new SldStyleParser();
+      expect.assertions(1);
+      const sld = fs.readFileSync( './data/slds/line_simpleline.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
