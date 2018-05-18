@@ -74,6 +74,19 @@ describe('SldStyleParser implements StyleParser', () => {
     it('is defined', () => {
       expect(styleParser.writeStyle).toBeDefined();
     });
+    it('can write a SLD PointSymbolizer', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_simplepoint)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplepoint);
+            });
+        });
+      });
   });
 
   describe('#tagNameProcessor', () => {

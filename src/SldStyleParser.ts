@@ -17,7 +17,8 @@ import {
 } from 'geostyler-style';
 
 import {
-  parseString
+  parseString,
+  Builder
 } from 'xml2js';
 
 import {
@@ -544,11 +545,120 @@ class SldStyleParser implements StyleParser {
    * @param {Style} geoStylerStyle A GeoStyler-Style Style.
    * @return {Promise} The Promise resolving with the SLD as a string.
    */
-  writeStyle(geoStylerStyle: Style): Promise<any> {
+  writeStyle(geoStylerStyle: Style): Promise<string> {
     return new Promise<any>((resolve, reject) => {
-      // TODO
-      resolve();
+      try {
+        const builder = new Builder();
+        const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
+        const sldString = builder.buildObject(sldObject);
+        resolve(sldString);
+      } catch (error) {
+        reject(error);
+      }
     });
+  }
+
+  /**
+   *
+   * @param geoStylerStyle
+   */
+  geoStylerStyleToSldObject(geoStylerStyle: Style): any {
+    const rules: any[] = this.getSldRulesFromRules(geoStylerStyle.rules);
+    return {
+      StyledLayerDescriptor: {
+        '$': {
+          'version': '1.0.0',
+          'xsi:schemaLocation': 'http://www.opengis.net/sld StyledLayerDescriptor.xsd',
+          'xmlns': 'http://www.opengis.net/sld',
+          'xmlns:ogc': 'http://www.opengis.net/ogc',
+          'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+          'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance'
+        },
+        'NamedLayer': [{
+          'Name': [
+            'Simple Point'
+          ],
+          'UserStyle': [{
+            'Title': [
+              'SLD Cook Book: Simple Point'
+            ],
+            'FeatureTypeStyle': [{
+              'Rule': rules
+            }]
+          }]
+        }]
+      }
+    };
+  }
+
+  getSldRulesFromRules(rules: Rule[]): any {
+    return rules.map((rule: Rule) => {
+      let sldRule: any = {};
+      const symbolizer = this.getSldSymbolizerFromSymbolizer(rule.symbolizer);
+      const symbolizerName = Object.keys(symbolizer)[0];
+      if (symbolizer && symbolizerName) {
+        sldRule[symbolizerName] = symbolizer[symbolizerName];
+      }
+      if (rule.filter) {
+        const filter = this.getSldFilterFromFilter(rule.filter);
+        sldRule.filter = filter;
+      }
+      if (rule.scaleDenominator) {
+        const scaleDenominator = this.getSldScaleDenominatorFromScaleDenominator(rule.scaleDenominator);
+        sldRule.scaleDenominator = scaleDenominator;
+      }
+      return sldRule;
+    });
+  }
+
+  getSldSymbolizerFromSymbolizer(symbolizer: Symbolizer): any {
+    let sldSymbolizer: any = {};
+    switch (symbolizer.kind) {
+      case 'Circle':
+        sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
+        break;
+      default:
+        break;
+    }
+    return sldSymbolizer;
+  }
+
+  getSldPointSymbolizerFromCircleSymbolizer(circleSymbolizer: CircleSymbolizer): any {
+    let mark: any[] = [{
+      'WellKnownName': [
+        'circle'
+      ]
+    }];
+    if (circleSymbolizer.color) {
+      mark[0].Fill = [{
+        'CssParameter': [{
+          '_': circleSymbolizer.color,
+          '$': {
+            'name': 'fill'
+          }
+        }]
+      }];
+    }
+    let graphic: any[] = [{
+      'Mark': mark
+    }];
+    if (circleSymbolizer.radius) {
+      graphic[0].Size = circleSymbolizer.radius;
+    }
+
+    return {
+      'PointSymbolizer': [{
+        'Graphic': graphic
+      }]
+    };
+  }
+
+  getSldFilterFromFilter(filter: Filter): any[] {
+    return [{}];
+  }
+
+  getSldScaleDenominatorFromScaleDenominator(scaleDenominator: ScaleDenominator): any[] {
+    return [{}];
   }
 
 }
