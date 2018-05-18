@@ -25,6 +25,7 @@ import {
 } from 'xmldom';
 
 import {
+  isString as _isString,
   get as _get
 } from 'lodash';
 
@@ -120,7 +121,18 @@ class SldStyleParser implements StyleParser {
     if (Object.keys(comparisonMap).includes(sldOperatorName)) {
       const comparisonOperator: ComparisonOperator = comparisonMap[sldOperatorName];
       const property: string = sldFilter.PropertyName[0];
-      const value = sldOperatorName === 'PropertyIsNull' ? null : sldFilter.Literal[0];
+      let value = sldFilter.Literal[0];
+      if (sldOperatorName === 'PropertyIsNull') {
+        value = null;
+      }
+      if (!Number.isNaN(parseFloat(value))) {
+        value = parseFloat(value);
+      }
+      if (_isString(value)) {
+        const lowerValue = value.toLowerCase();
+        if (lowerValue === 'false') {value = false; }
+        if (lowerValue === 'true') {value = true; }
+      }
       filter =  [
         comparisonOperator,
         property,
@@ -223,7 +235,7 @@ class SldStyleParser implements StyleParser {
             circleSymbolizer.strokeColor = param._;
             break;
           case 'stroke-width':
-            circleSymbolizer.strokeWidth = param._;
+            circleSymbolizer.strokeWidth = parseFloat(param._);
             break;
           default:
             break;
