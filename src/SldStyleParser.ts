@@ -618,10 +618,10 @@ class SldStyleParser implements StyleParser {
         sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
         break;
       case 'Icon':
-        // sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
+        // sldSymbolizer = this.getSldPointSymbolizerFromIconSymbolizer(symbolizer);
         break;
       case 'Text':
-        // sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
+        sldSymbolizer = this.getSldTextSymbolizerFromTextSymbolizer(symbolizer);
         break;
       case 'Line':
         sldSymbolizer = this.getSldLineSymbolizerFromLineSymbolizer(symbolizer);
@@ -633,6 +633,69 @@ class SldStyleParser implements StyleParser {
         break;
     }
     return sldSymbolizer;
+  }
+
+  getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: TextSymbolizer): any {
+    let sldTextSymbolizer: any = [{
+      'Label': [{
+        'PropertyName': [
+          textSymbolizer.field
+        ]
+      }]
+    }];
+    const fontPropertyMap = {
+      font: 'font-family',
+      size: 'font-size'
+    };
+
+    const fontCssParameters: any[] = Object.keys(textSymbolizer)
+      .filter((property: any) => property !== 'kind' && fontPropertyMap[property])
+      .map((property: any) => {
+        return {
+          '_': property === 'font'
+            ? textSymbolizer[property][0]
+            : textSymbolizer[property],
+          '$': {
+            'name': fontPropertyMap[property]
+          }
+        };
+      });
+
+    if (fontCssParameters.length > 0) {
+      sldTextSymbolizer[0].Font = [{
+        'CssParameter': fontCssParameters
+      }];
+    }
+
+    if (textSymbolizer.offset) {
+      sldTextSymbolizer[0].LabelPlacement = [{
+        'PointPlacement': [{
+          'Displacement': [{
+            'DisplacementX': [
+              textSymbolizer.offset[0]
+            ],
+            'DisplacementY': [
+              textSymbolizer.offset[1]
+            ]
+          }]
+        }]
+      }];
+    }
+
+    if (textSymbolizer.color) {
+      sldTextSymbolizer[0].Fill = [{
+        'CssParameter': [{
+          '_': textSymbolizer.color,
+          '$': {
+            'name': 'fill'
+          }
+        }]
+      }];
+    }
+
+    return {
+      'TextSymbolizer': sldTextSymbolizer
+    };
   }
 
   getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: FillSymbolizer): any {
@@ -694,7 +757,7 @@ class SldStyleParser implements StyleParser {
     };
 
     const cssParameters: any[] = Object.keys(lineSymbolizer)
-      .filter((property: any) => property !== 'kind')
+      .filter((property: any) => property !== 'kind' && propertyMap[property])
       .map((property: any) => {
         return {
           '_': lineSymbolizer[property],
