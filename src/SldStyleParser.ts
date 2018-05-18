@@ -169,18 +169,17 @@ class SldStyleParser implements StyleParser {
    * @return {ScaleDenominator} The GeoStyler-Style ScaleDenominator
    */
   getScaleDenominatorFromRule(sldRule: any): ScaleDenominator | undefined {
-    let min: number | undefined;
-    let max: number | undefined;
+    let scaleDenominator: ScaleDenominator = <ScaleDenominator> {};
     if (sldRule.MinScaleDenominator) {
-      min = parseFloat(sldRule.MinScaleDenominator[0]);
+      scaleDenominator.min = parseFloat(sldRule.MinScaleDenominator[0]);
     }
     if (sldRule.MaxScaleDenominator) {
-      max = parseFloat(sldRule.MaxScaleDenominator[0]);
+      scaleDenominator.max = parseFloat(sldRule.MaxScaleDenominator[0]);
     }
-    return {
-      min,
-      max
-    };
+
+    return (scaleDenominator.min || scaleDenominator.max)
+      ? scaleDenominator
+      : undefined;
   }
 
   /**
@@ -196,13 +195,16 @@ class SldStyleParser implements StyleParser {
     const wellKnownName = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
     const externalGrahphic = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
     if (wellKnownName === 'circle') {
-      const strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
-      const circleSymbolizer: CircleSymbolizer = {
-        kind: 'Circle',
-        opacity: _get(sldSymbolizer, 'Graphic[0].Opacity[0]'), // Could also come from fill-opacity
-        radius: _get(sldSymbolizer, 'Graphic[0].Size[0]'),
-        color: _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[0]._')
+      let circleSymbolizer: CircleSymbolizer = <CircleSymbolizer> {
+        kind: 'Circle'
       };
+      const strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
+      const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
+      const radius = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+      const color = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[0]._');
+      if (opacity) { circleSymbolizer.opacity = opacity; }
+      if (radius) { circleSymbolizer.radius = parseFloat(radius); }
+      if (color ) { circleSymbolizer.color = color; }
       strokeParams.forEach((param: any) => {
         switch (param.$.name) {
           case 'stroke':
@@ -218,12 +220,14 @@ class SldStyleParser implements StyleParser {
       pointSymbolizer = circleSymbolizer;
     } else if (externalGrahphic) {
       const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
-      const iconSymbolizer: IconSymbolizer = {
+      let iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
         kind: 'Icon',
-        opacity: _get(sldSymbolizer, 'Graphic[0].Opacity[0]'),
-        size: _get(sldSymbolizer, 'Graphic[0].Size[0]'),
         image: onlineResource.$['xlink:href']
       };
+      const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
+      const size = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+      if (opacity) { iconSymbolizer.opacity = opacity; }
+      if (size) { iconSymbolizer.size = size; }
       pointSymbolizer = iconSymbolizer;
     } else {
       throw new Error(`PointSymbolizer can not be parsed. Only "circle" is supported
@@ -432,11 +436,12 @@ class SldStyleParser implements StyleParser {
             const filter: Filter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
             const symbolizer: Symbolizer = this.getSymbolizerFromRule(sldRule);
-            const rule = {
-              filter,
-              scaleDenominator,
+            let rule: Rule = <Rule> {};
+            rule = {
               symbolizer
             };
+            if (filter) { rule.filter = filter; }
+            if (scaleDenominator) { rule.scaleDenominator = scaleDenominator; }
             rules.push(rule);
           });
         });

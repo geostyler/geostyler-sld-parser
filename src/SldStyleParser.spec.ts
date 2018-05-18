@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
 import { Style } from 'geostyler-style';
 
+import point_simplepoint from '../data/styles/point_simplepoint';
+
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
 });
@@ -18,11 +20,12 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(styleParser.readStyle).toBeDefined();
     });
     it('can read a SLD PointSymbolizer', () => {
-      expect.assertions(1);
+      expect.assertions(2);
       const sld = fs.readFileSync( './data/slds/point_simplepoint.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simplepoint);
         });
     });
     it('can read a SLD LineSymbolizer', () => {
