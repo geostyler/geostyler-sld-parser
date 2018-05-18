@@ -21,7 +21,8 @@
       "name": "Debug Jest Tests Windows",
       "program": "${workspaceRoot}/node_modules/jest/bin/jest",
       "args": [
-        "-i"
+        "-i",
+        "--watch"
       ],
       "internalConsoleOptions": "openOnSessionStart",
       "console": "integratedTerminal",
