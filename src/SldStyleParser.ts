@@ -359,8 +359,10 @@ class SldStyleParser implements StyleParser {
       kind: 'Text'
     };
     const fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
-    textSymbolizer.field = _get(sldSymbolizer, 'Label[0].PropertyName[0]');
-    textSymbolizer.color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
+    const field = _get(sldSymbolizer, 'Label[0].PropertyName[0]');
+    const color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
+    if (field) { textSymbolizer.field = field; }
+    if (color) { textSymbolizer.color = color; }
     const displacement = _get(sldSymbolizer, 'LabelPlacement[0].PointPlacement[0].Displacement[0]');
     if (displacement) {
       const x = displacement.DisplacementX[0];
@@ -379,7 +381,7 @@ class SldStyleParser implements StyleParser {
       } = cssParameter;
       switch (name) {
         case 'font-family':
-          textSymbolizer.font = value;
+          textSymbolizer.font = [value];
           break;
         case 'font-style':
           // Currently not supported by GeoStyler Style
