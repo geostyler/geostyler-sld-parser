@@ -14,6 +14,20 @@
       ],
       "runtimeExecutable": null,
       "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest Tests Windows",
+      "program": "${workspaceRoot}/node_modules/jest/bin/jest",
+      "args": [
+        "-i"
+      ],
+      "internalConsoleOptions": "openOnSessionStart",
+      "console": "integratedTerminal",
+      "outFiles": [
+        "${workspaceRoot}/build/dist/**/*"
+      ]
     }
   ]
 }
