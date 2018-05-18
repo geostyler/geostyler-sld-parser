@@ -87,6 +87,19 @@ describe('SldStyleParser implements StyleParser', () => {
             });
         });
       });
+    it('can write a SLD LineSymbolizer', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(line_simpleline)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(line_simpleline);
+            });
+        });
+      });
   });
 
   describe('#tagNameProcessor', () => {

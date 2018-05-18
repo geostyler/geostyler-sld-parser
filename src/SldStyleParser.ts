@@ -617,10 +617,52 @@ class SldStyleParser implements StyleParser {
       case 'Circle':
         sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
         break;
+      case 'Icon':
+        // sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
+        break;
+      case 'Text':
+        // sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
+        break;
+      case 'Line':
+        sldSymbolizer = this.getSldLineSymbolizerFromLineSymbolizer(symbolizer);
+        break;
+      case 'Fill':
+        // sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
+        break;
       default:
         break;
     }
     return sldSymbolizer;
+  }
+
+  getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: LineSymbolizer): any {
+    const propertyMap = {
+      color: 'stroke',
+      width: 'stroke-width',
+      opacity: 'stroke-opacity',
+      join: 'stroke-linejoin',
+      cap: 'stroke-linecap',
+      dasharray: 'stroke-dasharray'
+    };
+
+    const cssParameters: any[] = Object.keys(lineSymbolizer)
+      .filter((property: any) => property !== 'kind')
+      .map((property: any) => {
+        return {
+          '_': lineSymbolizer[property],
+          '$': {
+            'name': propertyMap[property]
+          }
+        };
+      });
+
+    return {
+      'LineSymbolizer': [{
+        'Stroke': {
+          'CssParameter': cssParameters
+        }
+      }]
+    };
   }
 
   getSldPointSymbolizerFromCircleSymbolizer(circleSymbolizer: CircleSymbolizer): any {
