@@ -226,9 +226,15 @@ class SldStyleParser implements StyleParser {
       const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
       const radius = _get(sldSymbolizer, 'Graphic[0].Size[0]');
       const color = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[0]._');
-      if (opacity) { circleSymbolizer.opacity = opacity; }
-      if (radius) { circleSymbolizer.radius = parseFloat(radius); }
-      if (color ) { circleSymbolizer.color = color; }
+      if (opacity) {
+        circleSymbolizer.opacity = opacity;
+      }
+      if (radius) {
+        circleSymbolizer.radius = parseFloat(radius);
+      }
+      if (color ) {
+        circleSymbolizer.color = color;
+      }
       strokeParams.forEach((param: any) => {
         switch (param.$.name) {
           case 'stroke':
@@ -250,8 +256,12 @@ class SldStyleParser implements StyleParser {
       };
       const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
       const size = _get(sldSymbolizer, 'Graphic[0].Size[0]');
-      if (opacity) { iconSymbolizer.opacity = opacity; }
-      if (size) { iconSymbolizer.size = size; }
+      if (opacity) {
+        iconSymbolizer.opacity = opacity;
+      }
+      if (size) {
+        iconSymbolizer.size = size;
+      }
       pointSymbolizer = iconSymbolizer;
     } else {
       throw new Error(`PointSymbolizer can not be parsed. Only "circle" is supported
@@ -373,8 +383,12 @@ class SldStyleParser implements StyleParser {
     const fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
     const field = _get(sldSymbolizer, 'Label[0].PropertyName[0]');
     const color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
-    if (field) { textSymbolizer.field = field; }
-    if (color) { textSymbolizer.color = color; }
+    if (field) {
+      textSymbolizer.field = field;
+    }
+    if (color) {
+      textSymbolizer.color = color;
+    }
     const displacement = _get(sldSymbolizer, 'LabelPlacement[0].PointPlacement[0].Displacement[0]');
     if (displacement) {
       const x = displacement.DisplacementX[0];
@@ -466,8 +480,12 @@ class SldStyleParser implements StyleParser {
             rule = {
               symbolizer
             };
-            if (filter) { rule.filter = filter; }
-            if (scaleDenominator) { rule.scaleDenominator = scaleDenominator; }
+            if (filter) {
+              rule.filter = filter;
+            }
+            if (scaleDenominator) {
+              rule.scaleDenominator = scaleDenominator;
+            }
             rules.push(rule);
           });
         });
