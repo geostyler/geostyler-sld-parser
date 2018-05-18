@@ -4,6 +4,7 @@ import { Style } from 'geostyler-style';
 
 import point_simplepoint from '../data/styles/point_simplepoint';
 import line_simpleline from '../data/styles/line_simpleline';
+import polygon_transparentpolygon from '../data/styles/polygon_transparentpolygon';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -39,11 +40,12 @@ describe('SldStyleParser implements StyleParser', () => {
       });
     });
     it('can read a SLD PolygonSymbolizer', () => {
-      expect.assertions(1);
+      expect.assertions(2);
       const sld = fs.readFileSync( './data/slds/polygon_transparentpolygon.sld', 'utf8');
       return styleParser.readStyle(sld)
-        .then((geoStylerStyle: Style) => {
-          expect(geoStylerStyle).toBeDefined();
+      .then((geoStylerStyle: Style) => {
+        expect(geoStylerStyle).toBeDefined();
+        expect(geoStylerStyle).toEqual(polygon_transparentpolygon);
         });
     });
     it('can read a SLD TextSymbolizer', () => {
