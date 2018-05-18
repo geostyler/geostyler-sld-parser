@@ -3,6 +3,7 @@ import SldStyleParser from './SldStyleParser';
 import { Style } from 'geostyler-style';
 
 import point_simplepoint from '../data/styles/point_simplepoint';
+import line_simpleline from '../data/styles/line_simpleline';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -27,14 +28,15 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_simplepoint);
         });
-    });
+      });
     it('can read a SLD LineSymbolizer', () => {
-      expect.assertions(1);
+      expect.assertions(2);
       const sld = fs.readFileSync( './data/slds/line_simpleline.sld', 'utf8');
       return styleParser.readStyle(sld)
-        .then((geoStylerStyle: Style) => {
-          expect(geoStylerStyle).toBeDefined();
-        });
+      .then((geoStylerStyle: Style) => {
+        expect(geoStylerStyle).toBeDefined();
+        expect(geoStylerStyle).toEqual(line_simpleline);
+      });
     });
     it('can read a SLD PolygonSymbolizer', () => {
       expect.assertions(1);
