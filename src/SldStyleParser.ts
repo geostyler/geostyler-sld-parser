@@ -627,12 +627,60 @@ class SldStyleParser implements StyleParser {
         sldSymbolizer = this.getSldLineSymbolizerFromLineSymbolizer(symbolizer);
         break;
       case 'Fill':
-        // sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
+        sldSymbolizer = this.getSldPolygonSymbolizerFromFillSymbolizer(symbolizer);
         break;
       default:
         break;
     }
     return sldSymbolizer;
+  }
+
+  getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: FillSymbolizer): any {
+    const strokePropertyMap = {
+      outlineColor: 'stroke'
+    };
+    const fillPropertyMap = {
+      color: 'fill',
+      opacity: 'fill-opacity'
+    };
+    let strokeCssParameters: any[] = [];
+    let fillCssParameters: any[] = [];
+
+    Object.keys(fillSymbolizer)
+      .filter((property: any) => property !== 'kind')
+      .forEach((property: any) => {
+        if (Object.keys(strokePropertyMap).includes(property)) {
+          strokeCssParameters.push({
+            '_': fillSymbolizer[property],
+            '$': {
+              'name': strokePropertyMap[property]
+            }
+          });
+        } else if (Object.keys(fillPropertyMap).includes(property)) {
+          fillCssParameters.push({
+            '_': fillSymbolizer[property],
+            '$': {
+              'name': fillPropertyMap[property]
+            }
+          });
+        }
+      });
+
+    let polygonSymbolizer: any = [{}];
+    if (strokeCssParameters.length > 0) {
+      polygonSymbolizer[0].Stroke = [{
+        'CssParameter': strokeCssParameters
+      }];
+    }
+    if (fillCssParameters.length > 0) {
+      polygonSymbolizer[0].Fill = [{
+        'CssParameter': fillCssParameters
+      }];
+    }
+
+    return {
+      'PolygonSymbolizer': polygonSymbolizer
+    };
   }
 
   getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: LineSymbolizer): any {
@@ -658,9 +706,9 @@ class SldStyleParser implements StyleParser {
 
     return {
       'LineSymbolizer': [{
-        'Stroke': {
+        'Stroke': [{
           'CssParameter': cssParameters
-        }
+        }]
       }]
     };
   }

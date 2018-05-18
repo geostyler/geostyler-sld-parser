@@ -86,7 +86,7 @@ describe('SldStyleParser implements StyleParser', () => {
               expect(readStyle).toEqual(point_simplepoint);
             });
         });
-      });
+    });
     it('can write a SLD LineSymbolizer', () => {
       expect.assertions(2);
       return styleParser.writeStyle(line_simpleline)
@@ -99,7 +99,20 @@ describe('SldStyleParser implements StyleParser', () => {
               expect(readStyle).toEqual(line_simpleline);
             });
         });
-      });
+    });
+    it('can write a SLD PolygonSymbolizer', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(polygon_transparentpolygon)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(polygon_transparentpolygon);
+            });
+        });
+    });
   });
 
   describe('#tagNameProcessor', () => {
