@@ -73,8 +73,20 @@ class SldStyleParser implements StyleParser {
     const foundSymbolizers = symbolizers.filter(symb => {
       return dom.getElementsByTagName(symb).length > 0;
     });
-    const symbolizer = foundSymbolizers[0].replace('Symbolizer', '');
-    styleType = symbolizer === 'Text' ? 'Point' : <StyleType> symbolizer;
+    switch (foundSymbolizers[0]) {
+      case 'PointSymbolizer':
+      case 'TextSymbolizer':
+        styleType = 'Point';
+        break;
+      case 'PolygonSymbolizer':
+        styleType = 'Fill';
+        break;
+      case 'LineSymbolizer':
+        styleType = 'Line';
+        break;
+      default:
+        throw new Error('StyleType could not be detected');
+    }
     return styleType;
   }
 
@@ -316,7 +328,7 @@ class SldStyleParser implements StyleParser {
           fillSymbolizer.color = value;
           break;
         case 'fill-opacity':
-          fillSymbolizer.opacity = value;
+          fillSymbolizer.opacity = parseFloat(value);
           break;
         default:
           break;
