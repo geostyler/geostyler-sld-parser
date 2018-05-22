@@ -6,7 +6,7 @@
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <NamedLayer>
-    <Name>Simple Point</Name>
+    <Name>Simple Point Filter</Name>
     <UserStyle>
       <Title>SLD Cook Book: Simple Point</Title>
       <FeatureTypeStyle>
