@@ -23,10 +23,6 @@ import {
 } from 'xml2js';
 
 import {
-  DOMParser
-} from 'xmldom';
-
-import {
   isString as _isString,
   isNumber as _isNumber,
   get as _get
