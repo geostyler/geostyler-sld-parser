@@ -19,6 +19,19 @@ describe('SldStyleParser implements StyleParser', () => {
     styleParser = new SldStyleParser();
   });
 
+  describe('#tagNameProcessor', () => {
+    it('is defined', () => {
+      expect(styleParser.tagNameProcessor).toBeDefined();
+    });
+    it('strips namespaces from TagNames', () => {
+      const tagNameProcessor = styleParser.tagNameProcessor;
+      expect(tagNameProcessor('ogc:PropertyName')).toBe('PropertyName');
+      expect(tagNameProcessor('ogc:Filter')).toBe('Filter');
+      expect(tagNameProcessor('sld:NamedLayer')).toBe('NamedLayer');
+      expect(tagNameProcessor('sld:PointSymbolizer')).toBe('PointSymbolizer');
+    });
+  });
+
   describe('#readStyle', () => {
     it('is defined', () => {
       expect(styleParser.readStyle).toBeDefined();
@@ -67,6 +80,74 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_simplepoint_filter);
         });
+    });
+
+    describe('#getStyleTypeFromSldString', () => {
+      it('is defined', () => {
+        expect(styleParser.getStyleTypeFromSldString).toBeDefined();
+      });
+      // More tests are skipped as this will be refactored:
+      // https://github.com/terrestris/geostyler/issues/66
+    });
+
+    describe('#getFilterFromOperatorAndComparison', () => {
+      it('is defined', () => {
+        expect(styleParser.getFilterFromOperatorAndComparison).toBeDefined();
+      });
+    });
+
+    describe('#getFilterFromRule', () => {
+      it('is defined', () => {
+        expect(styleParser.getFilterFromRule).toBeDefined();
+      });
+    });
+
+    describe('#getScaleDenominatorFromRule', () => {
+      it('is defined', () => {
+        expect(styleParser.getScaleDenominatorFromRule).toBeDefined();
+      });
+    });
+
+    describe('#getPointSymbolizerFromSldSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getPointSymbolizerFromSldSymbolizer).toBeDefined();
+      });
+    });
+
+    describe('#getLineSymbolizerFromSldSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getLineSymbolizerFromSldSymbolizer).toBeDefined();
+      });
+    });
+
+    describe('#getFillSymbolizerFromSldSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getFillSymbolizerFromSldSymbolizer).toBeDefined();
+      });
+    });
+
+    describe('#getTextSymbolizerFromSldSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getTextSymbolizerFromSldSymbolizer).toBeDefined();
+      });
+    });
+
+    describe('#getSymbolizerFromRule', () => {
+      it('is defined', () => {
+        expect(styleParser.getSymbolizerFromRule).toBeDefined();
+      });
+    });
+
+    describe('#getRulesFromSldObject', () => {
+      it('is defined', () => {
+        expect(styleParser.getRulesFromSldObject).toBeDefined();
+      });
+    });
+
+    describe('#sldObjectToGeoStylerStyle', () => {
+      it('is defined', () => {
+        expect(styleParser.sldObjectToGeoStylerStyle).toBeDefined();
+      });
     });
   });
 
@@ -139,86 +220,59 @@ describe('SldStyleParser implements StyleParser', () => {
             });
         });
     });
-  });
 
-  describe('#tagNameProcessor', () => {
-    it('is defined', () => {
-      expect(styleParser.tagNameProcessor).toBeDefined();
+    describe('#geoStylerStyleToSldObject', () => {
+      it('is defined', () => {
+        expect(styleParser.geoStylerStyleToSldObject).toBeDefined();
+      });
     });
-    it('strips namespaces from TagNames', () => {
-      const tagNameProcessor = styleParser.tagNameProcessor;
-      expect(tagNameProcessor('ogc:PropertyName')).toBe('PropertyName');
-      expect(tagNameProcessor('ogc:Filter')).toBe('Filter');
-      expect(tagNameProcessor('sld:NamedLayer')).toBe('NamedLayer');
-      expect(tagNameProcessor('sld:PointSymbolizer')).toBe('PointSymbolizer');
-    });
-  });
 
-  describe('#getStyleTypeFromSldString', () => {
-    it('is defined', () => {
-      expect(styleParser.getStyleTypeFromSldString).toBeDefined();
+    describe('#getSldRulesFromRules', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldRulesFromRules).toBeDefined();
+      });
     });
-    // More tests are skipped as this will be refactored:
-    // https://github.com/terrestris/geostyler/issues/66
-  });
 
-  describe('#getFilterFromOperatorAndComparison', () => {
-    it('is defined', () => {
-      expect(styleParser.getFilterFromOperatorAndComparison).toBeDefined();
+    describe('#getSldSymbolizerFromSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldSymbolizerFromSymbolizer).toBeDefined();
+      });
     });
-  });
 
-  describe('#getFilterFromRule', () => {
-    it('is defined', () => {
-      expect(styleParser.getFilterFromRule).toBeDefined();
+    describe('#getSldTextSymbolizerFromTextSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldTextSymbolizerFromTextSymbolizer).toBeDefined();
+      });
     });
-  });
 
-  describe('#getScaleDenominatorFromRule', () => {
-    it('is defined', () => {
-      expect(styleParser.getScaleDenominatorFromRule).toBeDefined();
+    describe('#getSldPolygonSymbolizerFromFillSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldPolygonSymbolizerFromFillSymbolizer).toBeDefined();
+      });
     });
-  });
 
-  describe('#getPointSymbolizerFromSldSymbolizer', () => {
-    it('is defined', () => {
-      expect(styleParser.getPointSymbolizerFromSldSymbolizer).toBeDefined();
+    describe('#getSldLineSymbolizerFromLineSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldLineSymbolizerFromLineSymbolizer).toBeDefined();
+      });
     });
-  });
 
-  describe('#getLineSymbolizerFromSldSymbolizer', () => {
-    it('is defined', () => {
-      expect(styleParser.getLineSymbolizerFromSldSymbolizer).toBeDefined();
+    describe('#getSldPointSymbolizerFromCircleSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldPointSymbolizerFromCircleSymbolizer).toBeDefined();
+      });
     });
-  });
 
-  describe('#getFillSymbolizerFromSldSymbolizer', () => {
-    it('is defined', () => {
-      expect(styleParser.getFillSymbolizerFromSldSymbolizer).toBeDefined();
+    describe('#getSldComparisonFilterFromComparisonFilte', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldComparisonFilterFromComparisonFilte).toBeDefined();
+      });
     });
-  });
 
-  describe('#getTextSymbolizerFromSldSymbolizer', () => {
-    it('is defined', () => {
-      expect(styleParser.getTextSymbolizerFromSldSymbolizer).toBeDefined();
-    });
-  });
-
-  describe('#getSymbolizerFromRule', () => {
-    it('is defined', () => {
-      expect(styleParser.getSymbolizerFromRule).toBeDefined();
-    });
-  });
-
-  describe('#getRulesFromSldObject', () => {
-    it('is defined', () => {
-      expect(styleParser.getRulesFromSldObject).toBeDefined();
-    });
-  });
-
-  describe('#sldObjectToGeoStylerStyle', () => {
-    it('is defined', () => {
-      expect(styleParser.sldObjectToGeoStylerStyle).toBeDefined();
+    describe('#getSldFilterFromFilter', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldFilterFromFilter).toBeDefined();
+      });
     });
   });
 

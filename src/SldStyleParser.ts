@@ -563,8 +563,10 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Style
    *
-   * @param geoStylerStyle
+   * @param {Style} geoStylerStyle A GeoStyler-Style Style.
+   * @return {object} The object representation of a SLD Style (readable with xml2js)
    */
   geoStylerStyleToSldObject(geoStylerStyle: Style): any {
     const rules: any[] = this.getSldRulesFromRules(geoStylerStyle.rules);
@@ -595,6 +597,12 @@ class SldStyleParser implements StyleParser {
     };
   }
 
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Rule.
+   *
+   * @param {Rule} rules A GeoStyler-Style Rule.
+   * @return {object} The object representation of a SLD Rule (readable with xml2js)
+   */
   getSldRulesFromRules(rules: Rule[]): any {
     return rules.map((rule: Rule) => {
       let sldRule: any = {};
@@ -620,6 +628,12 @@ class SldStyleParser implements StyleParser {
     });
   }
 
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Symbolizer.
+   *
+   * @param {Symbolizer} symbolizer A GeoStyler-Style Symbolizer.
+   * @return {object} The object representation of a SLD Symbolizer (readable with xml2js)
+   */
   getSldSymbolizerFromSymbolizer(symbolizer: Symbolizer): any {
     let sldSymbolizer: any = {};
     switch (symbolizer.kind) {
@@ -644,6 +658,12 @@ class SldStyleParser implements StyleParser {
     return sldSymbolizer;
   }
 
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style TextSymbolizer.
+   *
+   * @param {TextSymbolizer} textSymbolizer A GeoStyler-Style TextSymbolizer.
+   * @return {object} The object representation of a SLD TextSymbolizer (readable with xml2js)
+   */
   getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: TextSymbolizer): any {
     let sldTextSymbolizer: any = [{
       'Label': [{
@@ -707,6 +727,12 @@ class SldStyleParser implements StyleParser {
     };
   }
 
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style FillSymbolizer.
+   *
+   * @param {FillSymbolizer} fillSymbolizer A GeoStyler-Style FillSymbolizer.
+   * @return {object} The object representation of a SLD PolygonSymbolizer (readable with xml2js)
+   */
   getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: FillSymbolizer): any {
     const strokePropertyMap = {
       outlineColor: 'stroke'
@@ -755,6 +781,12 @@ class SldStyleParser implements StyleParser {
     };
   }
 
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style LineSymbolizer.
+   *
+   * @param {LineSymbolizer} lineSymbolizer A GeoStyler-Style LineSymbolizer.
+   * @return {object} The object representation of a SLD LineSymbolizer (readable with xml2js)
+   */
   getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: LineSymbolizer): any {
     const propertyMap = {
       color: 'stroke',
@@ -785,6 +817,13 @@ class SldStyleParser implements StyleParser {
     };
   }
 
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style CircleSymbolizer.
+   *
+   * @param {CircleSymbolizer} circleSymbolizer A GeoStyler-Style CircleSymbolizer.
+   * @return {object} The object representation of a SLD PointSymbolizer with a
+   * "circle" Mark (readable with xml2js)
+   */
   getSldPointSymbolizerFromCircleSymbolizer(circleSymbolizer: CircleSymbolizer): any {
     let mark: any[] = [{
       'WellKnownName': [
@@ -837,6 +876,13 @@ class SldStyleParser implements StyleParser {
     };
   }
 
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ComparisonFilter.
+   *
+   * @param {ComparisonFilter} comparisonFilter A GeoStyler-Style ComparisonFilter.
+   * @return {object} The object representation of a SLD Filter Expression with a
+   * comparison operator (readable with xml2js)
+   */
   getSldComparisonFilterFromComparisonFilte(comparisonFilter: ComparisonFilter): any[] {
     const sldComparisonFilter: any = <ComparisonFilter> {};
     const operator = comparisonFilter[0];
@@ -860,6 +906,12 @@ class SldStyleParser implements StyleParser {
     return sldComparisonFilter;
   }
 
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ComparisonFilter.
+   *
+   * @param {ComparisonFilter} comparisonFilter A GeoStyler-Style ComparisonFilter.
+   * @return {object} The object representation of a SLD Filter Expression (readable with xml2js)
+   */
   getSldFilterFromFilter(filter: Filter): any[] {
     let sldFilter: any = {};
     const [
