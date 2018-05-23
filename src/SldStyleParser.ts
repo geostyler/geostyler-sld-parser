@@ -28,6 +28,7 @@ import {
 
 import {
   isString as _isString,
+  isNumber as _isNumber,
   get as _get
 } from 'lodash';
 
@@ -58,6 +59,18 @@ class SldStyleParser implements StyleParser {
     PropertyIsGreaterThanOrEqualTo: '>=',
     PropertyIsNull: '=='
   };
+
+  /**
+   * Returns the keys of an object where the value is equal to the passed in
+   * value.
+   *
+   * @param {object} object The object to get the key from.
+   * @param {any} value The value to get the matching key from.
+   * @return {string[]} The matching keys.
+   */
+  private static keysByValue(object: any, value: any): string[] {
+    return Object.keys(object).filter(key => object[key] === value);
+  }
 
   /**
    * The name Processor is passed as an option to the xml2js parser and modifies
@@ -153,6 +166,7 @@ class SldStyleParser implements StyleParser {
         ...filters
       ];
     } else if (Object.keys(SldStyleParser.negationOperatorMap).includes(sldOperatorName)) {
+      const negationOperator = SldStyleParser.negationOperatorMap[sldOperatorName];
       const negatedOperator = Object.keys(sldFilter)[0];
       const negatedComparison = sldFilter[negatedOperator][0];
       const negatedFilter: Filter = this.getFilterFromOperatorAndComparison(
@@ -160,7 +174,7 @@ class SldStyleParser implements StyleParser {
         negatedComparison
       );
       filter = [
-        '!',
+        negationOperator,
         negatedFilter
       ];
     } else {
@@ -582,12 +596,9 @@ class SldStyleParser implements StyleParser {
         },
         'NamedLayer': [{
           'Name': [
-            'Simple Point'
+            'GeoStyler Style'
           ],
           'UserStyle': [{
-            'Title': [
-              'SLD Cook Book: Simple Point'
-            ],
             'FeatureTypeStyle': [{
               'Rule': rules
             }]
@@ -600,7 +611,7 @@ class SldStyleParser implements StyleParser {
   /**
    * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Rule.
    *
-   * @param {Rule} rules A GeoStyler-Style Rule.
+   * @param {Rule[]} rules An array of GeoStyler-Style Rules.
    * @return {object} The object representation of a SLD Rule (readable with xml2js)
    */
   getSldRulesFromRules(rules: Rule[]): any {
@@ -617,10 +628,10 @@ class SldStyleParser implements StyleParser {
       }
       if (rule.scaleDenominator) {
         const {min, max} = rule.scaleDenominator;
-        if (min) {
+        if (_isNumber(min)) {
           sldRule.MinScaleDenominator = [min.toString()];
         }
-        if (max) {
+        if (_isNumber(max)) {
           sldRule.MaxScaleDenominator = [max.toString()];
         }
       }
@@ -641,6 +652,7 @@ class SldStyleParser implements StyleParser {
         sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
         break;
       case 'Icon':
+        // TODO Implement logic for IconSymbolizer parsing
         // sldSymbolizer = this.getSldPointSymbolizerFromIconSymbolizer(symbolizer);
         break;
       case 'Text':
@@ -840,7 +852,7 @@ class SldStyleParser implements StyleParser {
         }]
       }];
     }
-    if (circleSymbolizer.strokeColor || circleSymbolizer.strokeColor) {
+    if (circleSymbolizer.strokeColor || circleSymbolizer.strokeWidth) {
       mark[0].Stroke = [{}];
       const strokeCssParameters = [];
       if (circleSymbolizer.strokeColor) {
@@ -883,18 +895,13 @@ class SldStyleParser implements StyleParser {
    * @return {object} The object representation of a SLD Filter Expression with a
    * comparison operator (readable with xml2js)
    */
-  getSldComparisonFilterFromComparisonFilte(comparisonFilter: ComparisonFilter): any[] {
+  getSldComparisonFilterFromComparisonFilter(comparisonFilter: ComparisonFilter): any[] {
     const sldComparisonFilter: any = <ComparisonFilter> {};
     const operator = comparisonFilter[0];
     const key = comparisonFilter[1];
     const value = comparisonFilter[2];
 
-    const keyByValue = (o: any, v: any) => {
-      return Object.keys(o)
-        .filter(k => SldStyleParser.comparisonMap[k] === v);
-    };
-
-    const sldOperators: string[] = keyByValue(SldStyleParser.comparisonMap, operator);
+    const sldOperators: string[] = SldStyleParser.keysByValue(SldStyleParser.comparisonMap, operator);
     let sldOperator: string = (sldOperators.length > 1 && value === null)
       ? sldOperators[1] : sldOperators[0];
 
@@ -907,9 +914,9 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ComparisonFilter.
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Filter.
    *
-   * @param {ComparisonFilter} comparisonFilter A GeoStyler-Style ComparisonFilter.
+   * @param {Filter} filter A GeoStyler-Style Filter.
    * @return {object} The object representation of a SLD Filter Expression (readable with xml2js)
    */
   getSldFilterFromFilter(filter: Filter): any[] {
@@ -920,9 +927,11 @@ class SldStyleParser implements StyleParser {
     ] = <Array<any>> filter;
 
     if (Object.values(SldStyleParser.comparisonMap).includes(operator)) {
-      sldFilter = this.getSldComparisonFilterFromComparisonFilte(<ComparisonFilter> filter);
+      sldFilter = this.getSldComparisonFilterFromComparisonFilter(<ComparisonFilter> filter);
     } else if (Object.values(SldStyleParser.combinationMap).includes(operator)) {
-      const combinator = operator === '&&' ? 'And' : 'Or';
+      const sldOperators: string[] = SldStyleParser.keysByValue(SldStyleParser.combinationMap, operator);
+      // TODO Implement logic for "PropertyIsBetween" filter
+      const combinator = sldOperators[0];
       sldFilter[combinator] = [{}];
       args.forEach(subFilter => {
         const sldSubFilter = this.getSldFilterFromFilter(subFilter);

@@ -265,7 +265,7 @@ describe('SldStyleParser implements StyleParser', () => {
 
     describe('#getSldComparisonFilterFromComparisonFilte', () => {
       it('is defined', () => {
-        expect(styleParser.getSldComparisonFilterFromComparisonFilte).toBeDefined();
+        expect(styleParser.getSldComparisonFilterFromComparisonFilter).toBeDefined();
       });
     });
 
