@@ -23,10 +23,6 @@ import {
 } from 'xml2js';
 
 import {
-  DOMParser
-} from 'xmldom';
-
-import {
   isString as _isString,
   isNumber as _isNumber,
   get as _get
@@ -85,30 +81,34 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
-   * Get the GeoStyler-Style StyleType from the sldString. It searches for the
+   * Get the GeoStyler-Style StyleType from the sldObject. It searches for the
    * first appearance of a SLD Symbolizer. Supported Symbolizers are:
    * 'PointSymbolizer',
    * 'LineSymbolizer',
    * 'TextSymbolizer',
    * 'PolygonSymbolizer'
    *
-   * @param {string} sldString The SLD string
+   * @param {object} sldObject The SLD object representation (created with xml2js)
    * @return {StyleType} The StyleType of the parsed SLD string
    */
-  getStyleTypeFromSldString(sldString: string): StyleType {
+  getStyleTypeFromSldObject(sldObject: any): StyleType {
     const symbolizers = [
       'PointSymbolizer',
       'LineSymbolizer',
       'TextSymbolizer',
       'PolygonSymbolizer'
     ];
-    const parser = new DOMParser();
-    const dom = parser.parseFromString(sldString);
     let styleType: StyleType;
-    const foundSymbolizers = symbolizers.filter(symb => {
-      return dom.getElementsByTagName(symb).length > 0;
-    });
-    switch (foundSymbolizers[0]) {
+    const ruleObject = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0]' +
+      '.UserStyle[0].FeatureTypeStyle[0].Rule[0]');
+
+    if (!ruleObject) {
+      throw new Error('StyleType could not be detected');
+    }
+
+    const ruleKeys = Object.keys(ruleObject);
+    const symbolizer = ruleKeys.find(key => symbolizers.includes(key));
+    switch (symbolizer) {
       case 'PointSymbolizer':
       case 'TextSymbolizer':
         styleType = 'Point';
@@ -127,7 +127,7 @@ class SldStyleParser implements StyleParser {
 
   /**
    * Creates a GeoStyler-Style Filter from a given operator name and the js
-   * object representation (created with xml2js) of the SLD Filter.
+   * SLD object representation (created with xml2js) of the SLD Filter.
    *
    * @param {string} sldOperatorName The Name of the SLD Filter Operator
    * @param {object} sldFilter The SLD Filter
@@ -481,7 +481,7 @@ class SldStyleParser implements StyleParser {
    *
    * Currently only one symbolizer per rule is supported.
    *
-   * @param {object} sldObject The object representation (created with xml2js)
+   * @param {object} sldObject The SLD object representation (created with xml2js)
    * @return {Rule} The GeoStyler-Style Rule
    */
   getRulesFromSldObject(sldObject: any): Rule[] {
@@ -516,10 +516,11 @@ class SldStyleParser implements StyleParser {
   /**
    * Get the GeoStyler-Style Style from an SLD Object (created with xml2js).
    *
-   * @param {object} sldObject The object representation (created with xml2js)
+   * @param {object} sldObject The SLD object representation (created with xml2js)
    * @return {Style} The GeoStyler-Style Style
    */
-  sldObjectToGeoStylerStyle(sldObject: object, type: StyleType): Style {
+  sldObjectToGeoStylerStyle(sldObject: object): Style {
+    const type = this.getStyleTypeFromSldObject(sldObject);
     const rules = this.getRulesFromSldObject(sldObject);
     return {
       type,
@@ -540,13 +541,12 @@ class SldStyleParser implements StyleParser {
       const options = {
         tagNameProcessors: [this.tagNameProcessor]
       };
-      const styleType: StyleType = this.getStyleTypeFromSldString(sldString);
       try {
         parseString(sldString, options, (err, result) => {
           if (err) {
             reject(`Error while parsing sldString: ${err}`);
           }
-          const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(result, styleType);
+          const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(result);
           resolve(geoStylerStyle);
         });
       } catch (error) {
