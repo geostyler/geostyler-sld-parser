@@ -1,0 +1,89 @@
+{
+  "StyledLayerDescriptor": {
+    "$": {
+      "version": "1.0.0",
+      "xsi:schemaLocation": "http://www.opengis.net/sld StyledLayerDescriptor.xsd",
+      "xmlns": "http://www.opengis.net/sld",
+      "xmlns:ogc": "http://www.opengis.net/ogc",
+      "xmlns:xlink": "http://www.w3.org/1999/xlink",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "NamedLayer": [{
+      "Name": [
+        "Simple Point"
+      ],
+      "UserStyle": [{
+        "Title": [
+          "SLD Cook Book: Simple Point"
+        ],
+        "FeatureTypeStyle": [{
+          "Rule": [{
+            "MinScaleDenominator": [
+              "10000"
+            ],
+            "MaxScaleDenominator": [
+              "20000"
+            ],
+            "Filter": [{
+              "And": [{
+                "PropertyIsEqualTo": [{
+                  "PropertyName": [
+                    "NAME"
+                  ],
+                  "Literal": [
+                    "New York"
+                  ]
+                }],
+                "Not": [{
+                  "PropertyIsGreaterThan": [{
+                    "PropertyName": [
+                      "POPULATION"
+                    ],
+                    "Literal": [
+                      "100000"
+                    ]
+                  }]
+                }]
+              }]
+            }],
+            "PointSymbolizer": [{
+              "Graphic": [{
+                "Mark": [{
+                  "WellKnownName": [
+                    "circle"
+                  ],
+                  "Fill": [{
+                    "CssParameter": [{
+                      "_": "#FF0000",
+                      "$": {
+                        "name": "fill"
+                      }
+                    }]
+                  }],
+                  "Stroke": [{
+                    "CssParameter": [{
+                        "_": "#000000",
+                        "$": {
+                          "name": "stroke"
+                        }
+                      },
+                      {
+                        "_": "2",
+                        "$": {
+                          "name": "stroke-width"
+                        }
+                      }
+                    ]
+                  }]
+                }],
+                "Size": [
+                  "6"
+                ]
+              }]
+            }]
+          }]
+        }]
+      }]
+    }]
+  }
+}
