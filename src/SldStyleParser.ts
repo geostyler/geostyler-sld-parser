@@ -801,6 +801,28 @@ class SldStyleParser implements StyleParser {
         }]
       }];
     }
+    if (circleSymbolizer.strokeColor || circleSymbolizer.strokeColor) {
+      mark[0].Stroke = [{}];
+      const strokeCssParameters = [];
+      if (circleSymbolizer.strokeColor) {
+        strokeCssParameters.push({
+          '_': circleSymbolizer.strokeColor,
+          '$': {
+            'name': 'stroke'
+          }
+        });
+      }
+      if (circleSymbolizer.strokeWidth) {
+        strokeCssParameters.push({
+          '_': circleSymbolizer.strokeWidth,
+          '$': {
+            'name': 'stroke-width'
+          }
+        });
+      }
+      mark[0].Stroke[0].CssParameter = strokeCssParameters;
+    }
+
     let graphic: any[] = [{
       'Mark': mark
     }];
