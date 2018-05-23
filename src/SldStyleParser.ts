@@ -101,6 +101,11 @@ class SldStyleParser implements StyleParser {
     let styleType: StyleType;
     const ruleObject = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0]' +
       '.UserStyle[0].FeatureTypeStyle[0].Rule[0]');
+
+    if (!ruleObject) {
+      throw new Error('StyleType could not be detected');
+    }
+
     const ruleKeys = Object.keys(ruleObject);
     const symbolizer = ruleKeys.find(key => symbolizers.includes(key));
     switch (symbolizer) {
