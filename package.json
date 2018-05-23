@@ -1,6 +1,6 @@
 {
   "name": "geostyler-sld-parser",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "GeoStyler Style Parser implementation for SLD",
   "main": "build/dist/SldStyleParser.js",
   "files": [
@@ -41,6 +41,7 @@
   "devDependencies": {
     "@types/jest": "22.2.3",
     "@types/node": "10.0.9",
+    "coveralls": "3.0.1",
     "jest": "22.4.3",
     "np": "2.20.1",
     "ts-jest": "22.4.6",
@@ -55,6 +56,9 @@
     "transform": {
       "\\.(ts)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
-    "testRegex": "/src/.*\\.spec.(ts|js)$"
+    "testRegex": "/src/.*\\.spec.(ts|js)$",
+    "collectCoverageFrom": [
+      "src/*.{ts,js}"
+    ]
   }
 }
