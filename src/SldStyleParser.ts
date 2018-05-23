@@ -608,8 +608,13 @@ class SldStyleParser implements StyleParser {
         sldRule.Filter = filter;
       }
       if (rule.scaleDenominator) {
-        const scaleDenominator = this.getSldScaleDenominatorFromScaleDenominator(rule.scaleDenominator);
-        sldRule.ScaleDenominator = scaleDenominator;
+        const {min, max} = rule.scaleDenominator;
+        if (min) {
+          sldRule.MinScaleDenominator = [min.toString()];
+        }
+        if (max) {
+          sldRule.MaxScaleDenominator = [max.toString()];
+        }
       }
       return sldRule;
     });
@@ -855,10 +860,6 @@ class SldStyleParser implements StyleParser {
     }
 
     return sldFilter;
-  }
-
-  getSldScaleDenominatorFromScaleDenominator(scaleDenominator: ScaleDenominator): any[] {
-    return [{}];
   }
 
 }
