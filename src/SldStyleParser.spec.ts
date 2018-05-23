@@ -82,12 +82,10 @@ describe('SldStyleParser implements StyleParser', () => {
         });
     });
 
-    describe('#getStyleTypeFromSldString', () => {
+    describe('#getStyleTypeFromSldObject', () => {
       it('is defined', () => {
-        expect(styleParser.getStyleTypeFromSldString).toBeDefined();
+        expect(styleParser.getStyleTypeFromSldObject).toBeDefined();
       });
-      // More tests are skipped as this will be refactored:
-      // https://github.com/terrestris/geostyler/issues/66
     });
 
     describe('#getFilterFromOperatorAndComparison', () => {
