@@ -8,9 +8,10 @@
   <NamedLayer>
     <Name>Simple Point Filter</Name>
     <UserStyle>
-      <Title>SLD Cook Book: Simple Point</Title>
+      <Title>Simple Point Filter</Title>
       <FeatureTypeStyle>
         <Rule>
+          <Name>Small populated New Yorks</Name>
           <MinScaleDenominator>10000</MinScaleDenominator>
           <MaxScaleDenominator>20000</MaxScaleDenominator>
           <ogc:Filter>

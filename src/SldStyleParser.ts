@@ -126,6 +126,20 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the name for the Style from the SLD Object. Returns the Title of the UserStyle
+   * if defined or the Name of the NamedLayer if defined or an empty string.
+   *
+   * @param {object} sldObject The SLD object representation (created with xml2js)
+   * @return {string} The name to be used for the GeoStyler Style Style
+   */
+  getStyleNameFromSldObject(sldObject: any): string {
+    const userStyleTitle = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle[0].Title[0]');
+    const namedLayerName = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].Name[0]');
+    return userStyleTitle ? userStyleTitle
+      : namedLayerName ? namedLayerName : '';
+  }
+
+  /**
    * Creates a GeoStyler-Style Filter from a given operator name and the js
    * SLD object representation (created with xml2js) of the SLD Filter.
    *
@@ -495,8 +509,10 @@ class SldStyleParser implements StyleParser {
             const filter: Filter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
             const symbolizer: Symbolizer = this.getSymbolizerFromRule(sldRule);
-            let rule: Rule = <Rule> {};
-            rule = {
+            const name = sldRule.Title ? sldRule.Title[0]
+              : (sldRule.Name ? sldRule.Name[0] : '');
+            let rule: Rule = <Rule> {
+              name,
               symbolizer
             };
             if (filter) {
@@ -522,7 +538,9 @@ class SldStyleParser implements StyleParser {
   sldObjectToGeoStylerStyle(sldObject: object): Style {
     const type = this.getStyleTypeFromSldObject(sldObject);
     const rules = this.getRulesFromSldObject(sldObject);
+    const name = this.getStyleNameFromSldObject(sldObject);
     return {
+      name,
       type,
       rules
     };
@@ -595,10 +613,10 @@ class SldStyleParser implements StyleParser {
           'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance'
         },
         'NamedLayer': [{
-          'Name': [
-            'GeoStyler Style'
-          ],
+          'Name': [geoStylerStyle.name],
           'UserStyle': [{
+            'Name': [geoStylerStyle.name],
+            'Title': [geoStylerStyle.name],
             'FeatureTypeStyle': [{
               'Rule': rules
             }]
@@ -616,7 +634,9 @@ class SldStyleParser implements StyleParser {
    */
   getSldRulesFromRules(rules: Rule[]): any {
     return rules.map((rule: Rule) => {
-      let sldRule: any = {};
+      let sldRule: any = {
+        Name: [rule.name]
+      };
       const symbolizer = this.getSldSymbolizerFromSymbolizer(rule.symbolizer);
       const symbolizerName = Object.keys(symbolizer)[0];
       if (symbolizer && symbolizerName) {

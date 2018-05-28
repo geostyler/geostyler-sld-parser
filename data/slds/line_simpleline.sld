@@ -8,7 +8,7 @@
   <NamedLayer>
     <Name>Simple Line</Name>
     <UserStyle>
-      <Title>SLD Cook Book: Simple Line</Title>
+      <Title>Simple Line</Title>
       <FeatureTypeStyle>
         <Rule>
           <LineSymbolizer>
