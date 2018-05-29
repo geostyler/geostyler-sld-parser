@@ -37,6 +37,11 @@ import {
  */
 class SldStyleParser implements StyleParser {
 
+  /**
+   * The name of the SLD Style Parser.
+   */
+  public name: 'SLD Style Parser';
+
   static negationOperatorMap = {
     Not: '!'
   };
