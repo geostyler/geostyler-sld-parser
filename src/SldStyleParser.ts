@@ -931,7 +931,7 @@ class SldStyleParser implements StyleParser {
         'xlink:href': iconSymbolizer.image
       }
     };
-    var graphic = [{
+    var graphic: any[] = [{
         'ExternalGraphic': [{
           'OnlineResource': onlineResource,
           'Format': 'image/png'// TODO: This has to be a property on the IconSymbolizer
