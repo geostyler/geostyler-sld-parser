@@ -153,9 +153,9 @@ class SldStyleParser implements StyleParser {
     if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
       const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
       const property: string = sldFilter.PropertyName[0];
-      let value = sldFilter.Literal[0];
-      if (sldOperatorName === 'PropertyIsNull') {
-        value = null;
+      let value = null;
+      if (sldOperatorName !== 'PropertyIsNull') {
+        value = sldFilter.Literal[0];
       }
       if (!Number.isNaN(parseFloat(value))) {
         value = parseFloat(value);
