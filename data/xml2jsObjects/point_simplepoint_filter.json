@@ -25,6 +25,9 @@
               "20000"
             ],
             "Filter": [{
+              "$": {
+                "xmlns": "http://www.opengis.net/ogc"
+              },
               "And": [{
                 "PropertyIsEqualTo": [{
                   "PropertyName": [
