@@ -250,7 +250,7 @@ class SldStyleParser implements StyleParser {
   getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
     let pointSymbolizer: PointSymbolizer = <PointSymbolizer> {};
     const wellKnownName = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
-    const externalGrahphic = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
+    const externalGraphic = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
     if (wellKnownName === 'circle') {
       let circleSymbolizer: CircleSymbolizer = <CircleSymbolizer> {
         kind: 'Circle'
@@ -281,7 +281,7 @@ class SldStyleParser implements StyleParser {
         }
       });
       pointSymbolizer = circleSymbolizer;
-    } else if (externalGrahphic) {
+    } else if (externalGraphic) {
       const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
       let iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
         kind: 'Icon',
@@ -289,11 +289,15 @@ class SldStyleParser implements StyleParser {
       };
       const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
       const size = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+      const rotate = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
       if (opacity) {
         iconSymbolizer.opacity = opacity;
       }
       if (size) {
-        iconSymbolizer.size = size;
+        iconSymbolizer.size = parseInt(size, 10);
+      }
+      if (rotate) {
+        iconSymbolizer.rotate = parseInt(rotate, 10);
       }
       pointSymbolizer = iconSymbolizer;
     } else {
@@ -672,8 +676,7 @@ class SldStyleParser implements StyleParser {
         sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
         break;
       case 'Icon':
-        // TODO Implement logic for IconSymbolizer parsing
-        // sldSymbolizer = this.getSldPointSymbolizerFromIconSymbolizer(symbolizer);
+        sldSymbolizer = this.getSldPointSymbolizerFromIconSymbolizer(symbolizer);
         break;
       case 'Text':
         sldSymbolizer = this.getSldTextSymbolizerFromTextSymbolizer(symbolizer);
@@ -904,6 +907,40 @@ class SldStyleParser implements StyleParser {
     return {
       'PointSymbolizer': [{
         'Graphic': graphic
+      }]
+    };
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style IconSymbolizer.
+   *
+   * @param {IconSymbolizer} iconSymbolizer A GeoStyler-Style IconSymbolizer.
+   * @return {object} The object representation of a SLD PointSymbolizer with
+   * en "ExternalGraphic" (readable with xml2js)
+   */
+  getSldPointSymbolizerFromIconSymbolizer(iconSymbolizer: IconSymbolizer): any {
+    const onlineResource = {
+      '$': {
+        'xlink:type': 'simple',
+        'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+        'xlink:href': iconSymbolizer.image
+      }
+    };
+    var graphic = [{
+        'ExternalGraphic': [{
+          'OnlineResource': onlineResource,
+          'Format': 'image/png'// TODO: This has to be a property on the IconSymbolizer
+        }]
+    }];
+    if (iconSymbolizer.size) {
+        graphic[0].Size = iconSymbolizer.size;
+    }
+    if (iconSymbolizer.rotate) {
+        graphic[0].Rotation = iconSymbolizer.rotate;
+    }
+    return {
+      'PointSymbolizer': [{
+          'Graphic': graphic
       }]
     };
   }
