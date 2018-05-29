@@ -985,6 +985,16 @@ class SldStyleParser implements StyleParser {
       sldComparisonFilter[sldOperator] = [{
         'PropertyName': [key]
       }];
+    } else if (sldOperator === 'PropertyIsLike') {
+      sldComparisonFilter[sldOperator] = [{
+        '$': {
+          'wildCard': '*',
+          'singleChar': '.',
+          'escape': '!'
+        },
+        'PropertyName': [key],
+        'Literal': [value]
+      }];
     } else {
       sldComparisonFilter[sldOperator] = [{
         'PropertyName': [key],

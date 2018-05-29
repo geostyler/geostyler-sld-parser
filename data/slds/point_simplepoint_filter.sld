@@ -21,6 +21,10 @@
                <PropertyIsNull>
                 <PropertyName>TEST</PropertyName>
               </PropertyIsNull>
+              <PropertyIsLike wildCard="*" singleChar="." escape="!">
+                <PropertyName>TEST2</PropertyName>
+                <Literal>*York*</Literal>
+              </PropertyIsLike>
                 <Not>
                     <PropertyIsGreaterThan>
                       <PropertyName>POPULATION</PropertyName>

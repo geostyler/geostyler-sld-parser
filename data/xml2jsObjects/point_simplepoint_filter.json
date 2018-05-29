@@ -42,6 +42,15 @@
                       "TEST"
                     ]
                   }]
+                }, {
+                  "PropertyIsLike": [{
+                    "PropertyName": [
+                      "TEST2"
+                    ],
+                    "Literal": [
+                      "*York*"
+                    ]
+                  }]
                 }],
                 "Not": [{
                   "PropertyIsGreaterThan": [{

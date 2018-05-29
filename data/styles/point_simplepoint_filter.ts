@@ -8,6 +8,7 @@ const pointSimplePoint: Style = {
     filter: ['&&',
       ['==', 'NAME', 'New York'],
       ['==', 'TEST', null],
+      ['*=', 'TEST2', '*York*'],
       ['!',
         ['>', 'POPULATION', 100000]
       ]
