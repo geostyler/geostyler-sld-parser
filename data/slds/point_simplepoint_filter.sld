@@ -12,22 +12,25 @@
       <FeatureTypeStyle>
         <Rule>
           <Name>Small populated New Yorks</Name>
-          <MinScaleDenominator>10000</MinScaleDenominator>
-          <MaxScaleDenominator>20000</MaxScaleDenominator>
           <ogc:Filter>
-            <And>
-               <PropertyIsEqualTo>
-                  <PropertyName>NAME</PropertyName>
-                  <Literal>New York</Literal>
-               </PropertyIsEqualTo>
-                <Not>
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>NAME</ogc:PropertyName>
+                  <ogc:Literal>New York</ogc:Literal>
+               </ogc:PropertyIsEqualTo>
+               <ogc:PropertyIsNull>
+                <ogc:PropertyName>TEST</ogc:PropertyName>
+              </ogc:PropertyIsNull>
+                <ogc:Not>
                     <ogc:PropertyIsGreaterThan>
                       <ogc:PropertyName>POPULATION</ogc:PropertyName>
                       <ogc:Literal>100000</ogc:Literal>
                     </ogc:PropertyIsGreaterThan>
-                </Not>
-            </And>
+                </ogc:Not>
+            </ogc:And>
           </ogc:Filter>
+          <MinScaleDenominator>10000</MinScaleDenominator>
+          <MaxScaleDenominator>20000</MaxScaleDenominator>
           <PointSymbolizer>
             <Graphic>
               <Mark>

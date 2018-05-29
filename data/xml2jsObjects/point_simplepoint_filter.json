@@ -33,6 +33,12 @@
                   "Literal": [
                     "New York"
                   ]
+                }, {
+                  "PropertyIsNull": [{
+                    "PropertyName": [
+                      "TEST"
+                    ]
+                  }]
                 }],
                 "Not": [{
                   "PropertyIsGreaterThan": [{
