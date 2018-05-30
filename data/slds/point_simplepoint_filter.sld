@@ -15,22 +15,32 @@
           <Filter xmlns="http://www.opengis.net/ogc">
             <And>
               <PropertyIsEqualTo>
-                  <PropertyName>NAME</PropertyName>
-                  <Literal>New York</Literal>
-               </PropertyIsEqualTo>
-               <PropertyIsNull>
+                <PropertyName>NAME</PropertyName>
+                <Literal>New York</Literal>
+              </PropertyIsEqualTo>
+              <PropertyIsNull>
                 <PropertyName>TEST</PropertyName>
               </PropertyIsNull>
               <PropertyIsLike wildCard="*" singleChar="." escape="!">
                 <PropertyName>TEST2</PropertyName>
                 <Literal>*York*</Literal>
               </PropertyIsLike>
-                <Not>
-                    <PropertyIsGreaterThan>
-                      <PropertyName>POPULATION</PropertyName>
-                      <Literal>100000</Literal>
-                    </PropertyIsGreaterThan>
-                </Not>
+              <Not>
+                <PropertyIsGreaterThan>
+                  <PropertyName>POPULATION</PropertyName>
+                  <Literal>100000</Literal>
+                </PropertyIsGreaterThan>
+              </Not>
+              <Or>
+                <PropertyIsEqualTo>
+                  <PropertyName>TEST2</PropertyName>
+                  <Literal>1</Literal>
+                </PropertyIsEqualTo>
+                <PropertyIsEqualTo>
+                  <PropertyName>TEST2</PropertyName>
+                  <Literal>2</Literal>
+                </PropertyIsEqualTo>
+              </Or>
             </And>
           </Filter>
           <MinScaleDenominator>10000</MinScaleDenominator>
