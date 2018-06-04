@@ -12,23 +12,37 @@
       <FeatureTypeStyle>
         <Rule>
           <Name>Small populated New Yorks</Name>
-          <ogc:Filter>
-            <ogc:And>
-              <ogc:PropertyIsEqualTo>
-                  <ogc:PropertyName>NAME</ogc:PropertyName>
-                  <ogc:Literal>New York</ogc:Literal>
-               </ogc:PropertyIsEqualTo>
-               <ogc:PropertyIsNull>
-                <ogc:PropertyName>TEST</ogc:PropertyName>
-              </ogc:PropertyIsNull>
-                <ogc:Not>
-                    <ogc:PropertyIsGreaterThan>
-                      <ogc:PropertyName>POPULATION</ogc:PropertyName>
-                      <ogc:Literal>100000</ogc:Literal>
-                    </ogc:PropertyIsGreaterThan>
-                </ogc:Not>
-            </ogc:And>
-          </ogc:Filter>
+          <Filter xmlns="http://www.opengis.net/ogc">
+            <And>
+              <PropertyIsEqualTo>
+                <PropertyName>NAME</PropertyName>
+                <Literal>New York</Literal>
+              </PropertyIsEqualTo>
+              <PropertyIsNull>
+                <PropertyName>TEST</PropertyName>
+              </PropertyIsNull>
+              <PropertyIsLike wildCard="*" singleChar="." escape="!">
+                <PropertyName>TEST2</PropertyName>
+                <Literal>*York*</Literal>
+              </PropertyIsLike>
+              <Not>
+                <PropertyIsGreaterThan>
+                  <PropertyName>POPULATION</PropertyName>
+                  <Literal>100000</Literal>
+                </PropertyIsGreaterThan>
+              </Not>
+              <Or>
+                <PropertyIsEqualTo>
+                  <PropertyName>TEST2</PropertyName>
+                  <Literal>1</Literal>
+                </PropertyIsEqualTo>
+                <PropertyIsEqualTo>
+                  <PropertyName>TEST2</PropertyName>
+                  <Literal>2</Literal>
+                </PropertyIsEqualTo>
+              </Or>
+            </And>
+          </Filter>
           <MinScaleDenominator>10000</MinScaleDenominator>
           <MaxScaleDenominator>20000</MaxScaleDenominator>
           <PointSymbolizer>

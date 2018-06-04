@@ -9,55 +9,56 @@
       "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
     },
     "NamedLayer": [{
-      "Name": [
-        "Simple Point"
-      ],
+      "Name": ["Simple Point Filter"],
       "UserStyle": [{
-        "Title": [
-          "SLD Cook Book: Simple Point"
-        ],
+        "Title": ["Simple Point Filter"],
         "FeatureTypeStyle": [{
           "Rule": [{
-            "MinScaleDenominator": [
-              "10000"
-            ],
-            "MaxScaleDenominator": [
-              "20000"
-            ],
+            "Name": ["Small populated New Yorks"],
             "Filter": [{
+              "$": {
+                "xmlns": "http://www.opengis.net/ogc"
+              },
               "And": [{
                 "PropertyIsEqualTo": [{
-                  "PropertyName": [
-                    "NAME"
-                  ],
-                  "Literal": [
-                    "New York"
-                  ]
-                }, {
-                  "PropertyIsNull": [{
-                    "PropertyName": [
-                      "TEST"
-                    ]
-                  }]
+                  "PropertyName": ["NAME"],
+                  "Literal": ["New York"]
+                }],
+                "PropertyIsNull": [{
+                  "PropertyName": ["TEST"]
+                }],
+                "PropertyIsLike": [{
+                  "$": {
+                    "wildCard": "*",
+                    "singleChar": ".",
+                    "escape": "!"
+                  },
+                  "PropertyName": ["TEST2"],
+                  "Literal": ["*York*"]
                 }],
                 "Not": [{
                   "PropertyIsGreaterThan": [{
-                    "PropertyName": [
-                      "POPULATION"
-                    ],
-                    "Literal": [
-                      "100000"
-                    ]
+                    "PropertyName": ["POPULATION"],
+                    "Literal": ["100000"]
+                  }]
+                }],
+                "Or": [{
+                  "PropertyIsEqualTo": [{
+                    "PropertyName": ["TEST2"],
+                    "Literal": ["1"]
+                  }, {
+                    "PropertyName": ["TEST2"],
+                    "Literal": ["2"]
                   }]
                 }]
               }]
             }],
+            "MinScaleDenominator": ["10000"],
+            "MaxScaleDenominator": ["20000"],
             "PointSymbolizer": [{
               "Graphic": [{
                 "Mark": [{
-                  "WellKnownName": [
-                    "circle"
-                  ],
+                  "WellKnownName": ["circle"],
                   "Fill": [{
                     "CssParameter": [{
                       "_": "#FF0000",
@@ -68,23 +69,19 @@
                   }],
                   "Stroke": [{
                     "CssParameter": [{
-                        "_": "#000000",
-                        "$": {
-                          "name": "stroke"
-                        }
-                      },
-                      {
-                        "_": "2",
-                        "$": {
-                          "name": "stroke-width"
-                        }
+                      "_": "#000000",
+                      "$": {
+                        "name": "stroke"
                       }
-                    ]
+                    }, {
+                      "_": "2",
+                      "$": {
+                        "name": "stroke-width"
+                      }
+                    }]
                   }]
                 }],
-                "Size": [
-                  "6"
-                ]
+                "Size": ["6"]
               }]
             }]
           }]

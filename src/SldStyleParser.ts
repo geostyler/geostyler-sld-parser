@@ -177,8 +177,15 @@ class SldStyleParser implements StyleParser {
       ];
     } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
-      const filters: Filter[] = Object.keys(sldFilter).map((op) => {
-        return this.getFilterFromOperatorAndComparison(op, sldFilter[op][0]);
+      let filters: Filter[] = [];
+      Object.keys(sldFilter).forEach((op) => {
+        if (sldFilter[op].length === 1) {
+          filters.push(this.getFilterFromOperatorAndComparison(op, sldFilter[op][0]));
+        } else {
+          sldFilter[op].forEach((el: any) => {
+            filters.push(this.getFilterFromOperatorAndComparison(op, el));
+          });
+        }
       });
       filter = [
         combinationOperator,
@@ -218,7 +225,12 @@ class SldStyleParser implements StyleParser {
       return;
     }
     const sldFilter = sldFilters[0];
-    const operator = Object.keys(sldFilter)[0];
+    const operator = Object.keys(sldFilter).find((key, index) => {
+      return key !== '$';
+    });
+    if (!operator) {
+      return;
+    }
     const comparison = sldFilter[operator][0];
     const filter = this.getFilterFromOperatorAndComparison(operator, comparison);
     return filter;
@@ -521,14 +533,16 @@ class SldStyleParser implements StyleParser {
             const name = sldRule.Title ? sldRule.Title[0]
               : (sldRule.Name ? sldRule.Name[0] : '');
             let rule: Rule = <Rule> {
-              name,
-              symbolizer
+              name
             };
             if (filter) {
               rule.filter = filter;
             }
             if (scaleDenominator) {
               rule.scaleDenominator = scaleDenominator;
+            }
+            if (symbolizer) {
+              rule.symbolizer = symbolizer;
             }
             rules.push(rule);
           });
@@ -611,6 +625,12 @@ class SldStyleParser implements StyleParser {
    */
   geoStylerStyleToSldObject(geoStylerStyle: Style): any {
     const rules: any[] = this.getSldRulesFromRules(geoStylerStyle.rules);
+    // add the ogc namespace to the filter element, if a filter is present
+    rules.forEach(rule => {
+      if (rule.Filter && !rule.Filter.$) {
+        rule.Filter.$ = {'xmlns': 'http://www.opengis.net/ogc'};
+      }
+    });
     return {
       StyledLayerDescriptor: {
         '$': {
@@ -646,11 +666,6 @@ class SldStyleParser implements StyleParser {
       let sldRule: any = {
         Name: [rule.name]
       };
-      const symbolizer = this.getSldSymbolizerFromSymbolizer(rule.symbolizer);
-      const symbolizerName = Object.keys(symbolizer)[0];
-      if (symbolizer && symbolizerName) {
-        sldRule[symbolizerName] = symbolizer[symbolizerName];
-      }
       if (rule.filter) {
         const filter = this.getSldFilterFromFilter(rule.filter);
         sldRule.Filter = filter;
@@ -663,6 +678,11 @@ class SldStyleParser implements StyleParser {
         if (_isNumber(max)) {
           sldRule.MaxScaleDenominator = [max.toString()];
         }
+      }
+      const symbolizer = this.getSldSymbolizerFromSymbolizer(rule.symbolizer);
+      const symbolizerName = Object.keys(symbolizer)[0];
+      if (symbolizer && symbolizerName) {
+        sldRule[symbolizerName] = symbolizer[symbolizerName];
       }
       return sldRule;
     });
@@ -967,10 +987,27 @@ class SldStyleParser implements StyleParser {
     let sldOperator: string = (sldOperators.length > 1 && value === null)
       ? sldOperators[1] : sldOperators[0];
 
-    sldComparisonFilter[sldOperator] = [{
-      'PropertyName': [key],
-      'Literal': [value]
-    }];
+    if (sldOperator === 'PropertyIsNull') {
+      // empty, selfclosing Literals are not valid in a propertyIsNull filter
+      sldComparisonFilter[sldOperator] = [{
+        'PropertyName': [key]
+      }];
+    } else if (sldOperator === 'PropertyIsLike') {
+      sldComparisonFilter[sldOperator] = [{
+        '$': {
+          'wildCard': '*',
+          'singleChar': '.',
+          'escape': '!'
+        },
+        'PropertyName': [key],
+        'Literal': [value]
+      }];
+    } else {
+      sldComparisonFilter[sldOperator] = [{
+        'PropertyName': [key],
+        'Literal': [value]
+      }];
+    }
 
     return sldComparisonFilter;
   }
@@ -995,10 +1032,25 @@ class SldStyleParser implements StyleParser {
       // TODO Implement logic for "PropertyIsBetween" filter
       const combinator = sldOperators[0];
       sldFilter[combinator] = [{}];
-      args.forEach(subFilter => {
+      args.forEach((subFilter, idx) => {
         const sldSubFilter = this.getSldFilterFromFilter(subFilter);
         const filterName = Object.keys(sldSubFilter)[0];
-        sldFilter[combinator][0][filterName] = sldSubFilter[filterName];
+        if (subFilter[0] === '||' || subFilter[0] === '&&') {
+          sldFilter[combinator][0][filterName] = {};
+          subFilter.forEach((el: any, index: number) => {
+            if (index > 0) {
+              const sldSubFilter2 = this.getSldFilterFromFilter(el);
+              const filterName2 = Object.keys(sldSubFilter2)[0];
+              const parentFilterName = Object.keys(sldSubFilter)[0];
+              if (!sldFilter[combinator][0][parentFilterName][filterName2]) {
+                sldFilter[combinator][0][parentFilterName][filterName2] = [];
+              }
+              sldFilter[combinator][0][parentFilterName][filterName2].push(sldSubFilter2[filterName2][0]);
+            }
+          });
+        } else {
+          sldFilter[combinator][0][filterName] = sldSubFilter[filterName];
+        }
       });
     } else if (Object.values(SldStyleParser.negationOperatorMap).includes(operator)) {
       sldFilter.Not = args.map(subFilter => this.getSldFilterFromFilter(subFilter));
