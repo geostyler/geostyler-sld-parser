@@ -35,6 +35,14 @@
                   },
                   "PropertyName": ["TEST2"],
                   "Literal": ["*York*"]
+                }, {
+                  "$": {
+                    "wildCard": "*",
+                    "singleChar": ".",
+                    "escape": "!"
+                  },
+                  "PropertyName": ["TEST1"],
+                  "Literal": ["*New*"]
                 }],
                 "Not": [{
                   "PropertyIsGreaterThan": [{

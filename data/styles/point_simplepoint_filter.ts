@@ -7,6 +7,7 @@ const pointSimplePoint: Style = {
       ['==', 'NAME', 'New York'],
       ['==', 'TEST', null],
       ['*=', 'TEST2', '*York*'],
+      ['*=', 'TEST1', '*New*'],
       ['!', ['>', 'POPULATION', 100000]],
       ['||',
         ['==', 'TEST2', 1],
