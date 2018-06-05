@@ -1049,7 +1049,11 @@ class SldStyleParser implements StyleParser {
             }
           });
         } else {
-          sldFilter[combinator][0][filterName] = sldSubFilter[filterName];
+          if (Array.isArray(sldFilter[combinator][0][filterName])) {
+            sldFilter[combinator][0][filterName].push(sldSubFilter[filterName][0]);
+          } else {
+            sldFilter[combinator][0][filterName] = sldSubFilter[filterName];
+          }
         }
       });
     } else if (Object.values(SldStyleParser.negationOperatorMap).includes(operator)) {

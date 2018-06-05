@@ -25,6 +25,10 @@
                 <PropertyName>TEST2</PropertyName>
                 <Literal>*York*</Literal>
               </PropertyIsLike>
+              <PropertyIsLike wildCard="*" singleChar="." escape="!">
+                <PropertyName>TEST1</PropertyName>
+                <Literal>*New*</Literal>
+              </PropertyIsLike>
               <Not>
                 <PropertyIsGreaterThan>
                   <PropertyName>POPULATION</PropertyName>
