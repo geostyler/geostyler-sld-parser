@@ -1052,21 +1052,14 @@ class SldStyleParser implements StyleParser {
             if (index > 0) {
               const sldSubFilter2 = this.getSldFilterFromFilter(el);
               const filterName2 = Object.keys(sldSubFilter2)[0];
-              if (isCombinationFilter(parentFilterName)) {
-                if (!(sldFilter[combinator][0][parentFilterName][subFilterIdx])) {
-                  sldFilter[combinator][0][parentFilterName][subFilterIdx] = {};
-                }
-                if (!sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]) {
-                  sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2] = [];
-                }
-                sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]
-                  .push(sldSubFilter2[filterName2][0]);
-              } else {
-              if (!sldFilter[combinator][0][parentFilterName][filterName2]) {
-                sldFilter[combinator][0][parentFilterName][filterName2] = [];
+              if (!(sldFilter[combinator][0][parentFilterName][subFilterIdx])) {
+                sldFilter[combinator][0][parentFilterName][subFilterIdx] = {};
               }
-              sldFilter[combinator][0][parentFilterName][filterName2].push(sldSubFilter2[filterName2][0]);
+              if (!sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]) {
+                sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2] = [];
               }
+              sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]
+                .push(sldSubFilter2[filterName2][0]);
             }
           });
         } else {
