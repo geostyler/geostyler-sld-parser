@@ -1032,20 +1032,34 @@ class SldStyleParser implements StyleParser {
       // TODO Implement logic for "PropertyIsBetween" filter
       const combinator = sldOperators[0];
       sldFilter[combinator] = [{}];
-      args.forEach((subFilter, idx) => {
+      args.forEach((subFilter, subFilterIdx) => {
         const sldSubFilter = this.getSldFilterFromFilter(subFilter);
         const filterName = Object.keys(sldSubFilter)[0];
+        const isCombinationFilter = (fName: string) => ['And', 'Or'].includes(fName);
+
         if (subFilter[0] === '||' || subFilter[0] === '&&') {
-          sldFilter[combinator][0][filterName] = {};
+          if (isCombinationFilter(filterName)) {
+            if (!(sldFilter[combinator][0][filterName])) {
+              sldFilter[combinator][0][filterName] = [];
+            }
+            sldFilter[combinator][0][filterName][subFilterIdx] = {};
+          } else {
+            sldFilter[combinator][0][filterName] = {};
+          }
+          const parentFilterName = Object.keys(sldSubFilter)[0];
+
           subFilter.forEach((el: any, index: number) => {
             if (index > 0) {
               const sldSubFilter2 = this.getSldFilterFromFilter(el);
               const filterName2 = Object.keys(sldSubFilter2)[0];
-              const parentFilterName = Object.keys(sldSubFilter)[0];
-              if (!sldFilter[combinator][0][parentFilterName][filterName2]) {
-                sldFilter[combinator][0][parentFilterName][filterName2] = [];
+              if (!(sldFilter[combinator][0][parentFilterName][subFilterIdx])) {
+                sldFilter[combinator][0][parentFilterName][subFilterIdx] = {};
               }
-              sldFilter[combinator][0][parentFilterName][filterName2].push(sldSubFilter2[filterName2][0]);
+              if (!sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]) {
+                sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2] = [];
+              }
+              sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]
+                .push(sldSubFilter2[filterName2][0]);
             }
           });
         } else {
@@ -1059,7 +1073,6 @@ class SldStyleParser implements StyleParser {
     } else if (Object.values(SldStyleParser.negationOperatorMap).includes(operator)) {
       sldFilter.Not = args.map(subFilter => this.getSldFilterFromFilter(subFilter));
     }
-
     return sldFilter;
   }
 

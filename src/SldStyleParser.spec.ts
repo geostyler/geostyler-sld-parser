@@ -7,6 +7,7 @@ import line_simpleline from '../data/styles/line_simpleline';
 import polygon_transparentpolygon from '../data/styles/polygon_transparentpolygon';
 import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
+import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 
 it('SldStyleParser is defined', () => {
@@ -89,6 +90,15 @@ describe('SldStyleParser implements StyleParser', () => {
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_simplepoint_filter);
+        });
+    });
+    it('can read a SLD style with nested logical filters', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_simplepoint_nestedLogicalFilters.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simplepoint_nestedLogicalFilters);
         });
     });
 
@@ -238,6 +248,19 @@ describe('SldStyleParser implements StyleParser', () => {
           return styleParser.readStyle(sldString)
             .then(readStyle => {
               expect(readStyle).toEqual(point_simplepoint_filter);
+            });
+        });
+    });
+    it('can write a SLD style with nested logical filters', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_simplepoint_nestedLogicalFilters)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplepoint_nestedLogicalFilters);
             });
         });
     });
