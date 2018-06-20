@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/terrestris/geostyler-sld-parser#readme",
   "dependencies": {
-    "@types/lodash": "4.14.109",
+    "@types/lodash": "4.14.110",
     "@types/xml2js": "0.4.3",
     "geostyler-style": "0.6.0",
     "lodash": "4.17.10",
@@ -40,8 +40,8 @@
     "release": "np --no-yarn"
   },
   "devDependencies": {
-    "@types/jest": "23.1.0",
     "@types/node": "10.3.4",
+    "@types/jest": "23.1.1",
     "coveralls": "3.0.1",
     "jest": "23.1.0",
     "np": "3.0.4",
