@@ -33,7 +33,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "prebuild": "npm run test",
     "pretest": "npm run lint",
+    "prepublishOnly": "npm run build",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "lint": "tslint --project tsconfig.json --config tslint.json && tsc --noEmit --project tsconfig.build.json",
