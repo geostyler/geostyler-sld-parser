@@ -365,7 +365,8 @@ class SldStyleParser implements StyleParser {
           lineSymbolizer.cap = value;
           break;
         case 'stroke-dasharray':
-          lineSymbolizer.dasharray = value;
+          const dashStringAsArray = value.split(',').map((a: string) => parseFloat(a));
+          lineSymbolizer.dasharray = dashStringAsArray;
           break;
         case 'stroke-dashoffset':
           // Currently not supported by GeoStyler Style
