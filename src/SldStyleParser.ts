@@ -419,6 +419,15 @@ class SldStyleParser implements StyleParser {
       } = cssParameter;
       if (name === 'stroke') {
         fillSymbolizer.outlineColor = value;
+      } else if (name === 'stroke-width') {
+        fillSymbolizer.outlineWidth = parseInt(value, 10);
+      } else if (name === 'stroke-dasharray') {
+        const outlineDasharrayStr = value.split(' ');
+        const outlineDasharray: number[] = [];
+        outlineDasharrayStr.forEach((dashStr: string) => {
+          outlineDasharray.push(parseInt(dashStr, 10));
+        });
+        fillSymbolizer.outlineDasharray = outlineDasharray;
       }
     });
     return fillSymbolizer;
@@ -795,7 +804,9 @@ class SldStyleParser implements StyleParser {
    */
   getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: FillSymbolizer): any {
     const strokePropertyMap = {
-      outlineColor: 'stroke'
+      outlineColor: 'stroke',
+      outlineWidth: 'stroke-width',
+      outlineDasharray: 'stroke-dasharray'
     };
     const fillPropertyMap = {
       color: 'fill',
@@ -808,12 +819,31 @@ class SldStyleParser implements StyleParser {
       .filter((property: any) => property !== 'kind')
       .forEach((property: any) => {
         if (Object.keys(strokePropertyMap).includes(property)) {
+
+          let transformedValue: string = '';
+
+          if (property === 'outlineDasharray') {
+            const paramValue: number[] = fillSymbolizer[property];
+            transformedValue = '';
+            paramValue.forEach((dash: number, idx) => {
+              transformedValue += dash;
+              if (idx < paramValue.length - 1) {
+                transformedValue += ' ';
+              }
+            });
+          } else if (property === 'outlineWidth') {
+            transformedValue = fillSymbolizer[property] + '';
+          } else {
+            transformedValue = fillSymbolizer[property];
+          }
+
           strokeCssParameters.push({
-            '_': fillSymbolizer[property],
+            '_': transformedValue,
             '$': {
               'name': strokePropertyMap[property]
             }
           });
+
         } else if (Object.keys(fillPropertyMap).includes(property)) {
           fillCssParameters.push({
             '_': fillSymbolizer[property],
