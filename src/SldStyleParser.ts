@@ -365,7 +365,8 @@ class SldStyleParser implements StyleParser {
           lineSymbolizer.cap = value;
           break;
         case 'stroke-dasharray':
-          lineSymbolizer.dasharray = value;
+          const dashStringAsArray = value.split(' ').map((a: string) => parseFloat(a));
+          lineSymbolizer.dasharray = dashStringAsArray;
           break;
         case 'stroke-dashoffset':
           // Currently not supported by GeoStyler Style
@@ -890,8 +891,12 @@ class SldStyleParser implements StyleParser {
     const cssParameters: any[] = Object.keys(lineSymbolizer)
       .filter((property: any) => property !== 'kind' && propertyMap[property])
       .map((property: any) => {
+        let value = lineSymbolizer[property];
+        if (property === 'dasharray') {
+          value = lineSymbolizer.dasharray!.join(' ');
+        }
         return {
-          '_': lineSymbolizer[property],
+          '_': value,
           '$': {
             'name': propertyMap[property]
           }

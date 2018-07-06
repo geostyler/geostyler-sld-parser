@@ -31,6 +31,12 @@
                     "$": {
                       "name": "stroke-width"
                     }
+                  },
+                  {
+                    "_": "13 37",
+                    "$": {
+                      "name": "stroke-dasharray"
+                    }
                   }
                 ]
               }]

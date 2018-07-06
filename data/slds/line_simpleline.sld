@@ -15,6 +15,7 @@
             <Stroke>
               <CssParameter name="stroke">#000000</CssParameter>
               <CssParameter name="stroke-width">3</CssParameter>
+              <CssParameter name="stroke-dasharray">13 37</CssParameter>
             </Stroke>
           </LineSymbolizer>
        	</Rule>
