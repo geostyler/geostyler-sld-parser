@@ -42,7 +42,7 @@
     "release": "np --no-yarn"
   },
   "devDependencies": {
-    "@types/jest": "23.1.4",
+    "@types/jest": "23.1.5",
     "@types/node": "10.5.2",
     "coveralls": "3.0.1",
     "jest": "23.1.0",
