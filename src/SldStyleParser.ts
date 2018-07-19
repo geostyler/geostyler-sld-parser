@@ -22,11 +22,9 @@ import {
   Builder
 } from 'xml2js';
 
-import {
-  isString as _isString,
-  isNumber as _isNumber,
-  get as _get
-} from 'lodash';
+const _isString = require('lodash/isString');
+const _isNumber = require('lodash/isNumber');
+const _get = require('lodash/get');
 
 /**
  * This parser can be used with the GeoStyler.
@@ -682,10 +680,10 @@ class SldStyleParser implements StyleParser {
       }
       if (rule.scaleDenominator) {
         const {min, max} = rule.scaleDenominator;
-        if (_isNumber(min)) {
+        if (min && _isNumber(min)) {
           sldRule.MinScaleDenominator = [min.toString()];
         }
-        if (_isNumber(max)) {
+        if (max && _isNumber(max)) {
           sldRule.MaxScaleDenominator = [max.toString()];
         }
       }
