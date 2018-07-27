@@ -9,7 +9,9 @@ const lineSimpleLine: Style = {
       kind: 'Line',
       color: '#000000',
       width: 3,
-      dasharray: [13, 37]
+      dasharray: [13, 37],
+      cap: 'round',
+      join: 'miter'
     }
   }]
 };

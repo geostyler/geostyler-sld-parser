@@ -357,7 +357,12 @@ class SldStyleParser implements StyleParser {
           lineSymbolizer.opacity = parseFloat(value);
           break;
         case 'stroke-linejoin':
-          lineSymbolizer.join = value;
+          // geostyler-style and ol use 'miter' whereas sld uses 'mitre'
+          if (value === 'mitre') {
+            lineSymbolizer.join = 'miter';
+          } else {
+            lineSymbolizer.join = value;
+          }
           break;
         case 'stroke-linecap':
           lineSymbolizer.cap = value;
@@ -892,6 +897,10 @@ class SldStyleParser implements StyleParser {
         let value = lineSymbolizer[property];
         if (property === 'dasharray') {
           value = lineSymbolizer.dasharray!.join(' ');
+        }
+        // simple transformation since geostyler-style uses prop 'miter' whereas sld uses 'mitre'
+        if (property === 'join' && value === 'miter') {
+          value = 'mitre';
         }
         return {
           '_': value,
