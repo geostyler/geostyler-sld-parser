@@ -378,6 +378,10 @@ class SldStyleParser implements StyleParser {
           break;
       }
     });
+    const perpendicularOffset = _get(sldSymbolizer, 'PerpendicularOffset[0]');
+    if (perpendicularOffset !== undefined) {
+      lineSymbolizer.perpendicularOffset = Number(perpendicularOffset);
+    }
     return lineSymbolizer;
   }
 
@@ -910,13 +914,21 @@ class SldStyleParser implements StyleParser {
         };
       });
 
-    return {
+    const perpendicularOffset = lineSymbolizer.perpendicularOffset;
+    let result = {
       'LineSymbolizer': [{
         'Stroke': [{
           'CssParameter': cssParameters
-        }]
+        }],
+        'PerpendicularOffset': [perpendicularOffset]
       }]
     };
+    
+    if (_get(result, 'LineSymbolizer[0].PerpendicularOffset[0]') === undefined) {
+      delete result.LineSymbolizer[0].PerpendicularOffset;
+    }
+
+    return result;
   }
 
   /**
