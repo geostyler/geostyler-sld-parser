@@ -11,7 +11,8 @@ const lineSimpleLine: Style = {
       width: 3,
       dasharray: [13, 37],
       cap: 'round',
-      join: 'miter'
+      join: 'miter',
+      dashOffset: 10
     }
   }]
 };
