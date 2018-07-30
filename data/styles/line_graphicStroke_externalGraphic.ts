@@ -1,0 +1,25 @@
+import { Style } from 'geostyler-style';
+
+const lineSimpleLine: Style = {
+  name: 'Simple Line',
+  type: 'Line',
+  rules: [{
+    name: '',
+    symbolizer: {
+      kind: 'Line',
+      color: '#000000',
+      width: 3,
+      dasharray: [13, 37],
+      cap: 'round',
+      join: 'miter',
+      graphicStroke: {
+        kind: 'Icon',
+        image: 'http://geoserver.org/img/geoserver-logo.png',
+        size: 10,
+        rotate: 90
+      }
+    }
+  }]
+};
+
+export default lineSimpleLine;

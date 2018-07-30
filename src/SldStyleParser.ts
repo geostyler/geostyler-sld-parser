@@ -334,45 +334,60 @@ class SldStyleParser implements StyleParser {
     let lineSymbolizer: LineSymbolizer = <LineSymbolizer> {
       kind: 'Line'
     };
-    const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
-    if (cssParameters.length < 1) {
-      throw new Error(`LineSymbolizer can not be parsed. No CssParameters detected.`);
+    const strokeKeys = Object.keys(_get(sldSymbolizer, 'Stroke[0]')) || [];
+    if (strokeKeys.length < 1) {
+      throw new Error(`LineSymbolizer cannot be parsed. No Stroke detected`);
     }
-    cssParameters.forEach((cssParameter: any) => {
-      const {
-        $: {
-          name
-        },
-        _: value
-      } = cssParameter;
-
-      switch (name) {
-        case 'stroke':
-          lineSymbolizer.color = value;
-          break;
-        case 'stroke-width':
-          lineSymbolizer.width = parseFloat(value);
-          break;
-        case 'stroke-opacity':
-          lineSymbolizer.opacity = parseFloat(value);
-          break;
-        case 'stroke-linejoin':
-          // geostyler-style and ol use 'miter' whereas sld uses 'mitre'
-          if (value === 'mitre') {
-            lineSymbolizer.join = 'miter';
-          } else {
-            lineSymbolizer.join = value;
+    strokeKeys.forEach((strokeKey: any) => {
+      switch (strokeKey) {
+        case 'CssParameter':
+          const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+          if (cssParameters.length < 1) {
+            throw new Error(`LineSymbolizer can not be parsed. No CssParameters detected.`);
           }
+          cssParameters.forEach((cssParameter: any) => {
+            const {
+              $: {
+                name
+              },
+              _: value
+            } = cssParameter;
+      
+            switch (name) {
+              case 'stroke':
+                lineSymbolizer.color = value;
+                break;
+              case 'stroke-width':
+                lineSymbolizer.width = parseFloat(value);
+                break;
+              case 'stroke-opacity':
+                lineSymbolizer.opacity = parseFloat(value);
+                break;
+              case 'stroke-linejoin':
+                // geostyler-style and ol use 'miter' whereas sld uses 'mitre'
+                if (value === 'mitre') {
+                  lineSymbolizer.join = 'miter';
+                } else {
+                  lineSymbolizer.join = value;
+                }
+                break;
+              case 'stroke-linecap':
+                lineSymbolizer.cap = value;
+                break;
+              case 'stroke-dasharray':
+                const dashStringAsArray = value.split(' ').map((a: string) => parseFloat(a));
+                lineSymbolizer.dasharray = dashStringAsArray;
+                break;
+              case 'stroke-dashoffset':
+                lineSymbolizer.dashOffset = parseFloat(value);
+                break;
+              default:
+                break;
+            }
+          });
           break;
-        case 'stroke-linecap':
-          lineSymbolizer.cap = value;
-          break;
-        case 'stroke-dasharray':
-          const dashStringAsArray = value.split(' ').map((a: string) => parseFloat(a));
-          lineSymbolizer.dasharray = dashStringAsArray;
-          break;
-        case 'stroke-dashoffset':
-          lineSymbolizer.dashOffset = parseFloat(value);
+        case 'GraphicStroke':
+          lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(_get(sldSymbolizer, 'Stroke[0].GraphicStroke[0]'));
           break;
         default:
           break;
@@ -896,6 +911,13 @@ class SldStyleParser implements StyleParser {
       dashOffset: 'stroke-dashoffset'
     };
 
+    let result:any = {
+      'LineSymbolizer': [{
+        'Stroke': [{
+        }]
+      }]
+    };
+
     const cssParameters: any[] = Object.keys(lineSymbolizer)
       .filter((property: any) => property !== 'kind' && propertyMap[property])
       .map((property: any) => {
@@ -916,17 +938,22 @@ class SldStyleParser implements StyleParser {
       });
 
     const perpendicularOffset = lineSymbolizer.perpendicularOffset;
-    let result = {
-      'LineSymbolizer': [{
-        'Stroke': [{
-          'CssParameter': cssParameters
-        }],
-        'PerpendicularOffset': [perpendicularOffset]
-      }]
-    };
-    
-    if (_get(result, 'LineSymbolizer[0].PerpendicularOffset[0]') === undefined) {
-      delete result.LineSymbolizer[0].PerpendicularOffset;
+
+    if (cssParameters.length != 0) {
+      result.LineSymbolizer[0].Stroke[0].CssParameter = cssParameters;
+    }
+    if (perpendicularOffset) {
+      result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
+    }
+
+    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Circle') {
+      const graphicStroke = this.getSldPointSymbolizerFromCircleSymbolizer(<CircleSymbolizer>lineSymbolizer.graphicStroke);
+      result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+    }
+
+    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Icon') {
+      const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(<IconSymbolizer>lineSymbolizer.graphicStroke);
+      result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
     }
 
     return result;
