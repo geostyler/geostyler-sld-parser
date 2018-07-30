@@ -387,7 +387,9 @@ class SldStyleParser implements StyleParser {
           });
           break;
         case 'GraphicStroke':
-          lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(_get(sldSymbolizer, 'Stroke[0].GraphicStroke[0]'));
+          lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(
+            _get(sldSymbolizer, 'Stroke[0].GraphicStroke[0]')
+          );
           break;
         default:
           break;
@@ -911,10 +913,9 @@ class SldStyleParser implements StyleParser {
       dashOffset: 'stroke-dashoffset'
     };
 
-    let result:any = {
+    let result: any = {
       'LineSymbolizer': [{
-        'Stroke': [{
-        }]
+        'Stroke': [{}]
       }]
     };
 
@@ -939,7 +940,7 @@ class SldStyleParser implements StyleParser {
 
     const perpendicularOffset = lineSymbolizer.perpendicularOffset;
 
-    if (cssParameters.length != 0) {
+    if (cssParameters.length !== 0) {
       result.LineSymbolizer[0].Stroke[0].CssParameter = cssParameters;
     }
     if (perpendicularOffset) {
@@ -947,12 +948,14 @@ class SldStyleParser implements StyleParser {
     }
 
     if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Circle') {
-      const graphicStroke = this.getSldPointSymbolizerFromCircleSymbolizer(<CircleSymbolizer>lineSymbolizer.graphicStroke);
+      const graphicStroke = this.getSldPointSymbolizerFromCircleSymbolizer(
+        <CircleSymbolizer> lineSymbolizer.graphicStroke
+      );
       result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
     }
 
     if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Icon') {
-      const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(<IconSymbolizer>lineSymbolizer.graphicStroke);
+      const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(<IconSymbolizer> lineSymbolizer.graphicStroke);
       result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
     }
 
