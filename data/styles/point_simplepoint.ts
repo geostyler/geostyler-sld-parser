@@ -2,14 +2,14 @@ import { Style } from 'geostyler-style';
 
 const pointSimplePoint: Style = {
   name: 'Simple Point',
-  type: 'Point',
+  type: ['Point'],
   rules: [{
     name: '',
-    symbolizer: {
+    symbolizer: [{
       kind: 'Circle',
       color: '#FF0000',
       radius: 6
-    }
+    }]
   }]
 };
 

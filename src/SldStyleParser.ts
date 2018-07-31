@@ -84,8 +84,8 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
-   * Get the GeoStyler-Style StyleType from the sldObject. It searches for the
-   * first appearance of a SLD Symbolizer. Supported Symbolizers are:
+   * Get the GeoStyler-Style StyleType from the sldObject. It searches for all 
+   * appearances of a SLD Symbolizer. Supported Symbolizers are:
    * 'PointSymbolizer',
    * 'LineSymbolizer',
    * 'TextSymbolizer',
@@ -95,13 +95,7 @@ class SldStyleParser implements StyleParser {
    * @return {StyleType} The StyleType of the parsed SLD string
    */
   getStyleTypeFromSldObject(sldObject: any): StyleType {
-    const symbolizers = [
-      'PointSymbolizer',
-      'LineSymbolizer',
-      'TextSymbolizer',
-      'PolygonSymbolizer'
-    ];
-    let styleType: StyleType;
+    let styleType: StyleType = [];
     const ruleObject = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0]' +
       '.UserStyle[0].FeatureTypeStyle[0].Rule[0]');
 
@@ -109,22 +103,25 @@ class SldStyleParser implements StyleParser {
       throw new Error('StyleType could not be detected');
     }
 
-    const ruleKeys = Object.keys(ruleObject);
-    const symbolizer = ruleKeys.find(key => symbolizers.includes(key));
-    switch (symbolizer) {
-      case 'PointSymbolizer':
-      case 'TextSymbolizer':
-        styleType = 'Point';
-        break;
-      case 'PolygonSymbolizer':
-        styleType = 'Fill';
-        break;
-      case 'LineSymbolizer':
-        styleType = 'Line';
-        break;
-      default:
-        throw new Error('StyleType could not be detected');
-    }
+    const ruleKeys = Object.keys(ruleObject).filter((key: string) => key.endsWith('Symbolizer'));
+    ruleKeys.forEach((key: string) => {
+      ruleObject[key].forEach(() => {
+        switch (key) {
+          case 'PointSymbolizer':
+          case 'TextSymbolizer':
+            styleType.push('Point');
+            break;
+          case 'PolygonSymbolizer':
+            styleType.push('Fill');
+            break;
+          case 'LineSymbolizer':
+            styleType.push('Line');
+            break;
+          default:
+            throw new Error('StyleType could not be detected');
+        }
+      });
+    });
     return styleType;
   }
 
@@ -514,41 +511,43 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
-   * Get the GeoStyler-Style Symbolizer from an SLD Rule.
-   *
-   * Currently only one symbolizer per rule is supported.
+   * Get the GeoStyler-Style Symbolizers from an SLD Rule.
    *
    * @param {object} sldRule The SLD Rule
-   * @return {Symbolizer} The GeoStyler-Style Symbolizer
+   * @return {Symbolizer[]} The GeoStyler-Style Symbolizer Array
    */
-  getSymbolizerFromRule(sldRule: any): Symbolizer {
-    let symbolizer: Symbolizer = <Symbolizer> {};
-    const sldSymbolizerName: string = Object.keys(sldRule).filter(key => key.endsWith('Symbolizer'))[0];
-    const sldSymbolizer = sldRule[sldSymbolizerName][0];
-    switch (sldSymbolizerName) {
-      case 'PointSymbolizer':
-        symbolizer = this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer);
-        break;
-      case 'LineSymbolizer':
-        symbolizer = this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer);
-        break;
-      case 'TextSymbolizer':
-        symbolizer = this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
-        break;
-      case 'PolygonSymbolizer':
-        symbolizer = this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
-        break;
-      default:
-        throw new Error('Failed to parse SymbolizerKind from SldRule');
-    }
-
-    return symbolizer;
+  getSymbolizerFromRule(sldRule: any): Symbolizer[] {
+   
+    let symbolizers: Symbolizer[] = <Symbolizer[]> [];
+    const symbolizerNames: string[] = Object.keys(sldRule).filter(key => key.endsWith('Symbolizer'));
+    symbolizerNames.forEach((sldSymbolizerName: string) => {
+      sldRule[sldSymbolizerName].forEach((sldSymbolizer: Symbolizer) => {
+        let symbolizer: any;
+        switch (sldSymbolizerName) {
+          case 'PointSymbolizer':
+            symbolizer = this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer);
+            break;
+          case 'LineSymbolizer':
+            symbolizer = this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer);
+            break;
+          case 'TextSymbolizer':
+            symbolizer = this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
+            break;
+          case 'PolygonSymbolizer':
+            symbolizer = this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
+            break;
+          default:
+            throw new Error('Failed to parse SymbolizerKind from SldRule');
+        }
+        symbolizers.push(symbolizer);
+      });
+    });
+   
+    return symbolizers;
   }
 
   /**
    * Get the GeoStyler-Style Rule from an SLD Object (created with xml2js).
-   *
-   * Currently only one symbolizer per rule is supported.
    *
    * @param {object} sldObject The SLD object representation (created with xml2js)
    * @return {Rule} The GeoStyler-Style Rule
@@ -563,7 +562,7 @@ class SldStyleParser implements StyleParser {
           featureTypeStyle.Rule.forEach((sldRule: any) => {
             const filter: Filter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
-            const symbolizer: Symbolizer = this.getSymbolizerFromRule(sldRule);
+            const symbolizer: Symbolizer[] = this.getSymbolizerFromRule(sldRule);
             const name = sldRule.Title ? sldRule.Title[0]
               : (sldRule.Name ? sldRule.Name[0] : '');
             let rule: Rule = <Rule> {
@@ -713,43 +712,101 @@ class SldStyleParser implements StyleParser {
           sldRule.MaxScaleDenominator = [max.toString()];
         }
       }
-      const symbolizer = this.getSldSymbolizerFromSymbolizer(rule.symbolizer);
-      const symbolizerName = Object.keys(symbolizer)[0];
-      if (symbolizer && symbolizerName) {
-        sldRule[symbolizerName] = symbolizer[symbolizerName];
+
+      // Remove empty Symbolizers and check if there is at least 1 symbolizer
+      const symbolizers = this.getSldSymbolizerFromSymbolizer(rule.symbolizer);
+      let symbolizerKeys: string[] = Object.keys(symbolizers[0]);
+
+      symbolizerKeys.forEach((key: string) => {
+        if (symbolizers[0][key].length === 0) {
+          delete symbolizers[0][key];
+        }
+      });
+      if (Object.keys(symbolizers[0]).length !== 0) {
+        sldRule = Object.assign(symbolizers[0], sldRule);
       }
       return sldRule;
     });
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Symbolizer.
+   * Get the SLD Object (readable with xml2js) from GeoStyler-Style Symbolizers.
    *
    * @param {Symbolizer} symbolizer A GeoStyler-Style Symbolizer.
    * @return {object} The object representation of a SLD Symbolizer (readable with xml2js)
    */
-  getSldSymbolizerFromSymbolizer(symbolizer: Symbolizer): any {
+  getSldSymbolizerFromSymbolizer(symbolizers: Symbolizer[]): any {
+    let sldSymbolizers: any = [];
     let sldSymbolizer: any = {};
-    switch (symbolizer.kind) {
-      case 'Circle':
-        sldSymbolizer = this.getSldPointSymbolizerFromCircleSymbolizer(symbolizer);
-        break;
-      case 'Icon':
-        sldSymbolizer = this.getSldPointSymbolizerFromIconSymbolizer(symbolizer);
-        break;
-      case 'Text':
-        sldSymbolizer = this.getSldTextSymbolizerFromTextSymbolizer(symbolizer);
-        break;
-      case 'Line':
-        sldSymbolizer = this.getSldLineSymbolizerFromLineSymbolizer(symbolizer);
-        break;
-      case 'Fill':
-        sldSymbolizer = this.getSldPolygonSymbolizerFromFillSymbolizer(symbolizer);
-        break;
-      default:
-        break;
-    }
-    return sldSymbolizer;
+    symbolizers.forEach(symb => {
+      let sldSymb: any;
+      switch (symb.kind) {
+        case 'Circle':
+          if (!sldSymbolizer.PointSymbolizer) {
+            sldSymbolizer.PointSymbolizer = [];
+          }
+          
+          sldSymb = this.getSldPointSymbolizerFromCircleSymbolizer(symb);
+          if (_get(sldSymb, 'PointSymbolizer[0]')) {
+            sldSymbolizer.PointSymbolizer.push(
+              _get(sldSymb, 'PointSymbolizer[0]')
+            );
+          } 
+          break;
+        case 'Icon':
+          if (!sldSymbolizer.PointSymbolizer) {
+            sldSymbolizer.PointSymbolizer = [];
+          }
+
+          sldSymb = this.getSldPointSymbolizerFromIconSymbolizer(symb);
+          if (_get(sldSymb, 'PointSymbolizer[0]')) {
+            sldSymbolizer.PointSymbolizer.push(
+              _get(sldSymb, 'PointSymbolizer[0]')
+            );
+          }
+          break;
+        case 'Text':
+          if (!sldSymbolizer.TextSymbolizer) {
+            sldSymbolizer.TextSymbolizer = [];
+          }
+          
+          sldSymb = this.getSldTextSymbolizerFromTextSymbolizer(symb);
+          if (_get(sldSymb, 'TextSymbolizer[0]')) {
+            sldSymbolizer.TextSymbolizer.push(
+              _get(sldSymb, 'TextSymbolizer[0]')
+            );
+          }
+          break;
+        case 'Line':
+          if (!sldSymbolizer.LineSymbolizer) {
+            sldSymbolizer.LineSymbolizer = [];
+          }
+
+          sldSymb = this.getSldLineSymbolizerFromLineSymbolizer(symb);
+          if (_get(sldSymb, 'LineSymbolizer[0]')) {
+            sldSymbolizer.LineSymbolizer.push(
+              _get(sldSymb, 'LineSymbolizer[0]')
+            );
+          }
+          break;
+        case 'Fill':
+          if (!sldSymbolizer.PolygonSymbolizer) {
+            sldSymbolizer.PolygonSymbolizer = [];
+          }
+
+          sldSymb = this.getSldPolygonSymbolizerFromFillSymbolizer(symb);
+          if (_get(sldSymb, 'PolygonSymbolizer[0]')) {
+            sldSymbolizer.PolygonSymbolizer.push(
+              _get(sldSymb, 'PolygonSymbolizer[0]')
+            );
+          }
+          break;
+        default:
+          break;
+      }
+      sldSymbolizers.push(sldSymbolizer);
+    });
+    return sldSymbolizers;
   }
 
   /**
