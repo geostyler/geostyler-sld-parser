@@ -5,7 +5,7 @@ import {
   Rule,
   ComparisonOperator,
   CombinationOperator,
-  StyleType,
+  // StyleType,
   ScaleDenominator,
   PointSymbolizer,
   Symbolizer,
@@ -94,36 +94,39 @@ class SldStyleParser implements StyleParser {
    * @param {object} sldObject The SLD object representation (created with xml2js)
    * @return {StyleType} The StyleType of the parsed SLD string
    */
-  getStyleTypeFromSldObject(sldObject: any): StyleType {
-    let styleType: StyleType = [];
-    const ruleObject = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0]' +
-      '.UserStyle[0].FeatureTypeStyle[0].Rule[0]');
+  // getStyleTypeFromSldObject(sldObject: any): StyleType {
+  //   const symbolizers = [
+  //     'PointSymbolizer',
+  //     'LineSymbolizer',
+  //     'TextSymbolizer',
+  //     'PolygonSymbolizer'
+  //   ];
+  //   let styleType: StyleType;
+  //   const ruleObject = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0]' +
+  //     '.UserStyle[0].FeatureTypeStyle[0].Rule[0]');
 
-    if (!ruleObject) {
-      throw new Error('StyleType could not be detected');
-    }
+  //   if (!ruleObject) {
+  //     throw new Error('StyleType could not be detected');
+  //   }
 
-    const ruleKeys = Object.keys(ruleObject).filter((key: string) => key.endsWith('Symbolizer'));
-    ruleKeys.forEach((key: string) => {
-      ruleObject[key].forEach(() => {
-        switch (key) {
-          case 'PointSymbolizer':
-          case 'TextSymbolizer':
-            styleType.push('Point');
-            break;
-          case 'PolygonSymbolizer':
-            styleType.push('Fill');
-            break;
-          case 'LineSymbolizer':
-            styleType.push('Line');
-            break;
-          default:
-            throw new Error('StyleType could not be detected');
-        }
-      });
-    });
-    return styleType;
-  }
+  //   const ruleKeys = Object.keys(ruleObject);
+  //   const symbolizer = ruleKeys.find(key => symbolizers.includes(key));
+  //   switch (symbolizer) {
+  //     case 'PointSymbolizer':
+  //     case 'TextSymbolizer':
+  //       styleType = 'Point';
+  //       break;
+  //     case 'PolygonSymbolizer':
+  //       styleType = 'Fill';
+  //       break;
+  //     case 'LineSymbolizer':
+  //       styleType = 'Line';
+  //       break;
+  //     default:
+  //       throw new Error('StyleType could not be detected');
+  //   }
+  //   return styleType;
+  // }
 
   /**
    * Get the name for the Style from the SLD Object. Returns the Title of the UserStyle
@@ -592,12 +595,10 @@ class SldStyleParser implements StyleParser {
    * @return {Style} The GeoStyler-Style Style
    */
   sldObjectToGeoStylerStyle(sldObject: object): Style {
-    const type = this.getStyleTypeFromSldObject(sldObject);
     const rules = this.getRulesFromSldObject(sldObject);
     const name = this.getStyleNameFromSldObject(sldObject);
     return {
       name,
-      type,
       rules
     };
   }

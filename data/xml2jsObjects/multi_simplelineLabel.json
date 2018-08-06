@@ -1,0 +1,124 @@
+{
+  "StyledLayerDescriptor": {
+    "$": {
+      "version": "1.0.0",
+      "xsi:schemaLocation": "http://www.opengis.net/sld StyledLayerDescriptor.xsd",
+      "xmlns": "http://www.opengis.net/sld",
+      "xmlns:ogc": "http://www.opengis.net/ogc",
+      "xmlns:xlink": "http://www.w3.org/1999/xlink",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "NamedLayer": [
+      {
+        "Name": [
+          "Simple Line with label"
+        ],
+        "UserStyle": [
+          {
+            "Title": [
+              "Simple Line with label"
+            ],
+            "FeatureTypeStyle": [
+              {
+                "Rule": [
+                  {
+                    "LineSymbolizer": [
+                      {
+                        "Stroke": [
+                          {
+                            "CssParameter": [
+                              {
+                                "_": "#000000",
+                                "$": {
+                                  "name": "stroke"
+                                }
+                              },
+                              {
+                                "_": "3",
+                                "$": {
+                                  "name": "stroke-width"
+                                }
+                              },
+                              {
+                                "_": "13 37",
+                                "$": {
+                                  "name": "stroke-dasharray"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "TextSymbolizer": [{
+                      "Label": [{
+                        "PropertyName": [
+                          "name"
+                        ]
+                      }],
+                      "Font": [{
+                        "CssParameter": [{
+                            "_": "Arial",
+                            "$": {
+                              "name": "font-family"
+                            }
+                          },
+                          {
+                            "_": "12",
+                            "$": {
+                              "name": "font-size"
+                            }
+                          },
+                          {
+                            "_": "normal",
+                            "$": {
+                              "name": "font-style"
+                            }
+                          },
+                          {
+                            "_": "bold",
+                            "$": {
+                              "name": "font-weight"
+                            }
+                          }
+                        ]
+                      }],
+                      "LabelPlacement": [{
+                        "PointPlacement": [{
+                          "AnchorPoint": [{
+                            "AnchorPointX": [
+                              "0.5"
+                            ],
+                            "AnchorPointY": [
+                              "0.0"
+                            ]
+                          }],
+                          "Displacement": [{
+                            "DisplacementX": [
+                              "0"
+                            ],
+                            "DisplacementY": [
+                              "5"
+                            ]
+                          }]
+                        }]
+                      }],
+                      "Fill": [{
+                        "CssParameter": [{
+                          "_": "#000000",
+                          "$": {
+                            "name": "fill"
+                          }
+                        }]
+                      }]
+                    }]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

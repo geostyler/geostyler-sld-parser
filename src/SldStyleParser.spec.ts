@@ -12,7 +12,7 @@ import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
-import multi_simplelineSimplepoint from '../data/styles/multi_simplelineSimplepoint';
+import multi_simplelineLabel from '../data/styles/multi_simplelineLabel';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -134,19 +134,19 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD style with multiple symbolizers in one Rule', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/multi_simplelineSimplepoint.sld', 'utf8');
+      const sld = fs.readFileSync( './data/slds/multi_simplelineLabel.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
-          expect(geoStylerStyle).toEqual(multi_simplelineSimplepoint);
+          expect(geoStylerStyle).toEqual(multi_simplelineLabel);
         });
     });
 
-    describe('#getStyleTypeFromSldObject', () => {
-      it('is defined', () => {
-        expect(styleParser.getStyleTypeFromSldObject).toBeDefined();
-      });
-    });
+    // describe('#getStyleTypeFromSldObject', () => {
+    //   it('is defined', () => {
+    //     expect(styleParser.getStyleTypeFromSldObject).toBeDefined();
+    //   });
+    // });
 
     describe('#getFilterFromOperatorAndComparison', () => {
       it('is defined', () => {
@@ -345,14 +345,14 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can write a SLD style with multiple symbolizers in one Rule', () => {
       expect.assertions(2);
-      return styleParser.writeStyle(multi_simplelineSimplepoint)
+      return styleParser.writeStyle(multi_simplelineLabel)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
           // As string comparison between to XML-Strings is awkward and nonesens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
-              expect(readStyle).toEqual(multi_simplelineSimplepoint);
+              expect(readStyle).toEqual(multi_simplelineLabel);
             });
         });
     });

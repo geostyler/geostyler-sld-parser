@@ -2,7 +2,6 @@ import { Style } from 'geostyler-style';
 
 const polygonTransparentPolygon: Style = {
   name: 'Transparent Polygon',
-  type: ['Fill'],
   rules: [{
     name: '',
     symbolizer: [{

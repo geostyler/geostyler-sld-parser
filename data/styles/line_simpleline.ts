@@ -2,7 +2,6 @@ import { Style } from 'geostyler-style';
 
 const lineSimpleLine: Style = {
   name: 'Simple Line',
-  type: ['Line'],
   rules: [{
     name: '',
     symbolizer: [{

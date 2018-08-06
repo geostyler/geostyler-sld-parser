@@ -29,8 +29,7 @@ const pointSimplePoint: Style = {
       'strokeColor': '#000000',
       'strokeWidth': 2
     }]
-  }],
-  'type': ['Point']
+  }]
 };
 
 export default pointSimplePoint;

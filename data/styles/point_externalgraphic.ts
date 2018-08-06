@@ -2,7 +2,6 @@ import { Style } from 'geostyler-style';
 
 const pointExternalGraphic: Style = {
   name: 'External Graphic',
-  type: ['Point'],
   rules: [{
     name: '',
     symbolizer: [{
