@@ -13,6 +13,11 @@ import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import multi_simplelineLabel from '../data/styles/multi_simplelineLabel';
+import point_simplesquare from '../data/styles/point_simplesquare';
+import point_simpletriangle from '../data/styles/point_simpletriangle';
+import point_simplestar from '../data/styles/point_simplestar';
+import point_simplecross from '../data/styles/point_simplecross';
+import point_simplex from '../data/styles/point_simplex';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -60,6 +65,51 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toEqual(point_externalgraphic);
         });
       });
+    it('can read a SLD PointSymbolizer with wellKnownName square', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_simplesquare.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simplesquare);
+        });
+    });
+    it('can read a SLD PointSymbolizer with wellKnownName triangle', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_simpletriangle.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simpletriangle);
+        });
+    });
+    it('can read a SLD PointSymbolizer with wellKnownName star', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_simplestar.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simplestar);
+        });
+    });
+    it('can read a SLD PointSymbolizer with wellKnownName cross', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_simplecross.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simplecross);
+        });
+    });
+    it('can read a SLD PointSymbolizer with wellKnownName x', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_simplex.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simplex);
+        });
+    });
     it('can read a SLD LineSymbolizer', () => {
       expect.assertions(2);
       const sld = fs.readFileSync( './data/slds/line_simpleline.sld', 'utf8');
@@ -233,6 +283,71 @@ describe('SldStyleParser implements StyleParser', () => {
             });
         });
     });
+    it('can write a SLD PointSymbolizer with wellKnownName square', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_simplesquare)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplesquare);
+            });
+        })
+    });
+    it('can write a SLD PointSymbolizer with wellKnownName triangle', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_simpletriangle)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simpletriangle);
+            });
+        })
+    });
+    it('can write a SLD PointSymbolizer with wellKnownName star', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_simplestar)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplestar);
+            });
+        })
+    });
+    it('can write a SLD PointSymbolizer with wellKnownName cross', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_simplecross)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplecross);
+            });
+        })
+    });
+    it('can write a SLD PointSymbolizer with wellKnownName x', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_simplex)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplex);
+            });
+        })
+    });
     it('can write a SLD LineSymbolizer', () => {
       expect.assertions(2);
       return styleParser.writeStyle(line_simpleline)
@@ -387,9 +502,9 @@ describe('SldStyleParser implements StyleParser', () => {
       });
     });
 
-    describe('#getSldPointSymbolizerFromCircleSymbolizer', () => {
+    describe('#getSldPointSymbolizerFromMarkSymbolizer', () => {
       it('is defined', () => {
-        expect(styleParser.getSldPointSymbolizerFromCircleSymbolizer).toBeDefined();
+        expect(styleParser.getSldPointSymbolizerFromMarkSymbolizer).toBeDefined();
       });
     });
 

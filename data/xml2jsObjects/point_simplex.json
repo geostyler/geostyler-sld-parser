@@ -1,0 +1,91 @@
+{
+  "StyledLayerDescriptor": {
+    "$": {
+      "version": "1.0.0",
+      "xsi:schemaLocation": "http://www.opengis.net/sld StyledLayerDescriptor.xsd",
+      "xmlns": "http://www.opengis.net/sld",
+      "xmlns:ogc": "http://www.opengis.net/ogc",
+      "xmlns:xlink": "http://www.w3.org/1999/xlink",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "NamedLayer": [
+      {
+        "Name": [
+          "Simple X"
+        ],
+        "UserStyle": [
+          {
+            "Title": [
+              "Simple X"
+            ],
+            "FeatureTypeStyle": [
+              {
+                "Rule": [
+                  {
+                    "Name": [
+                      "Small populated New Yorks"
+                    ],
+                    "PointSymbolizer": [
+                      {
+                        "Graphic": [
+                          {
+                            "Mark": [
+                              {
+                                "WellKnownName": [
+                                  "x"
+                                ],
+                                "Fill": [
+                                  {
+                                    "CssParameter": [
+                                      {
+                                        "_": "#FF0000",
+                                        "$": {
+                                          "name": "fill"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "Stroke": [
+                                  {
+                                    "CssParameter": [
+                                      {
+                                        "_": "#000000",
+                                        "$": {
+                                          "name": "stroke"
+                                        }
+                                      },
+                                      {
+                                        "_": "2",
+                                        "$": {
+                                          "name": "stroke-width"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "Size": [
+                              "10"
+                            ],
+                            "Rotation": [
+                              "45"
+                            ],
+                            "Opacity": [
+                              "1"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

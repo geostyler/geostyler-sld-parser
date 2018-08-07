@@ -1,0 +1,24 @@
+import { Style } from 'geostyler-style';
+
+const pointSimpleX: Style = {
+  'name': 'Simple X',
+  'rules': [{
+    'name': 'Small populated New Yorks',
+    'symbolizer': {
+      'kind': 'Mark',
+      'wellKnownName': 'X',
+      'points': 4,
+      'color': '#FF0000',
+      'radius1': 10,
+      'radius2': 0,
+      'strokeColor': '#000000',
+      'strokeWidth': 2,
+      'opacity': 1,
+      'rotation': 45,
+      'angle': Math.PI / 4
+    }
+  }],
+  'type': 'Point'
+};
+
+export default pointSimpleX;
