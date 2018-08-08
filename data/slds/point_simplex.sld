@@ -25,7 +25,6 @@
                 </Stroke>
               </Mark>
               <Size>10</Size>
-              <Rotation>45</Rotation>
               <Opacity>1</Opacity>
             </Graphic>
           </PointSymbolizer>

@@ -14,8 +14,7 @@ const pointSimpleX: Style = {
       'strokeColor': '#000000',
       'strokeWidth': 2,
       'opacity': 1,
-      'rotation': 45,
-      'angle': Math.PI / 4
+      'angle': 45
     }
   }],
   'type': 'Point'

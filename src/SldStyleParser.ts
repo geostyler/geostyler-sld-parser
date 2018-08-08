@@ -276,7 +276,8 @@ class SldStyleParser implements StyleParser {
           let squareSymbolizer: SquareSymbolizer = <SquareSymbolizer> {
             kind: 'Mark',
             wellKnownName: 'Square',
-            points: 4
+            points: 4,
+            angle: 45
           };
           if (radius) {
             squareSymbolizer.radius = parseFloat(radius);
@@ -328,7 +329,7 @@ class SldStyleParser implements StyleParser {
             wellKnownName: 'X',
             points: 4,
             radius2: 0,
-            angle: Math.PI / 4
+            angle: 45
           };
           if (radius) {
             xSymbolizer.radius1 = parseFloat(radius);
