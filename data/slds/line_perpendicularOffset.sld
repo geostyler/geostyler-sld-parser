@@ -19,9 +19,9 @@
               <CssParameter name="stroke-linecap">round</CssParameter>
               <CssParameter name="stroke-linejoin">mitre</CssParameter>
             </Stroke>
-	          <PerpendicularOffset>3</PerpendicularOffset>
+            <PerpendicularOffset>3</PerpendicularOffset>
           </LineSymbolizer>
-       	</Rule>
+        </Rule>
       </FeatureTypeStyle>
     </UserStyle>
   </NamedLayer>

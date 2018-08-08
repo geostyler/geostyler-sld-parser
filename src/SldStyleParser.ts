@@ -338,7 +338,7 @@ class SldStyleParser implements StyleParser {
     if (strokeKeys.length < 1) {
       throw new Error(`LineSymbolizer cannot be parsed. No Stroke detected`);
     }
-    strokeKeys.forEach((strokeKey: any) => {
+    strokeKeys.forEach((strokeKey: string) => {
       switch (strokeKey) {
         case 'CssParameter':
           const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
