@@ -2,10 +2,9 @@ import { Style } from 'geostyler-style';
 
 const lineSimpleLine: Style = {
   name: 'Simple Line',
-  type: 'Line',
   rules: [{
     name: '',
-    symbolizer: {
+    symbolizer: [{
       kind: 'Line',
       color: '#000000',
       width: 3,
@@ -18,7 +17,7 @@ const lineSimpleLine: Style = {
         size: 10,
         rotate: 90
       }
-    }
+    }]
   }]
 };
 
