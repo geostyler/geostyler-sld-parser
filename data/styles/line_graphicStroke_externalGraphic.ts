@@ -12,7 +12,12 @@ const lineSimpleLine: Style = {
       dasharray: [13, 37],
       cap: 'round',
       join: 'miter',
-      dashOffset: 10
+      graphicStroke: {
+        kind: 'Icon',
+        image: 'http://geoserver.org/img/geoserver-logo.png',
+        size: 10,
+        rotate: 90
+      }
     }
   }]
 };

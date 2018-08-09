@@ -13,15 +13,24 @@
         <Rule>
           <LineSymbolizer>
             <Stroke>
+              <GraphicStroke>
+                <Graphic>
+                  <ExternalGraphic>
+                    <OnlineResource xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://geoserver.org/img/geoserver-logo.png" />
+                    <Format>image/png</Format>
+                  </ExternalGraphic>
+                  <Size>10</Size>
+                  <Rotation>90</Rotation>
+                </Graphic>
+              </GraphicStroke>
               <CssParameter name="stroke">#000000</CssParameter>
               <CssParameter name="stroke-width">3</CssParameter>
               <CssParameter name="stroke-dasharray">13 37</CssParameter>
-              <CssParameter name="stroke-dashoffset">10</CssParameter>
               <CssParameter name="stroke-linecap">round</CssParameter>
               <CssParameter name="stroke-linejoin">mitre</CssParameter>
             </Stroke>
           </LineSymbolizer>
-       	</Rule>
+        </Rule>
       </FeatureTypeStyle>
     </UserStyle>
   </NamedLayer>

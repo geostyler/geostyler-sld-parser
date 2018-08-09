@@ -37,6 +37,24 @@
                     "$": {
                       "name": "stroke-dasharray"
                     }
+                  },
+                  {
+                    "_": "round",
+                    "$": {
+                      "name": "stroke-linecap"
+                    }
+                  },
+                  {
+                    "_": "mitre",
+                    "$": {
+                      "name": "stroke-linejoin"
+                    }
+                  },
+                  {
+                    "_": "10",
+                    "$": {
+                      "name": "stroke-dashoffset"
+                    }
                   }
                 ]
               }]

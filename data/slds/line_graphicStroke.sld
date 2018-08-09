@@ -13,10 +13,20 @@
         <Rule>
           <LineSymbolizer>
             <Stroke>
+              <GraphicStroke>
+                <Graphic>
+                  <Mark>
+                    <WellKnownName>circle</WellKnownName>
+                    <Fill>
+                      <CssParameter name="fill">#FF0000</CssParameter>
+                    </Fill>
+                  </Mark>
+                  <Size>7</Size>
+                </Graphic>
+              </GraphicStroke>
               <CssParameter name="stroke">#000000</CssParameter>
               <CssParameter name="stroke-width">3</CssParameter>
               <CssParameter name="stroke-dasharray">13 37</CssParameter>
-              <CssParameter name="stroke-dashoffset">10</CssParameter>
               <CssParameter name="stroke-linecap">round</CssParameter>
               <CssParameter name="stroke-linejoin">mitre</CssParameter>
             </Stroke>

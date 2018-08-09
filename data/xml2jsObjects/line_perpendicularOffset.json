@@ -1,0 +1,77 @@
+{
+  "StyledLayerDescriptor": {
+    "$": {
+      "version": "1.0.0",
+      "xsi:schemaLocation": "http://www.opengis.net/sld StyledLayerDescriptor.xsd",
+      "xmlns": "http://www.opengis.net/sld",
+      "xmlns:ogc": "http://www.opengis.net/ogc",
+      "xmlns:xlink": "http://www.w3.org/1999/xlink",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "NamedLayer": [
+      {
+        "Name": [
+          "Simple Line"
+        ],
+        "UserStyle": [
+          {
+            "Title": [
+              "Simple Line"
+            ],
+            "FeatureTypeStyle": [
+              {
+                "Rule": [
+                  {
+                    "LineSymbolizer": [
+                      {
+                        "Stroke": [
+                          {
+                            "CssParameter": [
+                              {
+                                "_": "#000000",
+                                "$": {
+                                  "name": "stroke"
+                                }
+                              },
+                              {
+                                "_": "3",
+                                "$": {
+                                  "name": "stroke-width"
+                                }
+                              },
+                              {
+                                "_": "13 37",
+                                "$": {
+                                  "name": "stroke-dasharray"
+                                }
+                              },
+                              {
+                                "_": "round",
+                                "$": {
+                                  "name": "stroke-linecap"
+                                }
+                              },
+                              {
+                                "_": "mitre",
+                                "$": {
+                                  "name": "stroke-linejoin"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "PerpendicularOffset": [
+                          "3"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

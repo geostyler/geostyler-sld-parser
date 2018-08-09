@@ -334,45 +334,71 @@ class SldStyleParser implements StyleParser {
     let lineSymbolizer: LineSymbolizer = <LineSymbolizer> {
       kind: 'Line'
     };
-    const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
-    if (cssParameters.length < 1) {
-      throw new Error(`LineSymbolizer can not be parsed. No CssParameters detected.`);
+    const strokeKeys = Object.keys(_get(sldSymbolizer, 'Stroke[0]')) || [];
+    if (strokeKeys.length < 1) {
+      throw new Error(`LineSymbolizer cannot be parsed. No Stroke detected`);
     }
-    cssParameters.forEach((cssParameter: any) => {
-      const {
-        $: {
-          name
-        },
-        _: value
-      } = cssParameter;
-
-      switch (name) {
-        case 'stroke':
-          lineSymbolizer.color = value;
+    strokeKeys.forEach((strokeKey: string) => {
+      switch (strokeKey) {
+        case 'CssParameter':
+          const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+          if (cssParameters.length < 1) {
+            throw new Error(`LineSymbolizer can not be parsed. No CssParameters detected.`);
+          }
+          cssParameters.forEach((cssParameter: any) => {
+            const {
+              $: {
+                name
+              },
+              _: value
+            } = cssParameter;
+      
+            switch (name) {
+              case 'stroke':
+                lineSymbolizer.color = value;
+                break;
+              case 'stroke-width':
+                lineSymbolizer.width = parseFloat(value);
+                break;
+              case 'stroke-opacity':
+                lineSymbolizer.opacity = parseFloat(value);
+                break;
+              case 'stroke-linejoin':
+                // geostyler-style and ol use 'miter' whereas sld uses 'mitre'
+                if (value === 'mitre') {
+                  lineSymbolizer.join = 'miter';
+                } else {
+                  lineSymbolizer.join = value;
+                }
+                break;
+              case 'stroke-linecap':
+                lineSymbolizer.cap = value;
+                break;
+              case 'stroke-dasharray':
+                const dashStringAsArray = value.split(' ').map((a: string) => parseFloat(a));
+                lineSymbolizer.dasharray = dashStringAsArray;
+                break;
+              case 'stroke-dashoffset':
+                lineSymbolizer.dashOffset = parseFloat(value);
+                break;
+              default:
+                break;
+            }
+          });
           break;
-        case 'stroke-width':
-          lineSymbolizer.width = parseFloat(value);
-          break;
-        case 'stroke-opacity':
-          lineSymbolizer.opacity = parseFloat(value);
-          break;
-        case 'stroke-linejoin':
-          lineSymbolizer.join = value;
-          break;
-        case 'stroke-linecap':
-          lineSymbolizer.cap = value;
-          break;
-        case 'stroke-dasharray':
-          const dashStringAsArray = value.split(' ').map((a: string) => parseFloat(a));
-          lineSymbolizer.dasharray = dashStringAsArray;
-          break;
-        case 'stroke-dashoffset':
-          // Currently not supported by GeoStyler Style
+        case 'GraphicStroke':
+          lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(
+            _get(sldSymbolizer, 'Stroke[0].GraphicStroke[0]')
+          );
           break;
         default:
           break;
       }
     });
+    const perpendicularOffset = _get(sldSymbolizer, 'PerpendicularOffset[0]');
+    if (perpendicularOffset !== undefined) {
+      lineSymbolizer.perpendicularOffset = Number(perpendicularOffset);
+    }
     return lineSymbolizer;
   }
 
@@ -883,7 +909,14 @@ class SldStyleParser implements StyleParser {
       opacity: 'stroke-opacity',
       join: 'stroke-linejoin',
       cap: 'stroke-linecap',
-      dasharray: 'stroke-dasharray'
+      dasharray: 'stroke-dasharray',
+      dashOffset: 'stroke-dashoffset'
+    };
+
+    let result: any = {
+      'LineSymbolizer': [{
+        'Stroke': [{}]
+      }]
     };
 
     const cssParameters: any[] = Object.keys(lineSymbolizer)
@@ -893,6 +926,10 @@ class SldStyleParser implements StyleParser {
         if (property === 'dasharray') {
           value = lineSymbolizer.dasharray!.join(' ');
         }
+        // simple transformation since geostyler-style uses prop 'miter' whereas sld uses 'mitre'
+        if (property === 'join' && value === 'miter') {
+          value = 'mitre';
+        }
         return {
           '_': value,
           '$': {
@@ -901,13 +938,28 @@ class SldStyleParser implements StyleParser {
         };
       });
 
-    return {
-      'LineSymbolizer': [{
-        'Stroke': [{
-          'CssParameter': cssParameters
-        }]
-      }]
-    };
+    const perpendicularOffset = lineSymbolizer.perpendicularOffset;
+
+    if (cssParameters.length !== 0) {
+      result.LineSymbolizer[0].Stroke[0].CssParameter = cssParameters;
+    }
+    if (perpendicularOffset) {
+      result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
+    }
+
+    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Circle') {
+      const graphicStroke = this.getSldPointSymbolizerFromCircleSymbolizer(
+        <CircleSymbolizer> lineSymbolizer.graphicStroke
+      );
+      result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+    }
+
+    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Icon') {
+      const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(<IconSymbolizer> lineSymbolizer.graphicStroke);
+      result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+    }
+
+    return result;
   }
 
   /**

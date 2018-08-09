@@ -12,7 +12,11 @@ const lineSimpleLine: Style = {
       dasharray: [13, 37],
       cap: 'round',
       join: 'miter',
-      dashOffset: 10
+      graphicStroke: {
+        kind: 'Circle',
+        color: '#FF0000',
+        radius: 7
+      }
     }
   }]
 };

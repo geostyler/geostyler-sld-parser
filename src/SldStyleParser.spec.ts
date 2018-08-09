@@ -4,6 +4,9 @@ import { Style } from 'geostyler-style';
 
 import point_simplepoint from '../data/styles/point_simplepoint';
 import line_simpleline from '../data/styles/line_simpleline';
+import line_perpendicularOffset from '../data/styles/line_perpendicularOffset';
+import line_graphicStroke from '../data/styles/line_graphicStroke';
+import line_graphicStroke_externalGraphic from '../data/styles/line_graphicStroke_externalGraphic';
 import polygon_transparentpolygon from '../data/styles/polygon_transparentpolygon';
 import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
@@ -64,6 +67,33 @@ describe('SldStyleParser implements StyleParser', () => {
         expect(geoStylerStyle).toBeDefined();
         expect(geoStylerStyle).toEqual(line_simpleline);
       });
+    });
+    it('can read a SLD LineSymbolizer with Perpendicular Offset', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/line_perpendicularOffset.sld', 'utf8');
+      return styleParser.readStyle(sld)
+      .then((geostylerStyle: Style) => {
+        expect(geostylerStyle).toBeDefined();
+        expect(geostylerStyle).toEqual(line_perpendicularOffset);
+      });
+    });
+    it('can read a SLD LineSymbolizer with GraphicStroke', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/line_graphicStroke.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(line_graphicStroke);
+        });
+    });
+    it('can read a SLD LineSymbolizer with GraphicStroke and ExternalGraphic', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/line_graphicStroke_externalGraphic.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(line_graphicStroke_externalGraphic);
+        });
     });
     it('can read a SLD PolygonSymbolizer', () => {
       expect.assertions(2);
@@ -209,6 +239,45 @@ describe('SldStyleParser implements StyleParser', () => {
           return styleParser.readStyle(sldString)
             .then(readStyle => {
               expect(readStyle).toEqual(line_simpleline);
+            });
+        });
+    });
+    it('can write a SLD LineSymbolizer with PerpendicularOffset', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(line_perpendicularOffset)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(line_perpendicularOffset);
+            });
+        });
+    });
+    it('can write a SLD LineSymbolizer with GraphicStroke', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(line_graphicStroke)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(line_graphicStroke);
+            });
+        });
+    });
+    it('can write a SLD LineSymbolizer with GraphicStroke and ExternalGraphic', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(line_graphicStroke_externalGraphic)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(line_graphicStroke_externalGraphic);
             });
         });
     });
