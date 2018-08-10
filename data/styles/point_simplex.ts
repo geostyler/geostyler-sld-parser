@@ -9,7 +9,7 @@ const pointSimpleX: Style = {
       'wellKnownName': 'X',
       'points': 4,
       'color': '#FF0000',
-      'radius1': 10,
+      'radius': 10,
       'radius2': 0,
       'strokeColor': '#000000',
       'strokeWidth': 2,

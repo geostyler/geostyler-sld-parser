@@ -13,7 +13,7 @@ const pointSimpleTriangle: Style = {
       'strokeColor': '#000000',
       'strokeWidth': 2,
       'opacity': 1,
-      'rotation': 45
+      'rotate': 45
     }
   }],
   'type': 'Point'

@@ -9,12 +9,12 @@ const pointSimpleCross: Style = {
       'wellKnownName': 'Cross',
       'points': 4,
       'color': '#FF0000',
-      'radius1': 10,
+      'radius': 10,
       'radius2': 0,
       'strokeColor': '#000000',
       'strokeWidth': 2,
       'opacity': 1,
-      'rotation': 45
+      'rotate': 45
     }
   }],
   'type': 'Point'
