@@ -668,7 +668,7 @@ class SldStyleParser implements StyleParser {
         tagNameProcessors: [this.tagNameProcessor]
       };
       try {
-        parseString(sldString, options, (err, result) => {
+        parseString(sldString, options, (err: any, result: any) => {
           if (err) {
             reject(`Error while parsing sldString: ${err}`);
           }
@@ -1056,9 +1056,9 @@ class SldStyleParser implements StyleParser {
       result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
     }
 
-    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Circle') {
-      const graphicStroke = this.getSldPointSymbolizerFromCircleSymbolizer(
-        <CircleSymbolizer> lineSymbolizer.graphicStroke
+    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Mark') {
+      const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(
+        <MarkSymbolizer> lineSymbolizer.graphicStroke
       );
       result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
     }
