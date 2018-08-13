@@ -44,7 +44,7 @@
               <CssParameter name="fill">#000000</CssParameter>
             </Fill>
           </TextSymbolizer>
-       	</Rule>
+        </Rule>
       </FeatureTypeStyle>
     </UserStyle>
   </NamedLayer>

@@ -142,12 +142,6 @@ describe('SldStyleParser implements StyleParser', () => {
         });
     });
 
-    // describe('#getStyleTypeFromSldObject', () => {
-    //   it('is defined', () => {
-    //     expect(styleParser.getStyleTypeFromSldObject).toBeDefined();
-    //   });
-    // });
-
     describe('#getFilterFromOperatorAndComparison', () => {
       it('is defined', () => {
         expect(styleParser.getFilterFromOperatorAndComparison).toBeDefined();

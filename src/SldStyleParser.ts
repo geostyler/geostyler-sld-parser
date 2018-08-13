@@ -5,7 +5,6 @@ import {
   Rule,
   ComparisonOperator,
   CombinationOperator,
-  // StyleType,
   ScaleDenominator,
   PointSymbolizer,
   Symbolizer,
@@ -82,51 +81,6 @@ class SldStyleParser implements StyleParser {
     const prefixMatch = new RegExp(/(?!xmlns)^.*:/);
     return name.replace(prefixMatch, '');
   }
-
-  /**
-   * Get the GeoStyler-Style StyleType from the sldObject. It searches for all 
-   * appearances of a SLD Symbolizer. Supported Symbolizers are:
-   * 'PointSymbolizer',
-   * 'LineSymbolizer',
-   * 'TextSymbolizer',
-   * 'PolygonSymbolizer'
-   *
-   * @param {object} sldObject The SLD object representation (created with xml2js)
-   * @return {StyleType} The StyleType of the parsed SLD string
-   */
-  // getStyleTypeFromSldObject(sldObject: any): StyleType {
-  //   const symbolizers = [
-  //     'PointSymbolizer',
-  //     'LineSymbolizer',
-  //     'TextSymbolizer',
-  //     'PolygonSymbolizer'
-  //   ];
-  //   let styleType: StyleType;
-  //   const ruleObject = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0]' +
-  //     '.UserStyle[0].FeatureTypeStyle[0].Rule[0]');
-
-  //   if (!ruleObject) {
-  //     throw new Error('StyleType could not be detected');
-  //   }
-
-  //   const ruleKeys = Object.keys(ruleObject);
-  //   const symbolizer = ruleKeys.find(key => symbolizers.includes(key));
-  //   switch (symbolizer) {
-  //     case 'PointSymbolizer':
-  //     case 'TextSymbolizer':
-  //       styleType = 'Point';
-  //       break;
-  //     case 'PolygonSymbolizer':
-  //       styleType = 'Fill';
-  //       break;
-  //     case 'LineSymbolizer':
-  //       styleType = 'Line';
-  //       break;
-  //     default:
-  //       throw new Error('StyleType could not be detected');
-  //   }
-  //   return styleType;
-  // }
 
   /**
    * Get the name for the Style from the SLD Object. Returns the Title of the UserStyle
