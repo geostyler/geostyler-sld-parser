@@ -4,7 +4,7 @@ const pointSimpleTriangle: Style = {
   'name': 'Simple Triangle',
   'rules': [{
     'name': 'Small populated New Yorks',
-    'symbolizer': {
+    'symbolizer': [{
       'kind': 'Mark',
       'wellKnownName': 'Triangle',
       'points': 3,
@@ -14,9 +14,8 @@ const pointSimpleTriangle: Style = {
       'strokeWidth': 2,
       'opacity': 1,
       'rotate': 45
-    }
-  }],
-  'type': 'Point'
+    }]
+  }]
 };
 
 export default pointSimpleTriangle;

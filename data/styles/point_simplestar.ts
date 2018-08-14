@@ -4,7 +4,7 @@ const pointSimpleStar: Style = {
   'name': 'Simple Star',
   'rules': [{
     'name': 'Small populated New Yorks',
-    'symbolizer': {
+    'symbolizer': [{
       'kind': 'Mark',
       'wellKnownName': 'Star',
       'points': 5,
@@ -15,9 +15,8 @@ const pointSimpleStar: Style = {
       'strokeWidth': 2,
       'opacity': 1,
       'rotate': 45
-    }
-  }],
-  'type': 'Point'
+    }]
+  }]
 };
 
 export default pointSimpleStar;

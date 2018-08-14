@@ -4,7 +4,7 @@ const pointSimpleSquare: Style = {
   'name': 'Simple Square',
   'rules': [{
     'name': 'Small populated New Yorks',
-    'symbolizer': {
+    'symbolizer': [{
       'kind': 'Mark',
       'wellKnownName': 'Square',
       'points': 4,
@@ -14,9 +14,8 @@ const pointSimpleSquare: Style = {
       'strokeWidth': 2,
       'opacity': 1,
       'angle': 45
-    }
-  }],
-  'type': 'Point'
+    }]
+  }]
 };
 
 export default pointSimpleSquare;

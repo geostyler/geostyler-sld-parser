@@ -294,7 +294,7 @@ describe('SldStyleParser implements StyleParser', () => {
             .then(readStyle => {
               expect(readStyle).toEqual(point_simplesquare);
             });
-        })
+        });
     });
     it('can write a SLD PointSymbolizer with wellKnownName triangle', () => {
       expect.assertions(2);
@@ -307,7 +307,7 @@ describe('SldStyleParser implements StyleParser', () => {
             .then(readStyle => {
               expect(readStyle).toEqual(point_simpletriangle);
             });
-        })
+        });
     });
     it('can write a SLD PointSymbolizer with wellKnownName star', () => {
       expect.assertions(2);
@@ -320,7 +320,7 @@ describe('SldStyleParser implements StyleParser', () => {
             .then(readStyle => {
               expect(readStyle).toEqual(point_simplestar);
             });
-        })
+        });
     });
     it('can write a SLD PointSymbolizer with wellKnownName cross', () => {
       expect.assertions(2);
@@ -333,7 +333,7 @@ describe('SldStyleParser implements StyleParser', () => {
             .then(readStyle => {
               expect(readStyle).toEqual(point_simplecross);
             });
-        })
+        });
     });
     it('can write a SLD PointSymbolizer with wellKnownName x', () => {
       expect.assertions(2);
@@ -346,7 +346,7 @@ describe('SldStyleParser implements StyleParser', () => {
             .then(readStyle => {
               expect(readStyle).toEqual(point_simplex);
             });
-        })
+        });
     });
     it('can write a SLD LineSymbolizer', () => {
       expect.assertions(2);
