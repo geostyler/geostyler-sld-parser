@@ -19,15 +19,14 @@ const pointSimplePoint: Style = {
       'max': 20000,
       'min': 10000
     },
-    'symbolizer': {
+    'symbolizer': [{
       'color': '#FF0000',
       'kind': 'Circle',
       'radius': 6,
       'strokeColor': '#000000',
       'strokeWidth': 2
-    }
-  }],
-  'type': 'Point'
+    }]
+  }]
 };
 
 export default pointSimplePoint;
