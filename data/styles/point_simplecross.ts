@@ -1,4 +1,3 @@
-
 import { Style } from 'geostyler-style';
 
 const pointSimpleCross: Style = {

@@ -1107,7 +1107,7 @@ class SldStyleParser implements StyleParser {
       }
       if (markSymbolizer.strokeWidth) {
         strokeCssParameters.push({
-          '_': JSON.stringify(markSymbolizer.strokeWidth),
+          '_': markSymbolizer.strokeWidth.toString(),
           '$': {
             'name': 'stroke-width'
           }
@@ -1115,7 +1115,7 @@ class SldStyleParser implements StyleParser {
       }
       if (markSymbolizer.strokeOpacity) {
         strokeCssParameters.push({
-          '_': JSON.stringify(markSymbolizer.strokeOpacity),
+          '_': markSymbolizer.strokeOpacity.toString(),
           '$': {
             'name': 'stroke-opacity'
           }
@@ -1133,7 +1133,7 @@ class SldStyleParser implements StyleParser {
     }
 
     if (markSymbolizer.opacity) {
-      graphic[0].Opacity = [JSON.stringify(markSymbolizer.opacity)];
+      graphic[0].Opacity = [markSymbolizer.opacity.toString()];
     }
 
     if (markSymbolizer.rotate) {
