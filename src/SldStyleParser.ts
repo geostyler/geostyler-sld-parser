@@ -1129,7 +1129,7 @@ class SldStyleParser implements StyleParser {
     }];
 
     if (markSymbolizer.radius) {
-      graphic[0].Size = [JSON.stringify(markSymbolizer.radius)];
+      graphic[0].Size = [markSymbolizer.radius.toString()];
     }
 
     if (markSymbolizer.opacity) {
@@ -1137,7 +1137,7 @@ class SldStyleParser implements StyleParser {
     }
 
     if (markSymbolizer.rotate) {
-      graphic[0].Rotation = [JSON.stringify(markSymbolizer.rotate)];
+      graphic[0].Rotation = [markSymbolizer.rotate.toString()];
     }
 
     return {
