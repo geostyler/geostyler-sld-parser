@@ -14,6 +14,13 @@ import {
   FillSymbolizer,
   TextSymbolizer,
   ComparisonFilter,
+  SquareSymbolizer,
+  TriangleSymbolizer,
+  BaseMarkSymbolizer,
+  StarSymbolizer,
+  CrossSymbolizer,
+  XSymbolizer,
+  MarkSymbolizer,
 } from 'geostyler-style';
 
 import {
@@ -209,6 +216,118 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style MarkSymbolizer from an SLD Symbolizer
+   * 
+   * @param {object} sldSymbolizer The SLD Symbolizer
+   * @return {MarkSymbolizer} The GeoStyler-Style MarkSymbolizer 
+   */
+  getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
+    const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
+    const strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
+    const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
+    const radius: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+    const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
+    
+    const fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
+    const colorIdx: number = fillParams.findIndex((cssParam: any) => {
+      return cssParam.$.name === 'fill';
+    }); 
+    const color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
+    
+    let baseMarkSymbolizer: BaseMarkSymbolizer = <BaseMarkSymbolizer> {};
+    let markSymbolizer: MarkSymbolizer = <MarkSymbolizer> {};
+    if (opacity) {
+      baseMarkSymbolizer.opacity = parseFloat(opacity);
+    }
+    if (color) {
+      baseMarkSymbolizer.color = color;
+    }
+    if (rotation) {
+      baseMarkSymbolizer.rotate = parseFloat(rotation);
+    }
+    if (radius) {
+      baseMarkSymbolizer.radius = parseFloat(radius);
+    }
+
+    strokeParams.forEach((param: any) => {
+      switch (param.$.name) {
+        case 'stroke':
+          baseMarkSymbolizer.strokeColor = param._;
+          break;
+        case 'stroke-width':
+          baseMarkSymbolizer.strokeWidth = parseFloat(param._);
+          break;
+        case 'stroke-opacity':
+          baseMarkSymbolizer.strokeOpacity = parseFloat(param._);
+          break;
+        default:
+          break;
+      }
+    });
+
+    switch (wellKnownName) {
+      case 'circle':
+        let circleSymbolizer: CircleSymbolizer = <CircleSymbolizer> {
+          kind: 'Mark',
+          wellKnownName: 'Circle'
+        };
+        markSymbolizer = {...baseMarkSymbolizer, ...circleSymbolizer};
+        break;
+      case 'square':
+        let squareSymbolizer: SquareSymbolizer = <SquareSymbolizer> {
+          kind: 'Mark',
+          wellKnownName: 'Square',
+          points: 4,
+          angle: 45
+        };
+        markSymbolizer = {...baseMarkSymbolizer, ...squareSymbolizer};
+        break;
+      case 'triangle':
+        let triangleSymbolizer: TriangleSymbolizer = <TriangleSymbolizer> {
+          kind: 'Mark',
+          wellKnownName: 'Triangle',
+          points: 3
+        };
+        markSymbolizer = {...baseMarkSymbolizer, ...triangleSymbolizer};
+        break;
+      case 'star':
+        let starSymbolizer: StarSymbolizer = <StarSymbolizer> {
+          kind: 'Mark',
+          wellKnownName: 'Star',
+          points: 5
+        };
+        if (radius) {
+          starSymbolizer.radius2 = parseFloat(radius) / 2.5;
+        }
+        markSymbolizer = {...baseMarkSymbolizer, ...starSymbolizer};
+        break;
+      case 'cross':
+        let crossSymbolizer: CrossSymbolizer = <CrossSymbolizer> {
+          kind: 'Mark',
+          wellKnownName: 'Cross',
+          points: 4,
+          radius2: 0
+        };
+        markSymbolizer = {...baseMarkSymbolizer, ...crossSymbolizer};
+        break;
+      case 'x':
+        let xSymbolizer: XSymbolizer = <XSymbolizer> {
+          kind: 'Mark',
+          wellKnownName: 'X',
+          points: 4,
+          radius2: 0,
+          angle: 45
+        };
+        markSymbolizer = {...baseMarkSymbolizer, ...xSymbolizer};
+        break;
+      default:
+        throw new Error(`PointSymbolizer can not be parsed. Only "circle", "square", 
+        "triangle", "star", "cross" or "x" are supported as WellKnownName.`);
+    }
+    return markSymbolizer;
+  }
+
+  /**
    * Get the GeoStyler-Style PointSymbolizer from an SLD Symbolizer.
    *
    * The opacity of the Symbolizer is taken from the <Graphic>.
@@ -218,39 +337,14 @@ class SldStyleParser implements StyleParser {
    */
   getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
     let pointSymbolizer: PointSymbolizer = <PointSymbolizer> {};
-    const wellKnownName = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
-    const externalGraphic = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
-    if (wellKnownName === 'circle') {
-      let circleSymbolizer: CircleSymbolizer = <CircleSymbolizer> {
-        kind: 'Circle'
-      };
-      const strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
-      const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
-      const radius = _get(sldSymbolizer, 'Graphic[0].Size[0]');
-      const color = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[0]._');
-      if (opacity) {
-        circleSymbolizer.opacity = opacity;
-      }
-      if (radius) {
-        circleSymbolizer.radius = parseFloat(radius);
-      }
-      if (color ) {
-        circleSymbolizer.color = color;
-      }
-      strokeParams.forEach((param: any) => {
-        switch (param.$.name) {
-          case 'stroke':
-            circleSymbolizer.strokeColor = param._;
-            break;
-          case 'stroke-width':
-            circleSymbolizer.strokeWidth = parseFloat(param._);
-            break;
-          default:
-            break;
-        }
-      });
-      pointSymbolizer = circleSymbolizer;
+    const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
+    const externalGraphic: any = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
+    if (wellKnownName) {
+
+      pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer);
+
     } else if (externalGraphic) {
+
       const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
       let iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
         kind: 'Icon',
@@ -269,9 +363,12 @@ class SldStyleParser implements StyleParser {
         iconSymbolizer.rotate = parseInt(rotate, 10);
       }
       pointSymbolizer = iconSymbolizer;
+
     } else {
-      throw new Error(`PointSymbolizer can not be parsed. Only "circle" is supported
-      as WellKnownName.`);
+
+      throw new Error(`PointSymbolizer can not be parsed. Neither "ExternalGraphic",
+       nor "Mark" were specified.`);
+
     }
     return pointSymbolizer;
   }
@@ -571,7 +668,7 @@ class SldStyleParser implements StyleParser {
         tagNameProcessors: [this.tagNameProcessor]
       };
       try {
-        parseString(sldString, options, (err, result) => {
+        parseString(sldString, options, (err: any, result: any) => {
           if (err) {
             reject(`Error while parsing sldString: ${err}`);
           }
@@ -696,12 +793,12 @@ class SldStyleParser implements StyleParser {
     symbolizers.forEach(symb => {
       let sldSymb: any;
       switch (symb.kind) {
-        case 'Circle':
+        case 'Mark':
           if (!sldSymbolizer.PointSymbolizer) {
             sldSymbolizer.PointSymbolizer = [];
           }
           
-          sldSymb = this.getSldPointSymbolizerFromCircleSymbolizer(symb);
+          sldSymb = this.getSldPointSymbolizerFromMarkSymbolizer(symb);
           if (_get(sldSymb, 'PointSymbolizer[0]')) {
             sldSymbolizer.PointSymbolizer.push(
               _get(sldSymb, 'PointSymbolizer[0]')
@@ -959,9 +1056,9 @@ class SldStyleParser implements StyleParser {
       result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
     }
 
-    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Circle') {
-      const graphicStroke = this.getSldPointSymbolizerFromCircleSymbolizer(
-        <CircleSymbolizer> lineSymbolizer.graphicStroke
+    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Mark') {
+      const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(
+        <MarkSymbolizer> lineSymbolizer.graphicStroke
       );
       result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
     }
@@ -975,44 +1072,52 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style CircleSymbolizer.
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style MarkSymbolizer.
    *
-   * @param {CircleSymbolizer} circleSymbolizer A GeoStyler-Style CircleSymbolizer.
+   * @param {MarkSymbolizer} markSymbolizer A GeoStyler-Style MarkSymbolizer.
    * @return {object} The object representation of a SLD PointSymbolizer with a
-   * "circle" Mark (readable with xml2js)
+   * Mark (readable with xml2js)
    */
-  getSldPointSymbolizerFromCircleSymbolizer(circleSymbolizer: CircleSymbolizer): any {
+  getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: MarkSymbolizer): any {
     let mark: any[] = [{
       'WellKnownName': [
-        'circle'
+        markSymbolizer.wellKnownName.toLowerCase()
       ]
     }];
-    if (circleSymbolizer.color) {
+    if (markSymbolizer.color) {
       mark[0].Fill = [{
         'CssParameter': [{
-          '_': circleSymbolizer.color,
+          '_': markSymbolizer.color,
           '$': {
             'name': 'fill'
           }
         }]
       }];
     }
-    if (circleSymbolizer.strokeColor || circleSymbolizer.strokeWidth) {
+    if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity) {
       mark[0].Stroke = [{}];
       const strokeCssParameters = [];
-      if (circleSymbolizer.strokeColor) {
+      if (markSymbolizer.strokeColor) {
         strokeCssParameters.push({
-          '_': circleSymbolizer.strokeColor,
+          '_': markSymbolizer.strokeColor,
           '$': {
             'name': 'stroke'
           }
         });
       }
-      if (circleSymbolizer.strokeWidth) {
+      if (markSymbolizer.strokeWidth) {
         strokeCssParameters.push({
-          '_': circleSymbolizer.strokeWidth,
+          '_': markSymbolizer.strokeWidth.toString(),
           '$': {
             'name': 'stroke-width'
+          }
+        });
+      }
+      if (markSymbolizer.strokeOpacity) {
+        strokeCssParameters.push({
+          '_': markSymbolizer.strokeOpacity.toString(),
+          '$': {
+            'name': 'stroke-opacity'
           }
         });
       }
@@ -1022,8 +1127,17 @@ class SldStyleParser implements StyleParser {
     let graphic: any[] = [{
       'Mark': mark
     }];
-    if (circleSymbolizer.radius) {
-      graphic[0].Size = circleSymbolizer.radius;
+
+    if (markSymbolizer.radius) {
+      graphic[0].Size = [markSymbolizer.radius.toString()];
+    }
+
+    if (markSymbolizer.opacity) {
+      graphic[0].Opacity = [markSymbolizer.opacity.toString()];
+    }
+
+    if (markSymbolizer.rotate) {
+      graphic[0].Rotation = [markSymbolizer.rotate.toString()];
     }
 
     return {

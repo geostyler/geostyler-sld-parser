@@ -1,6 +1,6 @@
 import { Style } from 'geostyler-style';
 
-const multi_simplelineLabel: Style = {
+const multiSimplelineLabel: Style = {
   name: 'Simple Line with label',
   rules: [{
     name: '',
@@ -9,7 +9,7 @@ const multi_simplelineLabel: Style = {
       color: '#000000',
       width: 3,
       dasharray: [13, 37]
-    },{
+    }, {
       kind: 'Text',
       color: '#000000',
       field: 'name',
@@ -20,4 +20,4 @@ const multi_simplelineLabel: Style = {
   }]
 };
 
-export default multi_simplelineLabel;
+export default multiSimplelineLabel;

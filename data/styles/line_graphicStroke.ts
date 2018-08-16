@@ -12,7 +12,8 @@ const lineSimpleLine: Style = {
       cap: 'round',
       join: 'miter',
       graphicStroke: {
-        kind: 'Circle',
+        kind: 'Mark',
+        wellKnownName: 'Circle',
         color: '#FF0000',
         radius: 7
       }
