@@ -4,7 +4,7 @@ const pointSimpleX: Style = {
   'name': 'Simple X',
   'rules': [{
     'name': 'Small populated New Yorks',
-    'symbolizer': [{
+    'symbolizers': [{
       'kind': 'Mark',
       'wellKnownName': 'X',
       'points': 4,

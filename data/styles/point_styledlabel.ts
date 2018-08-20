@@ -4,7 +4,7 @@ const pointStyledLabel: Style = {
   name: 'Styled Label',
   rules: [{
     name: '',
-    symbolizer: [{
+    symbolizers: [{
       kind: 'Text',
       color: '#000000',
       field: 'name',

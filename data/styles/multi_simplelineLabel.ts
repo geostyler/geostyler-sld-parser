@@ -4,7 +4,7 @@ const multiSimplelineLabel: Style = {
   name: 'Simple Line with label',
   rules: [{
     name: '',
-    symbolizer: [{
+    symbolizers: [{
       kind: 'Line',
       color: '#000000',
       width: 3,

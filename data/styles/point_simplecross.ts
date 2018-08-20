@@ -4,7 +4,7 @@ const pointSimpleCross: Style = {
   'name': 'Simple Cross',
   'rules': [{
     'name': 'Small populated New Yorks',
-    'symbolizer': [{
+    'symbolizers': [{
       'kind': 'Mark',
       'wellKnownName': 'Cross',
       'points': 4,

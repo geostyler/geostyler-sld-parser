@@ -4,7 +4,7 @@ const pointSimpleStar: Style = {
   'name': 'Simple Star',
   'rules': [{
     'name': 'Small populated New Yorks',
-    'symbolizer': [{
+    'symbolizers': [{
       'kind': 'Mark',
       'wellKnownName': 'Star',
       'points': 5,

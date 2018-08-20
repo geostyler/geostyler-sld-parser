@@ -4,7 +4,7 @@ const pointSimpleTriangle: Style = {
   'name': 'Simple Triangle',
   'rules': [{
     'name': 'Small populated New Yorks',
-    'symbolizer': [{
+    'symbolizers': [{
       'kind': 'Mark',
       'wellKnownName': 'Triangle',
       'points': 3,
