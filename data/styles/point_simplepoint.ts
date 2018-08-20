@@ -4,7 +4,7 @@ const pointSimplePoint: Style = {
   name: 'Simple Point',
   rules: [{
     name: '',
-    symbolizer: [{
+    symbolizers: [{
       kind: 'Mark',
       wellKnownName: 'Circle',
       color: '#FF0000',

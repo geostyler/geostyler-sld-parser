@@ -4,7 +4,7 @@ const pointSimpleSquare: Style = {
   'name': 'Simple Square',
   'rules': [{
     'name': 'Small populated New Yorks',
-    'symbolizer': [{
+    'symbolizers': [{
       'kind': 'Mark',
       'wellKnownName': 'Square',
       'points': 4,

@@ -570,7 +570,7 @@ class SldStyleParser implements StyleParser {
    * @param {object} sldRule The SLD Rule
    * @return {Symbolizer[]} The GeoStyler-Style Symbolizer Array
    */
-  getSymbolizerFromRule(sldRule: any): Symbolizer[] {
+  getSymbolizersFromRule(sldRule: any): Symbolizer[] {
    
     let symbolizers: Symbolizer[] = <Symbolizer[]> [];
     const symbolizerNames: string[] = Object.keys(sldRule).filter(key => key.endsWith('Symbolizer'));
@@ -616,7 +616,7 @@ class SldStyleParser implements StyleParser {
           featureTypeStyle.Rule.forEach((sldRule: any) => {
             const filter: Filter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
-            const symbolizer: Symbolizer[] = this.getSymbolizerFromRule(sldRule);
+            const symbolizers: Symbolizer[] = this.getSymbolizersFromRule(sldRule);
             const name = sldRule.Title ? sldRule.Title[0]
               : (sldRule.Name ? sldRule.Name[0] : '');
             let rule: Rule = <Rule> {
@@ -628,8 +628,8 @@ class SldStyleParser implements StyleParser {
             if (scaleDenominator) {
               rule.scaleDenominator = scaleDenominator;
             }
-            if (symbolizer) {
-              rule.symbolizer = symbolizer;
+            if (symbolizers) {
+              rule.symbolizers = symbolizers;
             }
             rules.push(rule);
           });
@@ -766,7 +766,7 @@ class SldStyleParser implements StyleParser {
       }
 
       // Remove empty Symbolizers and check if there is at least 1 symbolizer
-      const symbolizers = this.getSldSymbolizerFromSymbolizer(rule.symbolizer);
+      const symbolizers = this.getSldSymbolizersFromSymbolizers(rule.symbolizers);
       let symbolizerKeys: string[] = Object.keys(symbolizers[0]);
 
       symbolizerKeys.forEach((key: string) => {
@@ -784,10 +784,10 @@ class SldStyleParser implements StyleParser {
   /**
    * Get the SLD Object (readable with xml2js) from GeoStyler-Style Symbolizers.
    *
-   * @param {Symbolizer} symbolizer A GeoStyler-Style Symbolizer.
+   * @param {Symbolizer[]} symbolizers A GeoStyler-Style Symbolizer array.
    * @return {object} The object representation of a SLD Symbolizer (readable with xml2js)
    */
-  getSldSymbolizerFromSymbolizer(symbolizers: Symbolizer[]): any {
+  getSldSymbolizersFromSymbolizers(symbolizers: Symbolizer[]): any {
     let sldSymbolizers: any = [];
     let sldSymbolizer: any = {};
     symbolizers.forEach(symb => {

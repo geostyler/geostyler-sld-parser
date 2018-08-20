@@ -234,9 +234,9 @@ describe('SldStyleParser implements StyleParser', () => {
       });
     });
 
-    describe('#getSymbolizerFromRule', () => {
+    describe('#getSymbolizersFromRule', () => {
       it('is defined', () => {
-        expect(styleParser.getSymbolizerFromRule).toBeDefined();
+        expect(styleParser.getSymbolizersFromRule).toBeDefined();
       });
     });
 
@@ -478,9 +478,9 @@ describe('SldStyleParser implements StyleParser', () => {
       });
     });
 
-    describe('#getSldSymbolizerFromSymbolizer', () => {
+    describe('#getSldSymbolizersFromSymbolizers', () => {
       it('is defined', () => {
-        expect(styleParser.getSldSymbolizerFromSymbolizer).toBeDefined();
+        expect(styleParser.getSldSymbolizersFromSymbolizers).toBeDefined();
       });
     });
 

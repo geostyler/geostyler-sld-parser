@@ -22,7 +22,7 @@ const pointSimplePoint: Style = {
       'max': 20000,
       'min': 10000
     },
-    'symbolizer': [{
+    'symbolizers': [{
       'color': '#FF0000',
       'kind': 'Mark',
       'wellKnownName': 'Circle',

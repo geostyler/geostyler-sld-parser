@@ -4,7 +4,7 @@ const lineSimpleLine: Style = {
   name: 'Simple Line',
   rules: [{
     name: '',
-    symbolizer: [{
+    symbolizers: [{
       kind: 'Line',
       color: '#000000',
       width: 3,
