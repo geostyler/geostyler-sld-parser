@@ -439,7 +439,12 @@ class SldStyleParser implements StyleParser {
           break;
         case 'GraphicStroke':
           lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(
-            _get(sldSymbolizer, 'Stroke[0].GraphicStroke[0]')
+            sldSymbolizer.Stroke[0].GraphicStroke[0]
+          );
+          break;
+        case 'GraphicFill':
+          lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
+            sldSymbolizer.Stroke[0].GraphicFill[0]
           );
           break;
         default:
@@ -1056,16 +1061,32 @@ class SldStyleParser implements StyleParser {
       result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
     }
 
-    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Mark') {
-      const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(
-        <MarkSymbolizer> lineSymbolizer.graphicStroke
-      );
-      result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+    if (_get(lineSymbolizer, 'graphicStroke')) {
+      if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Mark') {
+        const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(
+          <MarkSymbolizer> lineSymbolizer.graphicStroke
+        );
+        result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+      } else if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Icon') {
+        const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(
+          <IconSymbolizer> lineSymbolizer.graphicStroke
+        );
+        result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+      }
     }
 
-    if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Icon') {
-      const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(<IconSymbolizer> lineSymbolizer.graphicStroke);
-      result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+    if (_get(lineSymbolizer, 'graphicFill')) {
+      if (_get(lineSymbolizer, 'graphicFill.kind') === 'Mark') {
+        const graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
+          <MarkSymbolizer> lineSymbolizer.graphicFill
+        );
+        result.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+      } else if (_get(lineSymbolizer, 'graphicFill.kind') === 'Icon') {
+        const graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
+          <IconSymbolizer> lineSymbolizer.graphicFill
+        );
+        result.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+      }
     }
 
     return result;
