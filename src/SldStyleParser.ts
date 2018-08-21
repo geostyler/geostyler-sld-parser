@@ -527,12 +527,33 @@ class SldStyleParser implements StyleParser {
     const fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
     const field = _get(sldSymbolizer, 'Label[0].PropertyName[0]');
     const color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
+    const haloColorCssParameter = _get(sldSymbolizer, 'Halo[0].Fill[0].CssParameter') || [];
+    const haloRadius = _get(sldSymbolizer, 'Halo[0].Radius[0]');
     if (field) {
       textSymbolizer.field = field;
     }
     if (color) {
       textSymbolizer.color = color;
     }
+    if (haloRadius) {
+      textSymbolizer.haloWidth = parseFloat(haloRadius);
+    }
+    haloColorCssParameter.forEach((cssParameter: any) => {
+      const {
+        $: {
+          name
+        },
+        _: value
+      } = cssParameter;
+      switch (name) {
+        case 'fill':
+          textSymbolizer.haloColor = value;
+          break;
+        case 'fill-opacity':
+        default:
+          break;
+      }
+    });
     const displacement = _get(sldSymbolizer, 'LabelPlacement[0].PointPlacement[0].Displacement[0]');
     if (displacement) {
       const x = displacement.DisplacementX[0];
@@ -541,6 +562,10 @@ class SldStyleParser implements StyleParser {
         x ? parseFloat(x) : 0,
         y ? parseFloat(y) : 0,
       ];
+    }
+    const rotation = _get(sldSymbolizer, 'LabelPlacement[0].PointPlacement[0].Rotation[0]');
+    if (rotation) {
+      textSymbolizer.rotate = parseFloat(rotation);
     }
     fontCssParameters.forEach((cssParameter: any) => {
       const {
@@ -904,18 +929,24 @@ class SldStyleParser implements StyleParser {
       }];
     }
 
-    if (textSymbolizer.offset) {
+    if (textSymbolizer.offset || textSymbolizer.rotate !== undefined) {
+      let pointPlacement: any = [{}];
+
+      if (textSymbolizer.offset) {
+        pointPlacement[0].Displacement = [{
+          'DisplacementX': [
+            textSymbolizer.offset[0].toString()
+          ],
+          'DisplacementY': [
+            textSymbolizer.offset[1].toString()
+          ]
+        }];
+      }
+      if (textSymbolizer.rotate !== undefined) {
+        pointPlacement[0].Rotation = [textSymbolizer.rotate.toString()];
+      }
       sldTextSymbolizer[0].LabelPlacement = [{
-        'PointPlacement': [{
-          'Displacement': [{
-            'DisplacementX': [
-              textSymbolizer.offset[0]
-            ],
-            'DisplacementY': [
-              textSymbolizer.offset[1]
-            ]
-          }]
-        }]
+        PointPlacement: pointPlacement
       }];
     }
 
@@ -930,6 +961,27 @@ class SldStyleParser implements StyleParser {
       }];
     }
 
+    if (textSymbolizer.haloWidth || textSymbolizer.haloColor) {
+      const halo: any = {};
+      const haloCssParameter = [];
+      if (textSymbolizer.haloWidth) {
+        halo.Radius = [textSymbolizer.haloWidth.toString()];
+      }
+      if (textSymbolizer.haloColor) {
+        haloCssParameter.push({
+          '_': textSymbolizer.haloColor,
+          '$': {
+            'name': 'fill'
+          }
+        });
+      }
+      if (haloCssParameter.length > 0) {
+        halo.Fill = [{
+          CssParameter: haloCssParameter
+        }];
+      }
+      sldTextSymbolizer[0].Halo = [halo];
+    }
     return {
       'TextSymbolizer': sldTextSymbolizer
     };
