@@ -31,7 +31,7 @@
               <CssParameter name="stroke-linejoin">mitre</CssParameter>
             </Stroke>
           </LineSymbolizer>
-       	</Rule>
+        </Rule>
       </FeatureTypeStyle>
     </UserStyle>
   </NamedLayer>
