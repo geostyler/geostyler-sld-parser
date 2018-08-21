@@ -472,7 +472,13 @@ class SldStyleParser implements StyleParser {
     };
     const fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameter') || [];
     const strokeCssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+    const graphicFill = _get(sldSymbolizer, 'Fill[0].GraphicFill[0]');
 
+    if (graphicFill) {
+      fillSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
+        graphicFill
+      );
+    }
     fillCssParameters.forEach((cssParameter: any) => {
       const {
         $: {
@@ -1005,6 +1011,7 @@ class SldStyleParser implements StyleParser {
     };
     let strokeCssParameters: any[] = [];
     let fillCssParameters: any[] = [];
+    let graphicFill: any;
 
     Object.keys(fillSymbolizer)
       .filter((property: any) => property !== 'kind')
@@ -1044,6 +1051,18 @@ class SldStyleParser implements StyleParser {
           });
         }
       });
+    
+    if (_get(fillSymbolizer, 'graphicFill')) {
+      if (_get(fillSymbolizer, 'graphicFill.kind') === 'Mark') {
+        graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
+          <MarkSymbolizer> fillSymbolizer.graphicFill
+        );
+      } else if (_get(fillSymbolizer, 'graphicFill.kind') === 'Icon') {
+        graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
+          <IconSymbolizer> fillSymbolizer.graphicFill
+        );
+      }
+    }
 
     let polygonSymbolizer: any = [{}];
     if (strokeCssParameters.length > 0) {
@@ -1051,10 +1070,14 @@ class SldStyleParser implements StyleParser {
         'CssParameter': strokeCssParameters
       }];
     }
-    if (fillCssParameters.length > 0) {
-      polygonSymbolizer[0].Fill = [{
-        'CssParameter': fillCssParameters
-      }];
+    if (fillCssParameters.length > 0 || graphicFill) {
+      polygonSymbolizer[0].Fill = [{}];
+      if (fillCssParameters.length > 0) {
+        polygonSymbolizer[0].Fill[0].CssParameter = fillCssParameters;
+      }
+      if (graphicFill) {
+        polygonSymbolizer[0].Fill[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+      }
     }
 
     return {
