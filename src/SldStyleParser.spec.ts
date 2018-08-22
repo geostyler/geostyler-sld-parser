@@ -10,6 +10,8 @@ import line_graphicStroke_externalGraphic from '../data/styles/line_graphicStrok
 import line_graphicFill from '../data/styles/line_graphicFill';
 import line_graphicFill_externalGraphic from '../data/styles/line_graphicFill_externalGraphic';
 import polygon_transparentpolygon from '../data/styles/polygon_transparentpolygon';
+import polygon_graphicFill from '../data/styles/polygon_graphicFill';
+import polygon_graphicFill_externalGraphic from '../data/styles/polygon_graphicFill_externalGraphic';
 import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
@@ -173,6 +175,24 @@ describe('SldStyleParser implements StyleParser', () => {
       .then((geoStylerStyle: Style) => {
         expect(geoStylerStyle).toBeDefined();
         expect(geoStylerStyle).toEqual(polygon_transparentpolygon);
+        });
+    });
+    it('can read a SLD PolygonSymbolizer with GraphicFill', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/polygon_graphicFill.sld', 'utf8');
+      return styleParser.readStyle(sld)
+      .then((geoStylerStyle: Style) => {
+        expect(geoStylerStyle).toBeDefined();
+        expect(geoStylerStyle).toEqual(polygon_graphicFill);
+        });
+    });
+    it('can read a SLD PolygonSymbolizer with GraphicFill and ExternalGraphic', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/polygon_graphicFill_externalGraphic.sld', 'utf8');
+      return styleParser.readStyle(sld)
+      .then((geoStylerStyle: Style) => {
+        expect(geoStylerStyle).toBeDefined();
+        expect(geoStylerStyle).toEqual(polygon_graphicFill_externalGraphic);
         });
     });
     it('can read a SLD TextSymbolizer', () => {
@@ -456,6 +476,32 @@ describe('SldStyleParser implements StyleParser', () => {
           return styleParser.readStyle(sldString)
             .then(readStyle => {
               expect(readStyle).toEqual(polygon_transparentpolygon);
+            });
+        });
+    });
+    it('can write a SLD PolygonSymbolizer with GraphicFill', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(polygon_graphicFill)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(polygon_graphicFill);
+            });
+        });
+    });
+    it('can write a SLD PolygonSymbolizer with GraphicFill and ExternalGraphic', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(polygon_graphicFill_externalGraphic)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(polygon_graphicFill_externalGraphic);
             });
         });
     });
