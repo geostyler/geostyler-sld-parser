@@ -20,7 +20,7 @@ import {
   StarSymbolizer,
   CrossSymbolizer,
   XSymbolizer,
-  MarkSymbolizer,
+  MarkSymbolizer
 } from 'geostyler-style';
 
 import {
@@ -328,6 +328,34 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the GeoStyler-Style IconSymbolizer from an SLD Symbolizer
+   * 
+   * @param {object} sldSymbolizer The SLD Symbolizer
+   * @return {IconSymbolizer} The GeoStyler-Style IconSymbolizer 
+   */
+  getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
+    const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
+    let iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
+      kind: 'Icon',
+      image: onlineResource.$['xlink:href']
+    };
+    const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
+    const size = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+    const rotate = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
+    if (opacity) {
+      iconSymbolizer.opacity = opacity;
+    }
+    if (size) {
+      iconSymbolizer.size = parseInt(size, 10);
+    }
+    if (rotate) {
+      iconSymbolizer.rotate = parseInt(rotate, 10);
+    }
+
+    return iconSymbolizer;
+  }
+
+  /**
    * Get the GeoStyler-Style PointSymbolizer from an SLD Symbolizer.
    *
    * The opacity of the Symbolizer is taken from the <Graphic>.
@@ -345,24 +373,7 @@ class SldStyleParser implements StyleParser {
 
     } else if (externalGraphic) {
 
-      const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
-      let iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
-        kind: 'Icon',
-        image: onlineResource.$['xlink:href']
-      };
-      const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
-      const size = _get(sldSymbolizer, 'Graphic[0].Size[0]');
-      const rotate = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
-      if (opacity) {
-        iconSymbolizer.opacity = opacity;
-      }
-      if (size) {
-        iconSymbolizer.size = parseInt(size, 10);
-      }
-      if (rotate) {
-        iconSymbolizer.rotate = parseInt(rotate, 10);
-      }
-      pointSymbolizer = iconSymbolizer;
+      pointSymbolizer = this.getIconSymbolizerFromSldSymbolizer(sldSymbolizer);
 
     } else {
 
@@ -1251,19 +1262,37 @@ class SldStyleParser implements StyleParser {
    * en "ExternalGraphic" (readable with xml2js)
    */
   getSldPointSymbolizerFromIconSymbolizer(iconSymbolizer: IconSymbolizer): any {
-    const onlineResource = {
+    const onlineResource = [{
       '$': {
         'xlink:type': 'simple',
         'xmlns:xlink': 'http://www.w3.org/1999/xlink',
         'xlink:href': iconSymbolizer.image
       }
-    };
+    }];
+
     var graphic: any[] = [{
         'ExternalGraphic': [{
-          'OnlineResource': onlineResource,
-          'Format': 'image/png'// TODO: This has to be a property on the IconSymbolizer
+          'OnlineResource': onlineResource
         }]
     }];
+
+    if (iconSymbolizer.image) {
+
+      const iconExt = iconSymbolizer.image.split('.').pop();
+      switch (iconExt) {
+        case 'png':
+        case 'jpeg':
+        case 'gif':
+          graphic[0].ExternalGraphic[0].Format = [`image/${iconExt}`];
+          break;
+        case 'svg':
+          graphic[0].ExternalGraphic[0].Format = ['image/svg+xml'];
+          break;
+        default:
+          break;
+      }
+    }
+
     if (iconSymbolizer.size) {
         graphic[0].Size = iconSymbolizer.size;
     }
