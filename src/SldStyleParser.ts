@@ -8,19 +8,13 @@ import {
   ScaleDenominator,
   PointSymbolizer,
   Symbolizer,
-  CircleSymbolizer,
   IconSymbolizer,
   LineSymbolizer,
   FillSymbolizer,
   TextSymbolizer,
   ComparisonFilter,
-  SquareSymbolizer,
-  TriangleSymbolizer,
-  BaseMarkSymbolizer,
-  StarSymbolizer,
-  CrossSymbolizer,
-  XSymbolizer,
-  MarkSymbolizer
+  MarkSymbolizer,
+  WellKnownName
 } from 'geostyler-style';
 
 import {
@@ -234,96 +228,64 @@ class SldStyleParser implements StyleParser {
     }); 
     const color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
     
-    let baseMarkSymbolizer: BaseMarkSymbolizer = <BaseMarkSymbolizer> {};
-    let markSymbolizer: MarkSymbolizer = <MarkSymbolizer> {};
+    let markSymbolizer: MarkSymbolizer = {
+      kind: 'Mark',
+    } as MarkSymbolizer;
+
     if (opacity) {
-      baseMarkSymbolizer.opacity = parseFloat(opacity);
+      markSymbolizer.opacity = parseFloat(opacity);
     }
     if (color) {
-      baseMarkSymbolizer.color = color;
+      markSymbolizer.color = color;
     }
     if (rotation) {
-      baseMarkSymbolizer.rotate = parseFloat(rotation);
+      markSymbolizer.rotate = parseFloat(rotation);
     }
     if (radius) {
-      baseMarkSymbolizer.radius = parseFloat(radius);
+      markSymbolizer.radius = parseFloat(radius);
+    }
+
+    switch (wellKnownName) {
+      case 'circle':
+      case 'square':
+      case 'triangle':
+      case 'star':
+      case 'cross':
+      case 'x':
+        const wkn = wellKnownName.charAt(0).toUpperCase() + wellKnownName.slice(1);
+        markSymbolizer.wellKnownName = wkn as WellKnownName;
+        break;
+      case 'shape://vertline':
+      case 'shape://horline':
+      case 'shape://slash':
+      case 'shape://backslash':
+      case 'shape://dot':
+      case 'shape://plus':
+      case 'shape://times':
+      case 'shape://oarrow':
+      case 'shape://carrow':
+        markSymbolizer.wellKnownName = wellKnownName as WellKnownName;
+        break;
+      default:
+        throw new Error(`MarkSymbolizer cannot be parsed. Unsupported WellKnownName.`);
     }
 
     strokeParams.forEach((param: any) => {
       switch (param.$.name) {
         case 'stroke':
-          baseMarkSymbolizer.strokeColor = param._;
+          markSymbolizer.strokeColor = param._;
           break;
         case 'stroke-width':
-          baseMarkSymbolizer.strokeWidth = parseFloat(param._);
+          markSymbolizer.strokeWidth = parseFloat(param._);
           break;
         case 'stroke-opacity':
-          baseMarkSymbolizer.strokeOpacity = parseFloat(param._);
+          markSymbolizer.strokeOpacity = parseFloat(param._);
           break;
         default:
           break;
       }
     });
 
-    switch (wellKnownName) {
-      case 'circle':
-        let circleSymbolizer: CircleSymbolizer = <CircleSymbolizer> {
-          kind: 'Mark',
-          wellKnownName: 'Circle'
-        };
-        markSymbolizer = {...baseMarkSymbolizer, ...circleSymbolizer};
-        break;
-      case 'square':
-        let squareSymbolizer: SquareSymbolizer = <SquareSymbolizer> {
-          kind: 'Mark',
-          wellKnownName: 'Square',
-          points: 4,
-          angle: 45
-        };
-        markSymbolizer = {...baseMarkSymbolizer, ...squareSymbolizer};
-        break;
-      case 'triangle':
-        let triangleSymbolizer: TriangleSymbolizer = <TriangleSymbolizer> {
-          kind: 'Mark',
-          wellKnownName: 'Triangle',
-          points: 3
-        };
-        markSymbolizer = {...baseMarkSymbolizer, ...triangleSymbolizer};
-        break;
-      case 'star':
-        let starSymbolizer: StarSymbolizer = <StarSymbolizer> {
-          kind: 'Mark',
-          wellKnownName: 'Star',
-          points: 5
-        };
-        if (radius) {
-          starSymbolizer.radius2 = parseFloat(radius) / 2.5;
-        }
-        markSymbolizer = {...baseMarkSymbolizer, ...starSymbolizer};
-        break;
-      case 'cross':
-        let crossSymbolizer: CrossSymbolizer = <CrossSymbolizer> {
-          kind: 'Mark',
-          wellKnownName: 'Cross',
-          points: 4,
-          radius2: 0
-        };
-        markSymbolizer = {...baseMarkSymbolizer, ...crossSymbolizer};
-        break;
-      case 'x':
-        let xSymbolizer: XSymbolizer = <XSymbolizer> {
-          kind: 'Mark',
-          wellKnownName: 'X',
-          points: 4,
-          radius2: 0,
-          angle: 45
-        };
-        markSymbolizer = {...baseMarkSymbolizer, ...xSymbolizer};
-        break;
-      default:
-        throw new Error(`PointSymbolizer can not be parsed. Only "circle", "square", 
-        "triangle", "star", "cross" or "x" are supported as WellKnownName.`);
-    }
     return markSymbolizer;
   }
 
