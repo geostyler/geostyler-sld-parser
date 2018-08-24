@@ -1,12 +1,12 @@
 import { Style } from 'geostyler-style';
 
-const pointSimpleX: Style = {
-  'name': 'Simple X',
+const pointSimpleSlash: Style = {
+  'name': 'Simple Slash',
   'rules': [{
     'name': 'Small populated New Yorks',
     'symbolizers': [{
       'kind': 'Mark',
-      'wellKnownName': 'X',
+      'wellKnownName': 'shape://slash',
       'color': '#FF0000',
       'radius': 10,
       'strokeColor': '#000000',
@@ -16,4 +16,4 @@ const pointSimpleX: Style = {
   }]
 };
 
-export default pointSimpleX;
+export default pointSimpleSlash;

@@ -7,7 +7,6 @@ const pointSimpleTriangle: Style = {
     'symbolizers': [{
       'kind': 'Mark',
       'wellKnownName': 'Triangle',
-      'points': 3,
       'color': '#FF0000',
       'radius': 10,
       'strokeColor': '#000000',

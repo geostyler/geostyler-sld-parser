@@ -7,10 +7,8 @@ const pointSimpleStar: Style = {
     'symbolizers': [{
       'kind': 'Mark',
       'wellKnownName': 'Star',
-      'points': 5,
       'color': '#FF0000',
       'radius': 10,
-      'radius2': 4,
       'strokeColor': '#000000',
       'strokeWidth': 2,
       'opacity': 1,
