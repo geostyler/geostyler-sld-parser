@@ -16,6 +16,7 @@ import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
+import point_externalgraphic_svg from '../data/styles/point_externalgraphic_svg';
 import multi_simplelineLabel from '../data/styles/multi_simplelineLabel';
 import point_simplesquare from '../data/styles/point_simplesquare';
 import point_simpletriangle from '../data/styles/point_simpletriangle';
@@ -69,6 +70,15 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toEqual(point_externalgraphic);
         });
       });
+    it('can read a SLD PointSymbolizer with ExternalGraphic svg', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_externalgraphic_svg.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_externalgraphic_svg);
+        });
+    });
     it('can read a SLD PointSymbolizer with wellKnownName square', () => {
       expect.assertions(2);
       const sld = fs.readFileSync( './data/slds/point_simplesquare.sld', 'utf8');
@@ -320,6 +330,19 @@ describe('SldStyleParser implements StyleParser', () => {
           return styleParser.readStyle(sldString)
             .then(readStyle => {
               expect(readStyle).toEqual(point_externalgraphic);
+            });
+        });
+    });
+    it('can write a SLD PointSymbolizer with ExternalGraphic svg', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_externalgraphic_svg)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_externalgraphic_svg);
             });
         });
     });
