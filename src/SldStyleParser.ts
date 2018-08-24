@@ -1285,6 +1285,9 @@ class SldStyleParser implements StyleParser {
         case 'gif':
           graphic[0].ExternalGraphic[0].Format = [`image/${iconExt}`];
           break;
+        case 'jpg':
+          graphic[0].ExternalGraphic[0].Format = ['image/jpeg'];
+          break;
         case 'svg':
           graphic[0].ExternalGraphic[0].Format = ['image/svg+xml'];
           break;
