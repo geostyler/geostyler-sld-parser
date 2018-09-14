@@ -1258,6 +1258,9 @@ class SldStyleParser implements StyleParser {
       }
     }
 
+    if (iconSymbolizer.opacity) {
+      graphic[0].Opacity = iconSymbolizer.opacity;
+    }
     if (iconSymbolizer.size) {
         graphic[0].Size = iconSymbolizer.size;
     }
