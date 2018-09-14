@@ -25,6 +25,7 @@ import {
 const _isString = require('lodash/isString');
 const _isNumber = require('lodash/isNumber');
 const _get = require('lodash/get');
+const _set = require('lodash/set');
 
 /**
  * This parser can be used with the GeoStyler.
@@ -329,19 +330,17 @@ class SldStyleParser implements StyleParser {
     let pointSymbolizer: PointSymbolizer = <PointSymbolizer> {};
     const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
     const externalGraphic: any = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
-    if (wellKnownName) {
-
-      pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer);
-
-    } else if (externalGraphic) {
+    if (externalGraphic) {
 
       pointSymbolizer = this.getIconSymbolizerFromSldSymbolizer(sldSymbolizer);
 
     } else {
-
-      throw new Error(`PointSymbolizer can not be parsed. Neither "ExternalGraphic",
-       nor "Mark" were specified.`);
-
+      // geoserver does not set a wellKnownName for square explicitly since it is the default value.
+      // Therefore, we have to set the wellKnownName to square if no wellKownName is given.
+      if (!wellKnownName) {
+        _set(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]', 'square');
+      }
+      pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer);
     }
     return pointSymbolizer;
   }
