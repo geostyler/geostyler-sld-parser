@@ -784,7 +784,7 @@ class SldStyleParser implements StyleParser {
         }
       });
       if (Object.keys(symbolizers[0]).length !== 0) {
-        sldRule = Object.assign(symbolizers[0], sldRule);
+        sldRule = Object.assign(sldRule, symbolizers[0]);
       }
       return sldRule;
     });
@@ -986,10 +986,29 @@ class SldStyleParser implements StyleParser {
     let fillCssParameters: any[] = [];
     let graphicFill: any;
 
+    if (_get(fillSymbolizer, 'graphicFill')) {
+      if (_get(fillSymbolizer, 'graphicFill.kind') === 'Mark') {
+        graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
+          <MarkSymbolizer> fillSymbolizer.graphicFill
+        );
+      } else if (_get(fillSymbolizer, 'graphicFill.kind') === 'Icon') {
+        graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
+          <IconSymbolizer> fillSymbolizer.graphicFill
+        );
+      }
+    }
+
     Object.keys(fillSymbolizer)
       .filter((property: any) => property !== 'kind')
       .forEach((property: any) => {
-        if (Object.keys(strokePropertyMap).includes(property)) {
+        if (Object.keys(fillPropertyMap).includes(property)) {
+          fillCssParameters.push({
+            '_': fillSymbolizer[property],
+            '$': {
+              'name': fillPropertyMap[property]
+            }
+          });
+        } else if (Object.keys(strokePropertyMap).includes(property)) {
 
           let transformedValue: string = '';
 
@@ -1014,43 +1033,24 @@ class SldStyleParser implements StyleParser {
               'name': strokePropertyMap[property]
             }
           });
-
-        } else if (Object.keys(fillPropertyMap).includes(property)) {
-          fillCssParameters.push({
-            '_': fillSymbolizer[property],
-            '$': {
-              'name': fillPropertyMap[property]
-            }
-          });
         }
       });
-    
-    if (_get(fillSymbolizer, 'graphicFill')) {
-      if (_get(fillSymbolizer, 'graphicFill.kind') === 'Mark') {
-        graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
-          <MarkSymbolizer> fillSymbolizer.graphicFill
-        );
-      } else if (_get(fillSymbolizer, 'graphicFill.kind') === 'Icon') {
-        graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
-          <IconSymbolizer> fillSymbolizer.graphicFill
-        );
+
+    let polygonSymbolizer: any = [{}];
+    if (fillCssParameters.length > 0 || graphicFill) {
+      polygonSymbolizer[0].Fill = [{}];
+      if (graphicFill) {
+        polygonSymbolizer[0].Fill[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+      }
+      if (fillCssParameters.length > 0) {
+        polygonSymbolizer[0].Fill[0].CssParameter = fillCssParameters;
       }
     }
 
-    let polygonSymbolizer: any = [{}];
     if (strokeCssParameters.length > 0) {
       polygonSymbolizer[0].Stroke = [{
         'CssParameter': strokeCssParameters
       }];
-    }
-    if (fillCssParameters.length > 0 || graphicFill) {
-      polygonSymbolizer[0].Fill = [{}];
-      if (fillCssParameters.length > 0) {
-        polygonSymbolizer[0].Fill[0].CssParameter = fillCssParameters;
-      }
-      if (graphicFill) {
-        polygonSymbolizer[0].Fill[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
-      }
     }
 
     return {
@@ -1102,13 +1102,6 @@ class SldStyleParser implements StyleParser {
 
     const perpendicularOffset = lineSymbolizer.perpendicularOffset;
 
-    if (cssParameters.length !== 0) {
-      result.LineSymbolizer[0].Stroke[0].CssParameter = cssParameters;
-    }
-    if (perpendicularOffset) {
-      result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
-    }
-
     if (_get(lineSymbolizer, 'graphicStroke')) {
       if (_get(lineSymbolizer, 'graphicStroke.kind') === 'Mark') {
         const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(
@@ -1135,6 +1128,13 @@ class SldStyleParser implements StyleParser {
         );
         result.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
       }
+    }
+
+    if (cssParameters.length !== 0) {
+      result.LineSymbolizer[0].Stroke[0].CssParameter = cssParameters;
+    }
+    if (perpendicularOffset) {
+      result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
     }
 
     return result;
@@ -1197,12 +1197,12 @@ class SldStyleParser implements StyleParser {
       'Mark': mark
     }];
 
-    if (markSymbolizer.radius) {
-      graphic[0].Size = [markSymbolizer.radius.toString()];
-    }
-
     if (markSymbolizer.opacity) {
       graphic[0].Opacity = [markSymbolizer.opacity.toString()];
+    }
+
+    if (markSymbolizer.radius) {
+      graphic[0].Size = [markSymbolizer.radius.toString()];
     }
 
     if (markSymbolizer.rotate) {
@@ -1258,6 +1258,9 @@ class SldStyleParser implements StyleParser {
       }
     }
 
+    if (iconSymbolizer.opacity) {
+      graphic[0].Opacity = iconSymbolizer.opacity;
+    }
     if (iconSymbolizer.size) {
         graphic[0].Size = iconSymbolizer.size;
     }
