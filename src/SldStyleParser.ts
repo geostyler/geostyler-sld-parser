@@ -493,6 +493,107 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Create a template string from a TextSymbolizer Label element.
+   * Due to the non-bidirectional behaviour of xml2js, we cannot
+   * recreate any template configuration. The current behaviour is as follows:
+   *
+   * Literals and Placeholders will be merge alternating, beginning with the property
+   * that comes first. If the number of properties between Literals and Placeholders
+   * is not equal, the remaining ones will be appended to the end of the template string.
+   *
+   * Examples:
+   * <Label>
+   *  <Literal>foo</Literal>
+   *  <PropertyName>bar</PropertyName>
+   * </Label>
+   * --> "foo{{bar}}"
+   *
+   * <Label>
+   *  <PropertyName>bar</PropertyName>
+   *  <Literal>foo</Literal>
+   * </Label>
+   * --> "{{bar}}foo"
+   *
+   * <Label>
+   *  <PropertyName>bar</PropertyName>
+   *  <Literal>foo</Literal>
+   *  <PropertyName>john</PropertyName>
+   * </Label>
+   * --> "{{bar}}foo{{john}}"
+   *
+   * <Label>
+   *  <PropertyName>bar</PropertyName>
+   *  <PropertyName>john</PropertyName>
+   *  <Literal>foo</Literal>
+   * </Label>
+   * --> "{{bar}}foo{{john}}"
+   *
+   * <Label>
+   *  <PropertyName>bar</PropertyName>
+   *  <PropertyName>john</PropertyName>
+   *  <PropertyName>doe</PropertyName>
+   *  <Literal>foo</Literal>
+   * </Label>
+   * --> "{{bar}}foo{{john}}{{doe}}"
+   *
+   */
+  getTextSymbolizerLabelFromSldSymbolizer = (sldLabel: any): string => {
+    let label = '';
+    const literals = _get(sldLabel, 'Literal');
+    const placeholders = _get(sldLabel, 'PropertyName');
+    const literalIsFirst: boolean = Object.keys(sldLabel)[0] === 'Literal';
+
+    if (placeholders && placeholders.length > 0) {
+      // if placeholders are being used
+
+      // add braces around placeholders
+      const placeholdersBraces = placeholders.map((plc: string) => `{{${plc}}}`);
+
+      if (literals && literals.length > 0) {
+        // if there are placeholders and literals
+        if (literalIsFirst) {
+          // start with literals
+          literals.forEach((lit: string, idx: number) => {
+            label += `${lit}`;
+            if (placeholdersBraces[idx]) {
+              label += `${placeholdersBraces[idx]}`;
+            }
+          });
+          // if there are more placeholders than literals,
+          // add the remaining placeholders at the end
+          if (placeholdersBraces.length > literals.length) {
+            label += placeholdersBraces.join('');
+          }
+        } else {
+          // start with placeholders
+          placeholdersBraces.forEach((plc: string, idx: number) => {
+            label += `${plc}`;
+            if (literals[idx]) {
+              label += `${literals[idx]}`;
+            }
+          });
+          // if there are more literals than placeholders,
+          // add the remaining literals at the end
+          if (literals.length > placeholdersBraces.length) {
+            label += literals.join('');
+          }
+        }
+
+      } else {
+        // if there are placeholders but no literals
+        // set curly braces around placeholders and simply join them with no spaces
+        label = placeholdersBraces.join('');
+      }
+
+    } else if (literals && literals.length > 0) {
+      // if no placeholders are being used
+      // create a simple string
+      label = literals.join('');
+    }
+    return label;
+  }
+
+  /**
    * Get the GeoStyler-Style TextSymbolizer from an SLD Symbolizer.
    *
    * @param {object} sldSymbolizer The SLD Symbolizer
@@ -503,13 +604,15 @@ class SldStyleParser implements StyleParser {
       kind: 'Text'
     };
     const fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
-    const field = _get(sldSymbolizer, 'Label[0].PropertyName[0]');
+
+    const label = _get(sldSymbolizer, 'Label[0]');
+    if (label) {
+      textSymbolizer.label = this.getTextSymbolizerLabelFromSldSymbolizer(label);
+    }
+
     const color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
     const haloColorCssParameter = _get(sldSymbolizer, 'Halo[0].Fill[0].CssParameter') || [];
     const haloRadius = _get(sldSymbolizer, 'Halo[0].Radius[0]');
-    if (field) {
-      textSymbolizer.field = field;
-    }
     if (color) {
       textSymbolizer.color = color;
     }
@@ -870,6 +973,55 @@ class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the Label from a TextSymbolizer
+   */
+  getSldLabelFromTextSymbolizer = (template: string): [any] => {
+    // prefix indicating that a template is being used
+    const prefix: string = '\\{\\{';
+    // suffix indicating that a template is being used
+    const suffix: string = '\\}\\}';
+    // RegExp to match all occurences encapsuled between two curly braces
+    // including the curly braces
+    let regExp: RegExp = new RegExp(prefix + '.*?' + suffix, 'g');
+    let regExpRes =  template.match(regExp);
+    // check if a template starts with a placeholder or a literal
+    const startsWithPlaceholder = template.startsWith('{{');
+
+    // if no template was used, return as fix string
+    if (!regExpRes) {
+      return [
+        {
+          'Literal': [template]
+        }
+      ];
+      // if templates are being used
+    } else {
+      // split the original string at occurences of placeholders
+      // the resulting array will be used for the Literal property
+      const literals = template.split(regExp);
+      // slice the curly braces of the placeholder matches
+      // and use the resulting array for the PropertyName property
+      const propertyName = regExpRes.map(reg => {
+        return reg.slice(2, reg.length - 2);
+      });
+
+      // if template starts with a placeholder, PropertyName must be set first
+      // otherwise Literal must be set first.
+      if (startsWithPlaceholder) {
+        return [{
+          'PropertyName': propertyName,
+          'Literal': literals
+        }];
+      } else {
+        return [{
+          'Literal': literals,
+          'PropertyName': propertyName
+        }];
+      }
+    }
+  }
+
+  /**
    * Get the SLD Object (readable with xml2js) from an GeoStyler-Style TextSymbolizer.
    *
    * @param {TextSymbolizer} textSymbolizer A GeoStyler-Style TextSymbolizer.
@@ -877,12 +1029,9 @@ class SldStyleParser implements StyleParser {
    */
   getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: TextSymbolizer): any {
     let sldTextSymbolizer: any = [{
-      'Label': [{
-        'PropertyName': [
-          textSymbolizer.field
-        ]
-      }]
+      'Label': textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
     }];
+
     const fontPropertyMap = {
       font: 'font-family',
       size: 'font-size'

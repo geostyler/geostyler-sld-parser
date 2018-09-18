@@ -12,7 +12,7 @@ const multiSimplelineLabel: Style = {
     }, {
       kind: 'Text',
       color: '#000000',
-      field: 'name',
+      label: '{{name}}',
       font: ['Arial'],
       size: 12,
       offset: [0, 5]
