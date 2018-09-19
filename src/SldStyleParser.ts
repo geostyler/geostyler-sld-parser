@@ -991,14 +991,21 @@ class SldStyleParser implements StyleParser {
     if (!regExpRes) {
       return [
         {
-          'Literal': [template]
+          'ogc:Literal': [template]
         }
       ];
       // if templates are being used
     } else {
       // split the original string at occurences of placeholders
       // the resulting array will be used for the Literal property
-      const literals = template.split(regExp);
+      const literalsWEmptyStrings = template.split(regExp);
+      const literals: string[] = [];
+      // remove empty strings
+      literalsWEmptyStrings.forEach((lit: string) => {
+        if (lit.length !== 0) {
+          literals.push(lit);
+        }
+      });
       // slice the curly braces of the placeholder matches
       // and use the resulting array for the PropertyName property
       const propertyName = regExpRes.map(reg => {
@@ -1009,13 +1016,13 @@ class SldStyleParser implements StyleParser {
       // otherwise Literal must be set first.
       if (startsWithPlaceholder) {
         return [{
-          'PropertyName': propertyName,
-          'Literal': literals
+          'ogc:PropertyName': propertyName,
+          'ogc:Literal': literals
         }];
       } else {
         return [{
-          'Literal': literals,
-          'PropertyName': propertyName
+          'ogc:Literal': literals,
+          'ogc:PropertyName': propertyName
         }];
       }
     }

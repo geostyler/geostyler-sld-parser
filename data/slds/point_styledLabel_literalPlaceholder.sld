@@ -9,7 +9,7 @@
           <TextSymbolizer>
             <Label>
               <ogc:PropertyName>name</ogc:PropertyName>
-              <Literal><![CDATA[ ]]>entity</Literal>
+              <ogc:Literal> entity</ogc:Literal>
             </Label>
             <Font>
               <CssParameter name="font-family">Arial</CssParameter>
