@@ -24,6 +24,7 @@ import point_simplestar from '../data/styles/point_simplestar';
 import point_simplecross from '../data/styles/point_simplecross';
 import point_simplex from '../data/styles/point_simplex';
 import point_simpleslash from '../data/styles/point_simpleslash';
+import point_styledLabel_literalPlaceholder from '../data/styles/point_styledLabel_literalPlaceholder';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -251,6 +252,15 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toEqual(multi_simplelineLabel);
         });
     });
+    it('can read a SLD style with a styled label containing a PropertyName and a Literal', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_styledLabel_literalPlaceholder.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_styledLabel_literalPlaceholder);
+        });
+    });
 
     describe('#getFilterFromOperatorAndComparison', () => {
       it('is defined', () => {
@@ -309,6 +319,12 @@ describe('SldStyleParser implements StyleParser', () => {
     describe('#sldObjectToGeoStylerStyle', () => {
       it('is defined', () => {
         expect(styleParser.sldObjectToGeoStylerStyle).toBeDefined();
+      });
+    });
+
+    describe('#getTextSymbolizerLabelFromSldSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getTextSymbolizerLabelFromSldSymbolizer).toBeDefined();
       });
     });
   });
@@ -603,6 +619,19 @@ describe('SldStyleParser implements StyleParser', () => {
             });
         });
     });
+    it('can write a SLD style with a styled label containing a placeholder and static text', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_styledLabel_literalPlaceholder)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_styledLabel_literalPlaceholder);
+            });
+        });
+    });
 
     describe('#geoStylerStyleToSldObject', () => {
       it('is defined', () => {
@@ -655,6 +684,12 @@ describe('SldStyleParser implements StyleParser', () => {
     describe('#getSldFilterFromFilter', () => {
       it('is defined', () => {
         expect(styleParser.getSldFilterFromFilter).toBeDefined();
+      });
+    });
+
+    describe('#getSldLabelFromTextSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldLabelFromTextSymbolizer).toBeDefined();
       });
     });
   });
