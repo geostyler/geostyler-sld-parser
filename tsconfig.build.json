@@ -29,6 +29,8 @@
     "jest",
     "data",
     "**/*.spec.ts",
-    "coverage"
+    "coverage",
+    "browser-build.config.js",
+    "browser"
   ]
 }
