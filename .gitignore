@@ -8,6 +8,7 @@
 
 # production
 /build
+/browser
 
 # misc
 .DS_Store

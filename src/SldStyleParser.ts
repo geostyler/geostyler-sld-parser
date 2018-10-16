@@ -34,7 +34,7 @@ const _set = require('lodash/set');
  * @class SldStyleParser
  * @implements StyleParser
  */
-class SldStyleParser implements StyleParser {
+export class SldStyleParser implements StyleParser {
 
   /**
    * The name of the SLD Style Parser.
