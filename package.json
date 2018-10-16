@@ -44,7 +44,7 @@
     "release": "np --no-yarn"
   },
   "devDependencies": {
-    "@types/jest": "23.3.2",
+    "@types/jest": "23.3.3",
     "@types/node": "10.11.3",
     "awesome-typescript-loader": "4.0.1",
     "coveralls": "3.0.1",
