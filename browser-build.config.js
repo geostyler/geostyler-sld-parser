@@ -2,7 +2,7 @@ const webpack = require("webpack");
 require("@babel/polyfill");
 
 module.exports = {
-  entry: ['@babel/polyfill', './src/SldStyleParser.ts'],
+  entry: ["@babel/polyfill", "./src/SldStyleParser.ts"],
   output: {
     filename: "sldStyleParser.js",
     path: __dirname + "/browser",
