@@ -26,7 +26,7 @@ const pointSimplePoint: Style = {
       'color': '#FF0000',
       'kind': 'Mark',
       'wellKnownName': 'Circle',
-      'radius': 6,
+      'radius': 3,
       'strokeColor': '#000000',
       'strokeWidth': 2
     }]

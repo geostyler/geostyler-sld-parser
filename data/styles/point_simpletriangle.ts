@@ -8,7 +8,7 @@ const pointSimpleTriangle: Style = {
       'kind': 'Mark',
       'wellKnownName': 'Triangle',
       'color': '#FF0000',
-      'radius': 10,
+      'radius': 5,
       'strokeColor': '#000000',
       'strokeWidth': 2,
       'opacity': 1,

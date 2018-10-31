@@ -23,7 +23,7 @@ const pointSimplePoint: Style = {
       'kind': 'Mark',
       'wellKnownName': 'Circle',
       'color': '#FF0000',
-      'radius': 6,
+      'radius': 3,
       'strokeColor': '#000000',
       'strokeWidth': 2
     }]
