@@ -220,7 +220,7 @@ export class SldStyleParser implements StyleParser {
     const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
     const strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
     const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
-    const radius: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+    const size: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
     const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
 
     const fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
@@ -242,8 +242,8 @@ export class SldStyleParser implements StyleParser {
     if (rotation) {
       markSymbolizer.rotate = parseFloat(rotation);
     }
-    if (radius) {
-      markSymbolizer.radius = parseFloat(radius) / 2;
+    if (size) {
+      markSymbolizer.radius = parseFloat(size) / 2;
     }
 
     switch (wellKnownName) {
