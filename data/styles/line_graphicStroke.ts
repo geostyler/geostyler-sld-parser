@@ -15,7 +15,7 @@ const lineSimpleLine: Style = {
         kind: 'Mark',
         wellKnownName: 'Circle',
         color: '#FF0000',
-        radius: 7
+        radius: 3.5
       }
     }]
   }]

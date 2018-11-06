@@ -8,7 +8,7 @@ const pointSimplePoint: Style = {
       kind: 'Mark',
       wellKnownName: 'Circle',
       color: '#FF0000',
-      radius: 6
+      radius: 3
     }]
   }]
 };

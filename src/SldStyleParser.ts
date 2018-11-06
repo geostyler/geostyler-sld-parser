@@ -212,23 +212,23 @@ export class SldStyleParser implements StyleParser {
 
   /**
    * Get the GeoStyler-Style MarkSymbolizer from an SLD Symbolizer
-   * 
+   *
    * @param {object} sldSymbolizer The SLD Symbolizer
-   * @return {MarkSymbolizer} The GeoStyler-Style MarkSymbolizer 
+   * @return {MarkSymbolizer} The GeoStyler-Style MarkSymbolizer
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
     const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
     const strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
     const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
-    const radius: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+    const size: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
     const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
-    
+
     const fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
     const colorIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill';
-    }); 
+    });
     const color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
-    
+
     let markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
     } as MarkSymbolizer;
@@ -242,8 +242,8 @@ export class SldStyleParser implements StyleParser {
     if (rotation) {
       markSymbolizer.rotate = parseFloat(rotation);
     }
-    if (radius) {
-      markSymbolizer.radius = parseFloat(radius);
+    if (size) {
+      markSymbolizer.radius = parseFloat(size) / 2;
     }
 
     switch (wellKnownName) {
@@ -292,9 +292,9 @@ export class SldStyleParser implements StyleParser {
 
   /**
    * Get the GeoStyler-Style IconSymbolizer from an SLD Symbolizer
-   * 
+   *
    * @param {object} sldSymbolizer The SLD Symbolizer
-   * @return {IconSymbolizer} The GeoStyler-Style IconSymbolizer 
+   * @return {IconSymbolizer} The GeoStyler-Style IconSymbolizer
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
     const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
@@ -375,7 +375,7 @@ export class SldStyleParser implements StyleParser {
               },
               _: value
             } = cssParameter;
-      
+
             switch (name) {
               case 'stroke':
                 lineSymbolizer.color = value;
@@ -682,7 +682,7 @@ export class SldStyleParser implements StyleParser {
    * @return {Symbolizer[]} The GeoStyler-Style Symbolizer Array
    */
   getSymbolizersFromRule(sldRule: any): Symbolizer[] {
-   
+
     let symbolizers: Symbolizer[] = <Symbolizer[]> [];
     const symbolizerNames: string[] = Object.keys(sldRule).filter(key => key.endsWith('Symbolizer'));
     symbolizerNames.forEach((sldSymbolizerName: string) => {
@@ -707,7 +707,7 @@ export class SldStyleParser implements StyleParser {
         symbolizers.push(symbolizer);
       });
     });
-   
+
     return symbolizers;
   }
 
@@ -908,13 +908,13 @@ export class SldStyleParser implements StyleParser {
           if (!sldSymbolizer.PointSymbolizer) {
             sldSymbolizer.PointSymbolizer = [];
           }
-          
+
           sldSymb = this.getSldPointSymbolizerFromMarkSymbolizer(symb);
           if (_get(sldSymb, 'PointSymbolizer[0]')) {
             sldSymbolizer.PointSymbolizer.push(
               _get(sldSymb, 'PointSymbolizer[0]')
             );
-          } 
+          }
           break;
         case 'Icon':
           if (!sldSymbolizer.PointSymbolizer) {
@@ -932,7 +932,7 @@ export class SldStyleParser implements StyleParser {
           if (!sldSymbolizer.TextSymbolizer) {
             sldSymbolizer.TextSymbolizer = [];
           }
-          
+
           sldSymb = this.getSldTextSymbolizerFromTextSymbolizer(symb);
           if (_get(sldSymb, 'TextSymbolizer[0]')) {
             sldSymbolizer.TextSymbolizer.push(
@@ -1357,7 +1357,7 @@ export class SldStyleParser implements StyleParser {
     }
 
     if (markSymbolizer.radius) {
-      graphic[0].Size = [markSymbolizer.radius.toString()];
+      graphic[0].Size = [(markSymbolizer.radius * 2).toString()];
     }
 
     if (markSymbolizer.rotate) {
