@@ -64,7 +64,7 @@
       "js"
     ],
     "transform": {
-      "\\.(ts)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+      "\\.(ts)$": "ts-jest"
     },
     "testRegex": "/src/.*\\.spec.(ts|js)$",
     "collectCoverageFrom": [
