@@ -70,5 +70,11 @@
     "collectCoverageFrom": [
       "src/*.{ts,js}"
     ]
+  },
+  "greenkeeper": {
+    "ignore": [
+      "webpack",
+      "webpack-cli"
+    ]
   }
 }
