@@ -1155,6 +1155,7 @@ export class SldStyleParser implements StyleParser {
 
     Object.keys(fillSymbolizer)
       .filter((property: any) => property !== 'kind')
+      .filter((property: any) => fillSymbolizer[property])
       .forEach((property: any) => {
         if (Object.keys(fillPropertyMap).includes(property)) {
           fillCssParameters.push({

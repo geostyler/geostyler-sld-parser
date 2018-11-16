@@ -33,6 +33,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json && npm run build:browser",
     "build:browser": "webpack --config browser-build.config.js",
+    "start:dev": "webpack --config dev-build.config.js --watch",
     "prebuild": "npm run test",
     "pretest": "npm run lint",
     "prepublishOnly": "npm run build",
