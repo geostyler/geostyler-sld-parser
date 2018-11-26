@@ -22,45 +22,13 @@
               "And": [{
                 "PropertyIsEqualTo": [{
                   "PropertyName": ["NAME"],
-                  "Literal": ["New York"]
+                  "Literal": ["Bool me if you can"]
                 }, {
-                  "PropertyName": ["TEST_BOOL"],
+                  "PropertyName": ["TEST"],
                   "Literal": ["true"]
-                }],
-                "PropertyIsNull": [{
-                  "PropertyName": ["TEST"]
-                }],
-                "PropertyIsLike": [{
-                  "$": {
-                    "wildCard": "*",
-                    "singleChar": ".",
-                    "escape": "!"
-                  },
-                  "PropertyName": ["TEST2"],
-                  "Literal": ["*York*"]
                 }, {
-                  "$": {
-                    "wildCard": "*",
-                    "singleChar": ".",
-                    "escape": "!"
-                  },
-                  "PropertyName": ["TEST1"],
-                  "Literal": ["*New*"]
-                }],
-                "Not": [{
-                  "PropertyIsGreaterThan": [{
-                    "PropertyName": ["POPULATION"],
-                    "Literal": ["100000"]
-                  }]
-                }],
-                "Or": [{
-                  "PropertyIsEqualTo": [{
-                    "PropertyName": ["TEST2"],
-                    "Literal": ["1"]
-                  }, {
-                    "PropertyName": ["TEST2"],
-                    "Literal": ["2"]
-                  }]
+                  "PropertyName": ["TEST2"],
+                  "Literal": ["false"]
                 }]
               }]
             }],

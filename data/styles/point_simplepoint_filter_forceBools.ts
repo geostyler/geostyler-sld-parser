@@ -1,19 +1,12 @@
 import { Style } from 'geostyler-style';
 
 const pointSimplePoint: Style = {
-  'name': 'Simple Point Filter',
+  'name': 'Simple Point Filter Force Bool',
   'rules': [{
     'filter': ['&&',
-      ['==', 'NAME', 'New York'],
-      ['==', 'TEST_BOOL', 'true'],
-      ['==', 'TEST', null],
-      ['*=', 'TEST2', '*York*'],
-      ['*=', 'TEST1', '*New*'],
-      ['!', ['>', 'POPULATION', '100000']],
-      ['||',
-        ['==', 'TEST2', '1'],
-        ['==', 'TEST2', '2']
-      ]
+      ['==', 'NAME', 'Bool me if you can'],
+      ['==', 'TEST', true],
+      ['==', 'TEST2', false]
     ],
     'name': 'Small populated New Yorks',
     'scaleDenominator': {

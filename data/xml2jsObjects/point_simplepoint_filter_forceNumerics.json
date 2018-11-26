@@ -23,9 +23,6 @@
                 "PropertyIsEqualTo": [{
                   "PropertyName": ["NAME"],
                   "Literal": ["New York"]
-                }, {
-                  "PropertyName": ["TEST_BOOL"],
-                  "Literal": ["true"]
                 }],
                 "PropertyIsNull": [{
                   "PropertyName": ["TEST"]
@@ -58,7 +55,7 @@
                     "PropertyName": ["TEST2"],
                     "Literal": ["1"]
                   }, {
-                    "PropertyName": ["TEST2"],
+                    "PropertyName": ["TEST2_STR"],
                     "Literal": ["2"]
                   }]
                 }]

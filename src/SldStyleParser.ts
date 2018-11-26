@@ -61,6 +61,46 @@ export class SldStyleParser implements StyleParser {
   };
 
   /**
+   * Array of field / property names in a filter, which are casted to numerics
+   * while parsing an SLD.
+   */
+  private _numericFilterFields: string[] = [];
+  /**
+   * Getter for _numericFilterFields
+   * @return {string[]} The numericFilterFields
+   */
+  get numericFilterFields(): string[] {
+    return this._numericFilterFields;
+  }
+  /**
+   * Setter for _numericFilterFields
+   * @param {string[]} numericFilterFields The numericFilterFields to set
+   */
+  set numericFilterFields(numericFilterFields: string[]) {
+    this._numericFilterFields = numericFilterFields;
+  }
+
+  /**
+   * Array of field / property names in a filter, which are casted to boolean
+   * while parsing an SLD.
+   */
+  private _boolFilterFields: string[] = [];
+  /**
+   * Getter for _boolFilterFields
+   * @return {string[]} The boolFilterFields
+   */
+  get boolFilterFields(): string[] {
+    return this._boolFilterFields;
+  }
+  /**
+   * Setter for _boolFilterFields
+   * @param {string[]} boolFilterFields The boolFilterFields to set
+   */
+  set boolFilterFields(boolFilterFields: string[]) {
+    this._boolFilterFields = boolFilterFields;
+  }
+
+  /**
    * Returns the keys of an object where the value is equal to the passed in
    * value.
    *
@@ -116,13 +156,15 @@ export class SldStyleParser implements StyleParser {
       if (sldOperatorName !== 'PropertyIsNull') {
         value = sldFilter.Literal[0];
       }
-      if (!Number.isNaN(parseFloat(value))) {
+      if (this.numericFilterFields.indexOf(property) !== -1 && !Number.isNaN(parseFloat(value))) {
         value = parseFloat(value);
       }
       if (_isString(value)) {
         const lowerValue = value.toLowerCase();
-        if (lowerValue === 'false') {value = false; }
-        if (lowerValue === 'true') {value = true; }
+        if (this.boolFilterFields.indexOf(property) !== -1) {
+          if (lowerValue === 'false') {value = false; }
+          if (lowerValue === 'true') {value = true; }
+        }
       }
       filter =  [
         comparisonOperator,
