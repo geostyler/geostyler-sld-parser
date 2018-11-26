@@ -878,14 +878,17 @@ export class SldStyleParser implements StyleParser {
 
       // Remove empty Symbolizers and check if there is at least 1 symbolizer
       const symbolizers = this.getSldSymbolizersFromSymbolizers(rule.symbolizers);
-      let symbolizerKeys: string[] = Object.keys(symbolizers[0]);
+      let symbolizerKeys: string[] = [];
+      if (symbolizers.length > 0) {
+        symbolizerKeys = Object.keys(symbolizers[0]);
+      }
 
       symbolizerKeys.forEach((key: string) => {
         if (symbolizers[0][key].length === 0) {
           delete symbolizers[0][key];
         }
       });
-      if (Object.keys(symbolizers[0]).length !== 0) {
+      if (symbolizers.length > 0 && Object.keys(symbolizers[0]).length !== 0) {
         sldRule = Object.assign(sldRule, symbolizers[0]);
       }
       return sldRule;
