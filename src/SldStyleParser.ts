@@ -838,10 +838,10 @@ export class SldStyleParser implements StyleParser {
           'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance'
         },
         'NamedLayer': [{
-          'Name': [geoStylerStyle.name],
+          'Name': [geoStylerStyle.name || ''],
           'UserStyle': [{
-            'Name': [geoStylerStyle.name],
-            'Title': [geoStylerStyle.name],
+            'Name': [geoStylerStyle.name || ''],
+            'Title': [geoStylerStyle.name || ''],
             'FeatureTypeStyle': [{
               'Rule': rules
             }]
