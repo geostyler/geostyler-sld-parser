@@ -18,6 +18,10 @@
                 <PropertyName>NAME</PropertyName>
                 <Literal>New York</Literal>
               </PropertyIsEqualTo>
+              <PropertyIsEqualTo>
+                <PropertyName>TEST_BOOL</PropertyName>
+                <Literal>true</Literal>
+              </PropertyIsEqualTo>
               <PropertyIsNull>
                 <PropertyName>TEST</PropertyName>
               </PropertyIsNull>
