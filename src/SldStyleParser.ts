@@ -218,16 +218,28 @@ export class SldStyleParser implements StyleParser {
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
     const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
-    const strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
+    let strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
+    if (strokeParams.length === 0) {
+      strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].SvgParameter') || [];
+    }
     const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
     const size: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
     const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
 
-    const fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
+    let fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
+    if (fillParams.length === 0) {
+      fillParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter') || [];
+    }
     const colorIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill';
     });
-    const color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
+    let color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
+    if (!color) {
+      let svg = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter[' + colorIdx + ']._');
+      if (svg) {
+        color = svg;
+      }
+    }
 
     let markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
@@ -364,7 +376,10 @@ export class SldStyleParser implements StyleParser {
     strokeKeys.forEach((strokeKey: string) => {
       switch (strokeKey) {
         case 'CssParameter':
-          const cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+          let cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+          if (cssParameters.length === 0) {
+            cssParameters = _get(sldSymbolizer, 'Stroke[0].SvgParameter') || [];
+          }
           if (cssParameters.length < 1) {
             throw new Error(`LineSymbolizer can not be parsed. No CssParameters detected.`);
           }
@@ -442,8 +457,14 @@ export class SldStyleParser implements StyleParser {
     let fillSymbolizer: FillSymbolizer = <FillSymbolizer> {
       kind: 'Fill'
     };
-    const fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameter') || [];
-    const strokeCssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+    let fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameter') || [];
+    if (fillCssParameters.length === 0) {
+      fillCssParameters = _get(sldSymbolizer, 'Fill[0].SvgParameter') || [];
+    }
+    let strokeCssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+    if (strokeCssParameters.length === 0) {
+      strokeCssParameters = _get(sldSymbolizer, 'Stroke[0].SvgParameter') || [];
+    }
     const graphicFill = _get(sldSymbolizer, 'Fill[0].GraphicFill[0]');
 
     if (graphicFill) {
@@ -603,15 +624,24 @@ export class SldStyleParser implements StyleParser {
     let textSymbolizer: TextSymbolizer = <TextSymbolizer> {
       kind: 'Text'
     };
-    const fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
+    let fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
+    if (fontCssParameters.length === 0) {
+      fontCssParameters = _get(sldSymbolizer, 'Font[0].SvgParameter') || [];
+    }
 
     const label = _get(sldSymbolizer, 'Label[0]');
     if (label) {
       textSymbolizer.label = this.getTextSymbolizerLabelFromSldSymbolizer(label);
     }
 
-    const color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
-    const haloColorCssParameter = _get(sldSymbolizer, 'Halo[0].Fill[0].CssParameter') || [];
+    let color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
+    if (!color) {
+      color = _get(sldSymbolizer, 'Fill[0].SvgParameter[0]._');
+    }
+    let haloColorCssParameter = _get(sldSymbolizer, 'Halo[0].Fill[0].CssParameter') || [];
+    if (haloColorCssParameter.length === 0) {
+      haloColorCssParameter = _get(sldSymbolizer, 'Halo[0].Fill[0].SvgParameter') || [];
+    }
     const haloRadius = _get(sldSymbolizer, 'Halo[0].Radius[0]');
     if (color) {
       textSymbolizer.color = color;
