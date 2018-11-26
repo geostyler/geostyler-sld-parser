@@ -14,6 +14,7 @@ import polygon_graphicFill from '../data/styles/polygon_graphicFill';
 import polygon_graphicFill_externalGraphic from '../data/styles/polygon_graphicFill_externalGraphic';
 import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
+import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_svg from '../data/styles/point_externalgraphic_svg';
@@ -590,6 +591,21 @@ describe('SldStyleParser implements StyleParser', () => {
           return styleParser.readStyle(sldString)
             .then(readStyle => {
               expect(readStyle).toEqual(point_simplepoint_filter);
+            });
+        });
+    });
+    it('can write a SLD style with a filter and force cast of numeric fields', () => {
+      expect.assertions(2);
+      // force fields beeing casted to numeric data type
+      styleParser.numericFilterFields = ['POPULATION', 'TEST1', 'TEST2'];
+      return styleParser.writeStyle(point_simplepoint_filter_forceNumerics)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplepoint_filter_forceNumerics);
             });
         });
     });
