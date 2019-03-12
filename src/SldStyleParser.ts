@@ -418,6 +418,7 @@ export class SldStyleParser implements StyleParser {
     strokeKeys.forEach((strokeKey: string) => {
       switch (strokeKey) {
         case 'CssParameter':
+        case 'SvgParameter':
           let cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
           if (cssParameters.length === 0) {
             cssParameters = _get(sldSymbolizer, 'Stroke[0].SvgParameter') || [];
@@ -532,6 +533,9 @@ export class SldStyleParser implements StyleParser {
           break;
       }
     });
+    if (!fillSymbolizer.color) {
+      fillSymbolizer.opacity = 0;
+    }
     strokeCssParameters.forEach((cssParameter: any) => {
       const {
         $: {
@@ -1230,7 +1234,7 @@ export class SldStyleParser implements StyleParser {
 
     Object.keys(fillSymbolizer)
       .filter((property: any) => property !== 'kind')
-      .filter((property: any) => fillSymbolizer[property])
+      .filter((property: any) => fillSymbolizer[property] !== undefined && fillSymbolizer[property] !== null)
       .forEach((property: any) => {
         if (Object.keys(fillPropertyMap).includes(property)) {
           fillCssParameters.push({
