@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "declaration": true,
     "outDir": "build/dist",
     "module": "commonjs",
     "target": "es5",
