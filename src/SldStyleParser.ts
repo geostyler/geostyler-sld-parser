@@ -12,9 +12,15 @@ import {
   LineSymbolizer,
   FillSymbolizer,
   TextSymbolizer,
+  RasterSymbolizer,
+  ColorMap,
+  ChannelSelection,
   ComparisonFilter,
   MarkSymbolizer,
-  WellKnownName
+  WellKnownName,
+  ColorMapEntry,
+  Channel,
+  ContrastEnhancement
 } from 'geostyler-style';
 
 import {
@@ -561,6 +567,148 @@ export class SldStyleParser implements StyleParser {
     return fillSymbolizer;
   }
 
+  getColorMapFromSldColorMap(sldColorMap: any): ColorMap {
+    let colorMap: ColorMap = {} as ColorMap;
+    let type = _get(sldColorMap, '$.type');
+    if (type) {
+      colorMap.type = type;
+    } else {
+      colorMap.type = 'ramp';
+    }
+
+    let extended = _get(sldColorMap, '$.extended');
+    if (extended) {
+      if (extended === 'true') {
+        colorMap.extended = true;
+      } else {
+        colorMap.extended = false;
+      }
+    }
+
+    let colorMapEntries = _get(sldColorMap, 'ColorMapEntry');
+    if (Array.isArray(colorMapEntries)) {
+      const cmEntries = colorMapEntries.map((cm: ColorMapEntry) => {
+        const color = _get(cm, '$.color');
+        if (!color) {
+          throw new Error(`Cannot parse ColorMapEntries. color is undefined.`);
+        }
+        let quantity = _get(cm, '$.quantity');
+        if(quantity) {
+          quantity = parseFloat(quantity);
+        }
+        const label = _get(cm, '$.label');
+        let opacity = _get(cm, '$.opacity');
+        if (opacity) {
+          opacity = parseFloat(opacity);
+        }
+        return {
+          color,
+          quantity,
+          label,
+          opacity
+        } as ColorMapEntry;
+      });
+      colorMap.colorMapEntries = cmEntries;
+    }
+
+    return colorMap;
+  }
+
+  getContrastEnhancementFromSldContrastEnhancement(sldContrastEnhancement: any): ContrastEnhancement {
+    let contrastEnhancement: ContrastEnhancement = {};
+    // parse enhancementType
+    const hasHistogram = typeof sldContrastEnhancement.Histogram !== 'undefined';
+    const hasNormalize = typeof sldContrastEnhancement.Normalize !== 'undefined';
+    if (hasHistogram && hasNormalize) {
+      throw new Error(`Cannot parse ContrastEnhancement. Histogram and Normalize
+      are mutually exclusive.`);
+    } else if (hasHistogram) {
+      contrastEnhancement.enhancementType = 'histogram';
+    } else if (hasNormalize) {
+      contrastEnhancement.enhancementType = 'normalize';
+    } 
+    // parse gammavalue
+    let gammaValue = _get(sldContrastEnhancement, 'GammaValue[0]');
+    if (gammaValue) {
+      gammaValue = parseFloat(gammaValue);
+    }
+    contrastEnhancement.gammaValue = gammaValue;
+
+    return contrastEnhancement;
+  }
+
+  getChannelFromSldChannel(sldChannel: any): Channel {
+    let channel: Channel = {
+      sourceChannelName: _get(sldChannel, 'SourceChannelName[0]'),
+    } as Channel;
+    let contrastEnhancement = _get(sldChannel, 'ContrastEnhancement[0]');
+    if (contrastEnhancement) {
+      channel.contrastEnhancement = this.getContrastEnhancementFromSldContrastEnhancement(contrastEnhancement);
+    }
+    return channel;
+  }
+
+  getChannelSelectionFromSldChannelSelection(sldChannelSelection: any): ChannelSelection {
+    let channelSelection: ChannelSelection;
+    const red = _get(sldChannelSelection, 'RedChannel[0]');
+    const blue = _get(sldChannelSelection, 'BlueChannel[0]');
+    const green = _get(sldChannelSelection, 'GreenChannel[0]');
+    const gray = _get(sldChannelSelection, 'GrayChannel[0]');
+
+    if (gray && red && blue && green) {
+      throw new Error(`Cannot parse ChannelSelection. RGB and Grayscale are mutually exclusive`);
+    }
+    if (gray) {
+      const grayChannel = this.getChannelFromSldChannel(gray);
+      channelSelection = {
+        grayChannel
+      };
+    } else if (red && green && blue) {
+      const redChannel = this.getChannelFromSldChannel(red);
+      const blueChannel = this.getChannelFromSldChannel(blue);
+      const greenChannel = this.getChannelFromSldChannel(green);
+      channelSelection = {
+        redChannel,
+        blueChannel,
+        greenChannel
+      };
+    } else {
+      throw new Error(`Cannot parse ChannelSelection. Red, Green and Blue channels must be defined.`);
+    }
+    return channelSelection;
+  }
+
+  getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any): RasterSymbolizer {
+    let rasterSymbolizer: RasterSymbolizer = <RasterSymbolizer> {
+      kind: 'Raster'
+    };
+    // parse Opacity
+    let opacity = _get(sldSymbolizer, 'Opacity[0]');
+    if (opacity) {
+      opacity = parseFloat(opacity);
+      rasterSymbolizer.opacity = opacity;
+    }
+    // parse ColorMap
+    const sldColorMap = _get(sldSymbolizer, 'ColorMap') || [];
+    if (sldColorMap.length > 0) {
+      const colormap = this.getColorMapFromSldColorMap(sldColorMap[0]);
+      rasterSymbolizer.colorMap = colormap;
+    }
+    // parse ChannelSelection
+    const sldChannelSelection = _get(sldSymbolizer, 'ChannelSelection') || [];
+    if (sldChannelSelection.length > 0) {
+      const channelSelection = this.getChannelSelectionFromSldChannelSelection(sldChannelSelection[0]);
+      rasterSymbolizer.channelSelection = channelSelection;
+    }
+    // parse ContrastEnhancement
+    const sldContrastEnhancement = _get(sldSymbolizer, 'ContrastEnhancement') || [];
+    if (sldContrastEnhancement.length > 0) {
+      const contrastEnhancement = this.getContrastEnhancementFromSldContrastEnhancement(sldContrastEnhancement[0]);
+      rasterSymbolizer.contrastEnhancement = contrastEnhancement;
+    }
+    return rasterSymbolizer;
+  }
+
   /**
    * Create a template string from a TextSymbolizer Label element.
    * Due to the non-bidirectional behaviour of xml2js, we cannot
@@ -778,6 +926,9 @@ export class SldStyleParser implements StyleParser {
             break;
           case 'PolygonSymbolizer':
             symbolizer = this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
+            break;
+          case 'RasterSymbolizer':
+            symbolizer = this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer);
             break;
           default:
             throw new Error('Failed to parse SymbolizerKind from SldRule');

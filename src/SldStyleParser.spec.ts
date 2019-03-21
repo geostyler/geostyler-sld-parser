@@ -27,6 +27,7 @@ import point_simplecross from '../data/styles/point_simplecross';
 import point_simplex from '../data/styles/point_simplex';
 import point_simpleslash from '../data/styles/point_simpleslash';
 import point_styledLabel_literalPlaceholder from '../data/styles/point_styledLabel_literalPlaceholder';
+import raster_simpleraster from '../data/styles/raster_simpleRaster';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -225,6 +226,15 @@ describe('SldStyleParser implements StyleParser', () => {
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_styledlabel);
+        });
+    });
+    it('can read a SLD RasterSymbolizer', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync('./data/slds/raster_simpleRaster.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(raster_simpleraster);
         });
     });
     it('can read a SLD style with a filter', () => {
