@@ -592,6 +592,19 @@ describe('SldStyleParser implements StyleParser', () => {
             });
         });
     });
+    it('can write a SLD RasterSymbolizer', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(raster_simpleraster)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(raster_simpleraster);
+            });
+        })
+    });
     it('can write a SLD style with a filter', () => {
       expect.assertions(2);
       return styleParser.writeStyle(point_simplepoint_filter)

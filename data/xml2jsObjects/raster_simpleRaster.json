@@ -22,6 +22,9 @@
               {
                 "Rule": [
                   {
+                    "Name": [
+                      "Small populated New Yorks"
+                    ],
                     "RasterSymbolizer": [
                       {
                         "Opacity": [
