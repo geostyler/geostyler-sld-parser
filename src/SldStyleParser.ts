@@ -736,10 +736,10 @@ export class SldStyleParser implements StyleParser {
           textSymbolizer.font = [value];
           break;
         case 'font-style':
-          // Currently not supported by GeoStyler Style
+          textSymbolizer.fontStyle = value;
           break;
         case 'font-weight':
-          // Currently not supported by GeoStyler Style
+          textSymbolizer.fontWeight = value;
           break;
         case 'font-size':
           textSymbolizer.size = parseFloat(value);
