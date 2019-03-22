@@ -71,9 +71,9 @@ const pointSimplePoint = {
 };
 var parser = new GeoStylerSLDParser.SldStyleParser();
 parser
-  .writeStyle(geostyle)
-  .then(function(style) {
-    console.log(style);
+  .writeStyle(pointSimplePoint)
+  .then(function(sld) {
+    console.log(sld);
   })
   .catch(function(error) {
     console.log(error);
