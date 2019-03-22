@@ -88,7 +88,7 @@ parser
   .then(function(styleObject) {
     console.log(styleObject);
   })
-  catch(function(error) {
+  .catch(function(error) {
     console.log(error);
   });
 ```
