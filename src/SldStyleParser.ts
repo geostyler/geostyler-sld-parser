@@ -340,6 +340,16 @@ export class SldStyleParser implements StyleParser {
           break;
       }
     });
+    
+    fillParams.forEach((param: any) => {
+      switch (param.$.name) {
+        case 'fill-opacity':
+          markSymbolizer.fillOpacity = parseFloat(param._);
+          break;
+        default:
+         break;
+      }
+    });
 
     return markSymbolizer;
   }
