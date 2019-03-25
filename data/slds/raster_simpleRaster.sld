@@ -18,6 +18,12 @@
               <RedChannel>
                 <SourceChannelName>1</SourceChannelName>
               </RedChannel>
+              <GreenChannel>
+                <SourceChannelName>3</SourceChannelName>
+                <ContrastEnhancement>
+                  <Normalize/>
+                </ContrastEnhancement>
+              </GreenChannel>
               <BlueChannel>
                 <SourceChannelName>2</SourceChannelName>
                 <ContrastEnhancement>
@@ -25,12 +31,6 @@
                   <GammaValue>2</GammaValue>
                 </ContrastEnhancement>
               </BlueChannel>
-              <GreenChannel>
-                <SourceChannelName>3</SourceChannelName>
-                <ContrastEnhancement>
-                  <Normalize/>
-                </ContrastEnhancement>
-              </GreenChannel>
             </ChannelSelection>
             <ColorMap type="ramp">
               <ColorMapEntry color="#323232" quantity="-300" label="label1" opacity="1"/>
