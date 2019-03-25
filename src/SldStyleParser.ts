@@ -598,7 +598,7 @@ export class SldStyleParser implements StyleParser {
           throw new Error(`Cannot parse ColorMapEntries. color is undefined.`);
         }
         let quantity = _get(cm, '$.quantity');
-        if(quantity) {
+        if (quantity) {
           quantity = parseFloat(quantity);
         }
         const label = _get(cm, '$.label');
@@ -1832,10 +1832,10 @@ export class SldStyleParser implements StyleParser {
     const enhancementType = _get(contrastEnhancement, 'enhancementType');
     if (enhancementType === 'normalize') {
       // parse normalize
-      sldContrastEnhancement[0].Normalize = [""];
+      sldContrastEnhancement[0].Normalize = [''];
     } else if (enhancementType === 'histogram') {
       // parse histogram
-      sldContrastEnhancement[0].Histogram = [""];
+      sldContrastEnhancement[0].Histogram = [''];
     }
     // parse gammaValue
     if (typeof contrastEnhancement.gammaValue !== 'undefined') {
