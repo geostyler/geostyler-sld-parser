@@ -8,6 +8,7 @@
     "index.d.ts",
     "browser"
   ],
+  "types": "build/dist/SldStyleParser.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/terrestris/geostyler-sld-parser.git"
