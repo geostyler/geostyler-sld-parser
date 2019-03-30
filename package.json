@@ -53,7 +53,7 @@
     "coveralls": "3.0.3",
     "jest": "23.4.2",
     "np": "4.0.2",
-    "ts-jest": "24.0.0",
+    "ts-jest": "24.0.1",
     "tslint": "5.10.0",
     "typescript": "2.9.1",
     "webpack": "3.12.0",
