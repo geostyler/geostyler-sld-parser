@@ -1317,11 +1317,12 @@ export class SldStyleParser implements StyleParser {
     };
 
     const cssParameters: any[] = Object.keys(lineSymbolizer)
-      .filter((property: any) => property !== 'kind' && propertyMap[property])
+      .filter((property: any) => property !== 'kind' && propertyMap[property] &&
+        lineSymbolizer[property] !== undefined && lineSymbolizer[property] !== null)
       .map((property: any) => {
         let value = lineSymbolizer[property];
         if (property === 'dasharray') {
-          value = lineSymbolizer.dasharray!.join(' ');
+          value = lineSymbolizer.dasharray ? lineSymbolizer.dasharray.join(' ') : undefined;
         }
         // simple transformation since geostyler-style uses prop 'miter' whereas sld uses 'mitre'
         if (property === 'join' && value === 'miter') {
