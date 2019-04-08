@@ -44,7 +44,7 @@
     "release": "np --no-yarn && git push https://github.com/terrestris/geostyler-sld-parser.git master --tags"
   },
   "devDependencies": {
-    "@babel/polyfill": "7.4.0",
+    "@babel/polyfill": "7.4.3",
     "@types/jest": "23.3.11",
     "@types/lodash": "4.14.122",
     "@types/node": "10.12.24",
