@@ -41,6 +41,8 @@ export class SldStyleParser implements StyleParser {
    */
   public static title = 'SLD Style Parser';
 
+  title = 'SLD Style Parser';
+
   static negationOperatorMap = {
     Not: '!'
   };
