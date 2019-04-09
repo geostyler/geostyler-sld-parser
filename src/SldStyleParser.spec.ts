@@ -28,6 +28,7 @@ import point_simplex from '../data/styles/point_simplex';
 import point_simpleslash from '../data/styles/point_simpleslash';
 import point_styledLabel_literalPlaceholder from '../data/styles/point_styledLabel_literalPlaceholder';
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
+import raster_complexraster from '../data/styles/raster_complexRaster';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -228,13 +229,22 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toEqual(point_styledlabel);
         });
     });
-    it('can read a SLD RasterSymbolizer', () => {
+    it('can read a simple SLD RasterSymbolizer', () => {
       expect.assertions(2);
       const sld = fs.readFileSync('./data/slds/raster_simpleRaster.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(raster_simpleraster);
+        });
+    });
+    it('can read a complex SLD RasterSymbolizer', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync('./data/slds/raster_complexRaster.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(raster_complexraster);
         });
     });
     it('can read a SLD style with a filter', () => {
@@ -592,7 +602,7 @@ describe('SldStyleParser implements StyleParser', () => {
             });
         });
     });
-    it('can write a SLD RasterSymbolizer', () => {
+    it('can write a simple SLD RasterSymbolizer', () => {
       expect.assertions(2);
       return styleParser.writeStyle(raster_simpleraster)
         .then((sldString: string) => {
@@ -602,6 +612,19 @@ describe('SldStyleParser implements StyleParser', () => {
           return styleParser.readStyle(sldString)
             .then(readStyle => {
               expect(readStyle).toEqual(raster_simpleraster);
+            });
+        })
+    });
+    it('can write a complex SLD RasterSymbolizer', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(raster_complexraster)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(raster_complexraster);
             });
         })
     });

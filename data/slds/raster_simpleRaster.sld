@@ -14,31 +14,6 @@
           <Name>Small populated New Yorks</Name>
           <RasterSymbolizer>
             <Opacity>0.5</Opacity>
-            <ChannelSelection>
-              <RedChannel>
-                <SourceChannelName>1</SourceChannelName>
-              </RedChannel>
-              <GreenChannel>
-                <SourceChannelName>3</SourceChannelName>
-                <ContrastEnhancement>
-                  <Normalize/>
-                </ContrastEnhancement>
-              </GreenChannel>
-              <BlueChannel>
-                <SourceChannelName>2</SourceChannelName>
-                <ContrastEnhancement>
-                  <Histogram/>
-                  <GammaValue>2</GammaValue>
-                </ContrastEnhancement>
-              </BlueChannel>
-            </ChannelSelection>
-            <ColorMap type="ramp">
-              <ColorMapEntry color="#323232" quantity="-300" label="label1" opacity="1"/>
-              <ColorMapEntry color="#BBBBBB" quantity="200" label="label2" opacity="1"/> 
-            </ColorMap>
-            <ContrastEnhancement>
-              <Histogram/>
-            </ContrastEnhancement>
           </RasterSymbolizer>
         </Rule>
       </FeatureTypeStyle>

@@ -32,6 +32,7 @@ const _isString = require('lodash/isString');
 const _isNumber = require('lodash/isNumber');
 const _get = require('lodash/get');
 const _set = require('lodash/set');
+const _isEmpty = require('lodash/isEmpty');
 
 /**
  * This parser can be used with the GeoStyler.
@@ -1708,33 +1709,39 @@ export class SldStyleParser implements StyleParser {
    * @return {object} The object representation of a SLD RasterSymbolizer (readable with xml2js)
    */
   getSldRasterSymbolizerFromRasterSymbolizer(rasterSymbolizer: RasterSymbolizer): any {
+    let sldRasterSymbolizer: any = [{}];
     let opacity: any;
     if (typeof rasterSymbolizer.opacity !== 'undefined') {
       opacity = [rasterSymbolizer.opacity.toString()];
+      sldRasterSymbolizer[0].Opacity = opacity;
     }
 
     let colorMap: any;
     if (rasterSymbolizer.colorMap) {
       colorMap = this.getSldColorMapFromColorMap(rasterSymbolizer.colorMap);
+      if (!_isEmpty(colorMap[0])) {
+        sldRasterSymbolizer[0].ColorMap = colorMap;
+      }
     }
 
     let channelSelection: any;
     if (rasterSymbolizer.channelSelection) {
       channelSelection = this.getSldChannelSelectionFromChannelSelection(rasterSymbolizer.channelSelection);
+      if (!_isEmpty(channelSelection[0])) {
+        sldRasterSymbolizer[0].ChannelSelection = channelSelection;
+      }
     }
 
     let contrastEnhancement: any;
     if (rasterSymbolizer.contrastEnhancement) {
       contrastEnhancement = this.getSldContrastEnhancementFromContrastEnhancement(rasterSymbolizer.contrastEnhancement);
+      if (!_isEmpty(contrastEnhancement[0])) {
+        sldRasterSymbolizer[0].ContrastEnhancement = contrastEnhancement;
+      }
     }
 
     return {
-      'RasterSymbolizer': [{
-        'Opacity': opacity,
-        'ChannelSelection': channelSelection,
-        'ColorMap': colorMap,
-        'ContrastEnhancement': contrastEnhancement
-      }]
+      'RasterSymbolizer': sldRasterSymbolizer
     };
   }
 
@@ -1807,15 +1814,17 @@ export class SldStyleParser implements StyleParser {
       let channel: any = [{}];
       // parse sourceChannelName
       const sourceChannelName = _get(channelSelection, `${key}.sourceChannelName`);
-      if (sourceChannelName) {
-        channel[0].SourceChannelName = [sourceChannelName];
-      }
       // parse contrastEnhancement
       const contrastEnhancement = _get(channelSelection, `${key}.contrastEnhancement`);
-      if (contrastEnhancement) {
-        channel[0].ContrastEnhancement = this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement);
+      if (sourceChannelName || contrastEnhancement) {
+        if (sourceChannelName) {
+          channel[0].SourceChannelName = [sourceChannelName];
+        }
+        if (contrastEnhancement) {
+          channel[0].ContrastEnhancement = this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement);
+        }
+        sldChannelSelection[0][propertyMap[key]] = channel;
       }
-      sldChannelSelection[0][propertyMap[key]] = channel;
     });
 
     return sldChannelSelection;

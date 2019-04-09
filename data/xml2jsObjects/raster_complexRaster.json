@@ -1,0 +1,118 @@
+{
+  "StyledLayerDescriptor": {
+    "$": {
+      "version": "1.0.0",
+      "xsi:schemaLocation": "http://www.opengis.net/sld StyledLayerDescriptor.xsd",
+      "xmlns": "http://www.opengis.net/sld",
+      "xmlns:ogc": "http://www.opengis.net/ogc",
+      "xmlns:xlink": "http://www.w3.org/1999/xlink",
+      "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"
+    },
+    "NamedLayer": [
+      {
+        "Name": [
+          "Complex Raster"
+        ],
+        "UserStyle": [
+          {
+            "Title": [
+              "Complex Raster"
+            ],
+            "FeatureTypeStyle": [
+              {
+                "Rule": [
+                  {
+                    "Name": [
+                      "Small populated New Yorks"
+                    ],
+                    "RasterSymbolizer": [
+                      {
+                        "Opacity": [
+                          "0.5"
+                        ],
+                        "ChannelSelection": [
+                          {
+                            "RedChannel": [
+                              {
+                                "SourceChannelName": [
+                                  "1"
+                                ]
+                              }
+                            ],
+                            "BlueChannel": [
+                              {
+                                "SourceChannelName": [
+                                  "2"
+                                ],
+                                "ContrastEnhancement": [
+                                  {
+                                    "Histogram": [
+                                      ""
+                                    ],
+                                    "GammaValue": [
+                                      "2"
+                                    ]
+                                  }
+                                ]
+                              }
+                            ],
+                            "GreenChannel": [
+                              {
+                                "SourceChannelName": [
+                                  "3"
+                                ],
+                                "ContrastEnhancement": [
+                                  {
+                                    "Normalize": [
+                                      ""
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "ColorMap": [
+                          {
+                            "$": {
+                              "type": "ramp"
+                            },
+                            "ColorMapEntry": [
+                              {
+                                "$": {
+                                  "color": "#323232",
+                                  "quantity": "-300",
+                                  "label": "label1",
+                                  "opacity": "1"
+                                }
+                              },
+                              {
+                                "$": {
+                                  "color": "#BBBBBB",
+                                  "quantity": "200",
+                                  "label": "label2",
+                                  "opacity": "1"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "ContrastEnhancement": [
+                          {
+                            "Histogram": [
+                              ""
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
