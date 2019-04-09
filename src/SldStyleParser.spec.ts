@@ -326,6 +326,12 @@ describe('SldStyleParser implements StyleParser', () => {
       });
     });
 
+    describe('#getRasterSymbolizerFromSldSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getRasterSymbolizerFromSldSymbolizer).toBeDefined();
+      });
+    });
+
     describe('#getSymbolizersFromRule', () => {
       it('is defined', () => {
         expect(styleParser.getSymbolizersFromRule).toBeDefined();
@@ -751,6 +757,12 @@ describe('SldStyleParser implements StyleParser', () => {
       it('is defined', () => {
         expect(styleParser.getSldPointSymbolizerFromMarkSymbolizer).toBeDefined();
       });
+    });
+
+    describe('#getSldRasterSymbolizerFromRasterSymbolizer', () => {
+      it('is defined', () => {
+        expect(styleParser.getSldRasterSymbolizerFromRasterSymbolizer).toBeDefined();
+      })
     });
 
     describe('#getSldComparisonFilterFromComparisonFilte', () => {
