@@ -913,10 +913,10 @@ export class SldStyleParser implements StyleParser {
           textSymbolizer.font = [value];
           break;
         case 'font-style':
-          // Currently not supported by GeoStyler Style
+          textSymbolizer.fontStyle = value;
           break;
         case 'font-weight':
-          // Currently not supported by GeoStyler Style
+          textSymbolizer.fontWeight = value;
           break;
         case 'font-size':
           textSymbolizer.size = parseFloat(value);
@@ -1312,7 +1312,9 @@ export class SldStyleParser implements StyleParser {
 
     const fontPropertyMap = {
       font: 'font-family',
-      size: 'font-size'
+      size: 'font-size',
+      fontStyle: 'font-style',
+      fontWeight: 'font-weight'
     };
 
     const fontCssParameters: any[] = Object.keys(textSymbolizer)

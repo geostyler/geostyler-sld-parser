@@ -15,7 +15,9 @@ const multiSimplelineLabel: Style = {
       label: '{{name}}',
       font: ['Arial'],
       size: 12,
-      offset: [0, 5]
+      offset: [0, 5],
+      fontStyle: 'normal',
+      fontWeight: 'bold'
     }]
   }]
 };
