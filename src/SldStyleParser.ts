@@ -34,6 +34,12 @@ const _get = require('lodash/get');
 const _set = require('lodash/set');
 const _isEmpty = require('lodash/isEmpty');
 
+export type ConstructorParams = {
+  forceCasting?: boolean,
+  numericFilterFields?: string[],
+  boolFilterFields?: string[]
+};
+
 /**
  * This parser can be used with the GeoStyler.
  * It implements the GeoStyler-Style StyleParser interface.
@@ -68,6 +74,10 @@ export class SldStyleParser implements StyleParser {
     PropertyIsGreaterThanOrEqualTo: '>=',
     PropertyIsNull: '=='
   };
+
+  constructor(opts?: ConstructorParams) {
+    Object.assign(this, opts);
+  }
 
   /**
    * Array of field / property names in a filter, which are casted to numerics
