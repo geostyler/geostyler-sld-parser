@@ -620,6 +620,7 @@ describe('SldStyleParser implements StyleParser', () => {
               expect(readStyle).toEqual(raster_simpleraster);
             });
         })
+        });
     });
     it('can write a complex SLD RasterSymbolizer', () => {
       expect.assertions(2);
@@ -633,6 +634,7 @@ describe('SldStyleParser implements StyleParser', () => {
               expect(readStyle).toEqual(raster_complexraster);
             });
         })
+        });
     });
     it('can write a SLD style with a filter', () => {
       expect.assertions(2);
@@ -762,7 +764,7 @@ describe('SldStyleParser implements StyleParser', () => {
     describe('#getSldRasterSymbolizerFromRasterSymbolizer', () => {
       it('is defined', () => {
         expect(styleParser.getSldRasterSymbolizerFromRasterSymbolizer).toBeDefined();
-      })
+      });
     });
 
     describe('#getSldComparisonFilterFromComparisonFilte', () => {
