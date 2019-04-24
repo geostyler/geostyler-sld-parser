@@ -619,7 +619,6 @@ describe('SldStyleParser implements StyleParser', () => {
             .then(readStyle => {
               expect(readStyle).toEqual(raster_simpleraster);
             });
-        })
         });
     });
     it('can write a complex SLD RasterSymbolizer', () => {
@@ -633,7 +632,6 @@ describe('SldStyleParser implements StyleParser', () => {
             .then(readStyle => {
               expect(readStyle).toEqual(raster_complexraster);
             });
-        })
         });
     });
     it('can write a SLD style with a filter', () => {
@@ -664,10 +662,39 @@ describe('SldStyleParser implements StyleParser', () => {
             });
         });
     });
+    it('can write a SLD style with a filter and force cast of numeric fields (forceCasting)', () => {
+      expect.assertions(2);
+      styleParser.forceCasting = true;
+      return styleParser.writeStyle(point_simplepoint_filter_forceNumerics)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplepoint_filter_forceNumerics);
+            });
+        });
+    });
     it('can write a SLD style with a filter and force cast of boolean fields', () => {
       expect.assertions(2);
       // force fields beeing casted to boolean data type
       styleParser.boolFilterFields = ['TEST', 'TEST2'];
+      return styleParser.writeStyle(point_simplepoint_filter_forceBools)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between to XML-Strings is awkward and nonesens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplepoint_filter_forceBools);
+            });
+        });
+    });
+    it('can write a SLD style with a filter and force cast of boolean fields (forceCasting)', () => {
+      expect.assertions(2);
+      // force fields beeing casted to boolean data type
+      styleParser.forceCasting = true;
       return styleParser.writeStyle(point_simplepoint_filter_forceBools)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();

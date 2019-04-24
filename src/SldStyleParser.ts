@@ -110,6 +110,27 @@ export class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Flag to tell if all values should be casted automatically
+   */
+  private _forceCasting: boolean = false;
+
+  /**
+   * Getter for _forceCasting
+   * @return {boolean}
+   */
+  get forceCasting(): boolean {
+    return this._forceCasting;
+  }
+
+  /**
+   * Setter for _forceCasting
+   * @param {boolean} forceCasting The forceCasting value to set
+   */
+  set forceCasting(forceCasting: boolean) {
+    this._forceCasting = forceCasting;
+  }
+
+  /**
    * Returns the keys of an object where the value is equal to the passed in
    * value.
    *
@@ -165,12 +186,13 @@ export class SldStyleParser implements StyleParser {
       if (sldOperatorName !== 'PropertyIsNull') {
         value = sldFilter.Literal[0];
       }
-      if (this.numericFilterFields.indexOf(property) !== -1 && !Number.isNaN(parseFloat(value))) {
+      const shouldParse = this.numericFilterFields.indexOf(property) !== -1 || this.forceCasting;
+      if (shouldParse && !Number.isNaN(parseFloat(value))) {
         value = parseFloat(value);
       }
       if (_isString(value)) {
         const lowerValue = value.toLowerCase();
-        if (this.boolFilterFields.indexOf(property) !== -1) {
+        if (this.boolFilterFields.indexOf(property) !== -1 || this.forceCasting) {
           if (lowerValue === 'false') {value = false; }
           if (lowerValue === 'true') {value = true; }
         }
@@ -638,7 +660,7 @@ export class SldStyleParser implements StyleParser {
       contrastEnhancement.enhancementType = 'histogram';
     } else if (hasNormalize) {
       contrastEnhancement.enhancementType = 'normalize';
-    } 
+    }
     // parse gammavalue
     let gammaValue = _get(sldContrastEnhancement, 'GammaValue[0]');
     if (gammaValue) {
