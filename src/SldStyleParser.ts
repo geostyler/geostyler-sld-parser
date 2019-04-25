@@ -34,6 +34,12 @@ const _get = require('lodash/get');
 const _set = require('lodash/set');
 const _isEmpty = require('lodash/isEmpty');
 
+export type ConstructorParams = {
+  forceCasting?: boolean,
+  numericFilterFields?: string[],
+  boolFilterFields?: string[]
+};
+
 /**
  * This parser can be used with the GeoStyler.
  * It implements the GeoStyler-Style StyleParser interface.
@@ -68,6 +74,10 @@ export class SldStyleParser implements StyleParser {
     PropertyIsGreaterThanOrEqualTo: '>=',
     PropertyIsNull: '=='
   };
+
+  constructor(opts?: ConstructorParams) {
+    Object.assign(this, opts);
+  }
 
   /**
    * Array of field / property names in a filter, which are casted to numerics
@@ -107,6 +117,27 @@ export class SldStyleParser implements StyleParser {
    */
   set boolFilterFields(boolFilterFields: string[]) {
     this._boolFilterFields = boolFilterFields;
+  }
+
+  /**
+   * Flag to tell if all values should be casted automatically
+   */
+  private _forceCasting: boolean = false;
+
+  /**
+   * Getter for _forceCasting
+   * @return {boolean}
+   */
+  get forceCasting(): boolean {
+    return this._forceCasting;
+  }
+
+  /**
+   * Setter for _forceCasting
+   * @param {boolean} forceCasting The forceCasting value to set
+   */
+  set forceCasting(forceCasting: boolean) {
+    this._forceCasting = forceCasting;
   }
 
   /**
@@ -165,12 +196,13 @@ export class SldStyleParser implements StyleParser {
       if (sldOperatorName !== 'PropertyIsNull') {
         value = sldFilter.Literal[0];
       }
-      if (this.numericFilterFields.indexOf(property) !== -1 && !Number.isNaN(parseFloat(value))) {
+      const shouldParse = this.numericFilterFields.indexOf(property) !== -1 || this.forceCasting;
+      if (shouldParse && !Number.isNaN(parseFloat(value))) {
         value = parseFloat(value);
       }
       if (_isString(value)) {
         const lowerValue = value.toLowerCase();
-        if (this.boolFilterFields.indexOf(property) !== -1) {
+        if (this.boolFilterFields.indexOf(property) !== -1 || this.forceCasting) {
           if (lowerValue === 'false') {value = false; }
           if (lowerValue === 'true') {value = true; }
         }
@@ -638,7 +670,7 @@ export class SldStyleParser implements StyleParser {
       contrastEnhancement.enhancementType = 'histogram';
     } else if (hasNormalize) {
       contrastEnhancement.enhancementType = 'normalize';
-    } 
+    }
     // parse gammavalue
     let gammaValue = _get(sldContrastEnhancement, 'GammaValue[0]');
     if (gammaValue) {
