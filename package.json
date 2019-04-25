@@ -5,7 +5,6 @@
   "main": "build/dist/SldStyleParser.js",
   "files": [
     "build",
-    "index.d.ts",
     "browser"
   ],
   "types": "build/dist/SldStyleParser.d.ts",
