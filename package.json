@@ -46,7 +46,7 @@
     "@babel/polyfill": "7.4.3",
     "@types/jest": "23.3.11",
     "@types/lodash": "4.14.122",
-    "@types/node": "11.13.7",
+    "@types/node": "11.13.8",
     "@types/xml2js": "0.4.4",
     "awesome-typescript-loader": "4.0.1",
     "coveralls": "3.0.3",
