@@ -1904,6 +1904,13 @@ export class SldStyleParser implements StyleParser {
     let sldOperator: string = (sldOperators.length > 1 && value === null)
       ? sldOperators[1] : sldOperators[0];
 
+    // allow for more complex filters within comparison filters
+    // (this is a stopgap until filters are natively supported)
+    // see https://github.com/terrestris/geostyler/issues/996
+    if (comparisonFilter.length === 2 && typeof key === 'object') {
+      sldComparisonFilter[sldOperator] = [key]; // key must be an object readable with xml2js
+    }
+    
     if (sldOperator === 'PropertyIsNull') {
       // empty, selfclosing Literals are not valid in a propertyIsNull filter
       sldComparisonFilter[sldOperator] = [{
