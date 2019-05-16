@@ -5,10 +5,7 @@
     "outDir": "build/dist",
     "module": "commonjs",
     "target": "es5",
-    "lib": [
-      "dom",
-      "es2017"
-    ],
+    "lib": ["es6", "dom"],
     "sourceMap": true,
     "moduleResolution": "node",
     "rootDir": "src",
@@ -25,14 +22,12 @@
     "build",
     "scripts",
     "acceptance-tests",
+    "coverage",
     "webpack",
     "jest",
-    "src/setupTests.ts",
-    "src/**.spec.ts",
     "data",
-    "coverage",
+    "**/*.spec.ts",
     "browser",
-    "browser-build.config.js",
-    "dev-build.config.js"
+    "browser-build.config.js"
   ]
 }
