@@ -1,28 +1,35 @@
-const webpack = require("webpack");
+const TerserPlugin = require('terser-webpack-plugin');
 require("@babel/polyfill");
 
 module.exports = {
   entry: ["@babel/polyfill", "./src/SldStyleParser.ts"],
+  mode: 'production',
   output: {
     filename: "sldStyleParser.js",
     path: __dirname + "/browser",
     library: "GeoStylerSLDParser"
   },
   resolve: {
-    // Add '.ts' and '.tsx' as resolvable extensions.
-    extensions: [".ts", ".tsx", ".js", ".json"]
+    // Add '.ts' as resolvable extensions.
+    extensions: [".ts", ".js", ".json"]
+  },
+  optimization: {
+    minimizer: [
+      new TerserPlugin()
+    ]
   },
   module: {
     rules: [
-      // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
+      // All files with a '.ts'
       {
         test: /\.ts$/,
-        include: /src/,
-        loader: "awesome-typescript-loader"
-      },
+        include: __dirname + '/src',
+        use: [
+          {
+            loader: require.resolve('ts-loader'),
+          },
+        ],
+      }
     ]
-  },
-  plugins: [
-    new webpack.optimize.UglifyJsPlugin(),
-  ]
+  }
 };

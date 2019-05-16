@@ -3,11 +3,11 @@
   "version": "1.2.0",
   "description": "GeoStyler Style Parser implementation for SLD",
   "main": "build/dist/SldStyleParser.js",
+  "types": "build/dist/SldStyleParser.d.ts",
   "files": [
     "build",
     "browser"
   ],
-  "types": "build/dist/SldStyleParser.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/terrestris/geostyler-sld-parser.git"
@@ -31,7 +31,7 @@
     "xmldom": "0.1.27"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && npm run build:browser",
+    "build": "tsc -p tsconfig.json && npm run build:browser",
     "build:browser": "webpack --config browser-build.config.js",
     "start:dev": "webpack --config dev-build.config.js --watch",
     "prebuild": "npm run test",
@@ -39,43 +39,28 @@
     "prepublishOnly": "npm run build",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "lint": "tslint --project tsconfig.json --config tslint.json && tsc --noEmit --project tsconfig.build.json",
+    "lint": "tslint --project tsconfig.json --config tslint.json && tsc --noEmit --project tsconfig.json",
     "release": "np --no-yarn && git push https://github.com/terrestris/geostyler-sld-parser.git master --tags"
   },
   "devDependencies": {
+    "@babel/core": "7.4.4",
+    "@babel/plugin-proposal-class-properties": "7.4.4",
+    "@babel/plugin-proposal-object-rest-spread": "7.4.4",
     "@babel/polyfill": "7.4.4",
-    "@types/jest": "23.3.11",
+    "@babel/preset-env": "7.4.4",
+    "@babel/preset-typescript": "7.3.3",
+    "@types/jest": "24.0.13",
     "@types/lodash": "4.14.129",
     "@types/node": "12.0.2",
     "@types/xml2js": "0.4.4",
-    "awesome-typescript-loader": "4.0.1",
+    "babel-jest": "24.8.0",
     "coveralls": "3.0.3",
-    "jest": "23.4.2",
+    "jest": "24.8.0",
     "np": "5.0.1",
-    "ts-jest": "24.0.2",
-    "tslint": "5.10.0",
-    "typescript": "2.9.1",
-    "webpack": "3.12.0",
-    "webpack-cli": "3.1.2"
-  },
-  "jest": {
-    "testURL": "http://localhost/",
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ],
-    "transform": {
-      "\\.(ts)$": "ts-jest"
-    },
-    "testRegex": "/src/.*\\.spec.(ts|js)$",
-    "collectCoverageFrom": [
-      "src/*.{ts,js}"
-    ]
-  },
-  "greenkeeper": {
-    "ignore": [
-      "webpack",
-      "webpack-cli"
-    ]
+    "ts-loader": "5.3.3",
+    "tslint": "5.16.0",
+    "typescript": "3.4.5",
+    "webpack": "4.31.0",
+    "webpack-cli": "3.3.2"
   }
 }
