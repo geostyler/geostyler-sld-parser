@@ -3,6 +3,7 @@ import {
   StyleParser,
   Style,
   Rule,
+  FunctionFilter,
   ComparisonOperator,
   CombinationOperator,
   ScaleDenominator,
@@ -20,7 +21,8 @@ import {
   WellKnownName,
   ColorMapEntry,
   Channel,
-  ContrastEnhancement
+  ContrastEnhancement,
+  StrMatchesFunctionFilter
 } from 'geostyler-style';
 
 import {
@@ -179,6 +181,39 @@ export class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Creates a GeoStyler-Style StrMatchesFunctionFilterr from a SLD strMatches Function.
+   *
+   * @param {object} sldFilter The SLD Filter
+   * @return {Filter} The GeoStyler-Style FunctionFilter
+   */
+  getStrMatchesFunctionFilterFromSldFilter(sldFilter: any): StrMatchesFunctionFilter {
+    const propertyName = _get(sldFilter, 'Function[0].PropertyName[0]');
+    const literal = _get(sldFilter, 'Function[0].Literal[0]');
+    const regex = new RegExp(literal);
+    return [
+      'FN_strMatches',
+      propertyName,
+      regex
+    ];
+  }
+
+  /**
+   * Creates a GeoStyler-Style FunctionFilterr from a SLD Function.
+   *
+   * @param {object} sldFilter The SLD Filter
+   * @return {Filter} The GeoStyler-Style FunctionFilter
+   */
+  getFunctionFilterFromSldFilter(sldFilter: any): FunctionFilter {
+    const functionName = _get(sldFilter, 'Function[0].$.name');
+    switch (functionName) {
+      case 'strMatches':
+        return this.getStrMatchesFunctionFilterFromSldFilter(sldFilter);
+      default:
+        return this.getStrMatchesFunctionFilterFromSldFilter(sldFilter);
+    }
+  }
+
+  /**
    * Creates a GeoStyler-Style Filter from a given operator name and the js
    * SLD object representation (created with xml2js) of the SLD Filter.
    *
@@ -191,27 +226,37 @@ export class SldStyleParser implements StyleParser {
 
     if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
       const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
-      const property: string = sldFilter.PropertyName[0];
+      const propertyIsFilter = !!sldFilter.Function;
+      const propertyOrFilter = propertyIsFilter
+        ? this.getFunctionFilterFromSldFilter(sldFilter)
+        : sldFilter.PropertyName[0];
+
       let value = null;
       if (sldOperatorName !== 'PropertyIsNull') {
         value = sldFilter.Literal[0];
       }
-      const shouldParse = this.numericFilterFields.indexOf(property) !== -1 || this.forceCasting;
-      if (shouldParse && !Number.isNaN(parseFloat(value))) {
+      const shouldParseFloat = this.forceCasting || propertyIsFilter ||
+          this.numericFilterFields.indexOf(propertyOrFilter as string) !== -1;
+
+      if (shouldParseFloat && !Number.isNaN(parseFloat(value))) {
         value = parseFloat(value);
       }
       if (_isString(value)) {
         const lowerValue = value.toLowerCase();
-        if (this.boolFilterFields.indexOf(property) !== -1 || this.forceCasting) {
-          if (lowerValue === 'false') {value = false; }
-          if (lowerValue === 'true') {value = true; }
+        const shouldParseBool =  this.forceCasting || propertyIsFilter ||
+          this.boolFilterFields.indexOf(propertyOrFilter as string) !== -1;
+        if (shouldParseBool) {
+          if (lowerValue === 'false') { value = false; }
+          if (lowerValue === 'true') { value = true; }
         }
       }
-      filter =  [
+
+      filter = [
         comparisonOperator,
-        property,
+        propertyOrFilter,
         value
       ];
+
     } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
       let filters: Filter[] = [];
@@ -1112,7 +1157,7 @@ export class SldStyleParser implements StyleParser {
     // add the ogc namespace to the filter element, if a filter is present
     rules.forEach(rule => {
       if (rule.Filter && !rule.Filter.$) {
-        rule.Filter.$ = {'xmlns': 'http://www.opengis.net/ogc'};
+        rule.Filter.$ = { 'xmlns': 'http://www.opengis.net/ogc' };
       }
     });
     return {
@@ -1155,7 +1200,7 @@ export class SldStyleParser implements StyleParser {
         sldRule.Filter = filter;
       }
       if (rule.scaleDenominator) {
-        const {min, max} = rule.scaleDenominator;
+        const { min, max } = rule.scaleDenominator;
         if (min && _isNumber(min)) {
           sldRule.MinScaleDenominator = [min.toString()];
         }
@@ -1286,7 +1331,7 @@ export class SldStyleParser implements StyleParser {
     // RegExp to match all occurences encapsuled between two curly braces
     // including the curly braces
     let regExp: RegExp = new RegExp(prefix + '.*?' + suffix, 'g');
-    let regExpRes =  template.match(regExp);
+    let regExpRes = template.match(regExp);
     // check if a template starts with a placeholder or a literal
     const startsWithPlaceholder = template.startsWith('{{');
 
@@ -1695,9 +1740,9 @@ export class SldStyleParser implements StyleParser {
     }];
 
     var graphic: any[] = [{
-        'ExternalGraphic': [{
-          'OnlineResource': onlineResource
-        }]
+      'ExternalGraphic': [{
+        'OnlineResource': onlineResource
+      }]
     }];
 
     if (iconSymbolizer.image) {
@@ -1724,14 +1769,14 @@ export class SldStyleParser implements StyleParser {
       graphic[0].Opacity = iconSymbolizer.opacity;
     }
     if (iconSymbolizer.size) {
-        graphic[0].Size = iconSymbolizer.size;
+      graphic[0].Size = iconSymbolizer.size;
     }
     if (iconSymbolizer.rotate) {
-        graphic[0].Rotation = iconSymbolizer.rotate;
+      graphic[0].Rotation = iconSymbolizer.rotate;
     }
     return {
       'PointSymbolizer': [{
-          'Graphic': graphic
+        'Graphic': graphic
       }]
     };
   }
@@ -1888,6 +1933,40 @@ export class SldStyleParser implements StyleParser {
   }
 
   /**
+   * Get the SLD Object (readable with xml2js) from a GeoStyler-Style StrMatchesFunctionFilter.
+   *
+   * @param {StrMatchesFunctionFilter} functionFilter A GeoStyler-Style StrMatchesFunctionFilter.
+   * @return {object} The object representation of a SLD strMatches Function Expression.
+   */
+  getSldStrMatchesFunctionFromFunctionFilter(functionFilter: StrMatchesFunctionFilter): any {
+    const property: string = functionFilter[1];
+    const regex: RegExp = functionFilter[2];
+    return {
+      '$': {
+        'name': 'strMatches'
+      },
+      'PropertyName': [property],
+      'Literal': [regex.toString().replace(/\//g, '')]
+    };
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from a GeoStyler-Style FunctionFilter.
+   *
+   * @param {FunctionFilter} functionFilter A GeoStyler-Style FunctionFilter.
+   * @return {object} The object representation of a SLD Function Expression.
+   */
+  getSldFunctionFilterFromFunctionFilter(functionFilter: FunctionFilter): any {
+    const functionName = functionFilter[0].split('FN_')[1];
+    switch (functionName) {
+      case 'strMatches':
+        return this.getSldStrMatchesFunctionFromFunctionFilter(functionFilter);
+      default:
+        break;
+    }
+  }
+
+  /**
    * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ComparisonFilter.
    *
    * @param {ComparisonFilter} comparisonFilter A GeoStyler-Style ComparisonFilter.
@@ -1897,17 +1976,24 @@ export class SldStyleParser implements StyleParser {
   getSldComparisonFilterFromComparisonFilter(comparisonFilter: ComparisonFilter): any[] {
     const sldComparisonFilter: any = <ComparisonFilter> {};
     const operator = comparisonFilter[0];
-    const key = comparisonFilter[1];
+    let key = comparisonFilter[1];
     const value = comparisonFilter[2];
 
     const sldOperators: string[] = SldStyleParser.keysByValue(SldStyleParser.comparisonMap, operator);
     let sldOperator: string = (sldOperators.length > 1 && value === null)
       ? sldOperators[1] : sldOperators[0];
 
+    let propertyKey = 'PropertyName';
+
+    if (Array.isArray(key) && key[0].startsWith('FN_')) {
+      key = this.getSldFunctionFilterFromFunctionFilter(key);
+      propertyKey = 'Function';
+    }
+
     if (sldOperator === 'PropertyIsNull') {
       // empty, selfclosing Literals are not valid in a propertyIsNull filter
       sldComparisonFilter[sldOperator] = [{
-        'PropertyName': [key]
+        [propertyKey]: [key]
       }];
     } else if (sldOperator === 'PropertyIsLike') {
       sldComparisonFilter[sldOperator] = [{
@@ -1916,12 +2002,12 @@ export class SldStyleParser implements StyleParser {
           'singleChar': '.',
           'escape': '!'
         },
-        'PropertyName': [key],
+        [propertyKey]: [key],
         'Literal': [value]
       }];
     } else {
       sldComparisonFilter[sldOperator] = [{
-        'PropertyName': [key],
+        [propertyKey]: [key],
         'Literal': [value]
       }];
     }
@@ -1940,7 +2026,7 @@ export class SldStyleParser implements StyleParser {
     const [
       operator,
       ...args
-    ] = <Array<any>> filter;
+    ] = filter;
 
     if (Object.values(SldStyleParser.comparisonMap).includes(operator)) {
       sldFilter = this.getSldComparisonFilterFromComparisonFilter(<ComparisonFilter> filter);
