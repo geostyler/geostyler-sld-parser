@@ -746,6 +746,17 @@ describe('SldStyleParser implements StyleParser', () => {
         });
     });
 
+    it('can write a non-prettified SLD by setting flag "prettyOutput" to false', () => {
+      expect.assertions(2);
+      const styleParser = new SldStyleParser({prettyOutput: false});
+      return styleParser.writeStyle(point_simplepoint)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          const sld = fs.readFileSync( './data/slds/point_simplepoint_oneline.sld', 'utf8');
+          expect(sldString).toEqual(sld.trim());
+        });
+    });
+
     describe('#geoStylerStyleToSldObject', () => {
       it('is defined', () => {
         expect(styleParser.geoStylerStyleToSldObject).toBeDefined();
