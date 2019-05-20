@@ -25,7 +25,8 @@ import {
 
 import {
   parseString,
-  Builder
+  Builder,
+  OptionsV2
 } from 'xml2js';
 
 const _isString = require('lodash/isString');
@@ -37,7 +38,8 @@ const _isEmpty = require('lodash/isEmpty');
 export type ConstructorParams = {
   forceCasting?: boolean,
   numericFilterFields?: string[],
-  boolFilterFields?: string[]
+  boolFilterFields?: string[],
+  prettyOutput?: boolean
 };
 
 /**
@@ -138,6 +140,27 @@ export class SldStyleParser implements StyleParser {
    */
   set forceCasting(forceCasting: boolean) {
     this._forceCasting = forceCasting;
+  }
+
+  /**
+   * Flag to tell if the generated output SLD will be prettified
+   */
+  private _prettyOutput: boolean = true;
+
+  /**
+   * Getter for _prettyOutput
+   * @return {boolean}
+   */
+  get prettyOutput(): boolean {
+    return this._prettyOutput;
+  }
+
+  /**
+   * Setter for _prettyOutput
+   * @param {boolean} prettyOutput The _prettyOutput value to set
+   */
+  set prettyOutput(prettyOutput: boolean) {
+    this._prettyOutput = prettyOutput;
   }
 
   /**
@@ -1091,7 +1114,11 @@ export class SldStyleParser implements StyleParser {
   writeStyle(geoStylerStyle: Style): Promise<string> {
     return new Promise<any>((resolve, reject) => {
       try {
-        const builder = new Builder();
+        let builderOpts = {
+          renderOpts: {pretty: this.prettyOutput}
+        } as OptionsV2;
+
+        const builder = new Builder(builderOpts);
         const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
         const sldString = builder.buildObject(sldObject);
         resolve(sldString);
