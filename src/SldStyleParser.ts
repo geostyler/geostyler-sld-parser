@@ -198,7 +198,7 @@ export class SldStyleParser implements StyleParser {
   }
 
   /**
-   * Creates a GeoStyler-Style FunctionFilterr from a SLD Function.
+   * Creates a GeoStyler-Style FunctionFilter from a SLD Function.
    *
    * @param {object} sldFilter The SLD Filter
    * @return {Filter} The GeoStyler-Style FunctionFilter
