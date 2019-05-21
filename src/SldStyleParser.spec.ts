@@ -16,6 +16,7 @@ import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
+import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_svg from '../data/styles/point_externalgraphic_svg';
@@ -265,6 +266,15 @@ describe('SldStyleParser implements StyleParser', () => {
           expect(geoStylerStyle).toEqual(point_simplepoint_nestedLogicalFilters);
         });
     });
+    it('can read a SLD style with functionfilters', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_simplepoint_functionfilter.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simplepoint_functionfilter);
+        });
+    });
     it('can read a SLD style with multiple symbolizers in one Rule', () => {
       expect.assertions(2);
       const sld = fs.readFileSync( './data/slds/multi_simplelineLabel.sld', 'utf8');
@@ -366,7 +376,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplepoint)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -379,7 +389,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_externalgraphic)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -392,7 +402,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_externalgraphic_svg)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -405,7 +415,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplesquare)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -418,7 +428,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simpletriangle)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -431,7 +441,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplestar)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -444,7 +454,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplecross)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -457,7 +467,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplex)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -470,7 +480,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simpleslash)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -483,7 +493,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(line_simpleline)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -496,7 +506,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(line_perpendicularOffset)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -509,7 +519,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(line_graphicStroke)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -522,7 +532,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(line_graphicStroke_externalGraphic)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -535,7 +545,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(line_graphicFill)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -548,7 +558,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(line_graphicFill_externalGraphic)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -561,7 +571,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(polygon_transparentpolygon)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -574,7 +584,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(polygon_graphicFill)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -587,7 +597,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(polygon_graphicFill_externalGraphic)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -600,7 +610,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_styledlabel)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -613,7 +623,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(raster_simpleraster)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -626,7 +636,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(raster_complexraster)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -639,7 +649,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplepoint_filter)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -654,7 +664,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplepoint_filter_forceNumerics)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -668,7 +678,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplepoint_filter_forceNumerics)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -683,7 +693,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplepoint_filter_forceBools)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -698,7 +708,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplepoint_filter_forceBools)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -711,11 +721,24 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_simplepoint_nestedLogicalFilters)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
               expect(readStyle).toEqual(point_simplepoint_nestedLogicalFilters);
+            });
+        });
+    });
+    it('can write a SLD style with functionfilters', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_simplepoint_functionfilter)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between two XML-Strings is awkward and nonsens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_simplepoint_functionfilter);
             });
         });
     });
@@ -724,7 +747,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(multi_simplelineLabel)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
@@ -737,7 +760,7 @@ describe('SldStyleParser implements StyleParser', () => {
       return styleParser.writeStyle(point_styledLabel_literalPlaceholder)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          // As string comparison between to XML-Strings is awkward and nonesens
+          // As string comparison between two XML-Strings is awkward and nonsens
           // we read it again and compare the json input with the parser output
           return styleParser.readStyle(sldString)
             .then(readStyle => {
