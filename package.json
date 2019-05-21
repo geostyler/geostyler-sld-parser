@@ -43,7 +43,7 @@
     "release": "np --no-yarn && git push https://github.com/terrestris/geostyler-sld-parser.git master --tags"
   },
   "devDependencies": {
-    "@babel/core": "7.4.4",
+    "@babel/core": "7.4.5",
     "@babel/plugin-proposal-class-properties": "7.4.4",
     "@babel/plugin-proposal-object-rest-spread": "7.4.4",
     "@babel/polyfill": "7.4.4",
