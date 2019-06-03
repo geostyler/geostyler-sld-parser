@@ -461,21 +461,28 @@ export class SldStyleParser implements StyleParser {
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
     const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
-    let iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
-      kind: 'Icon',
-      image: onlineResource.$['xlink:href']
-    };
-    const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
-    const size = _get(sldSymbolizer, 'Graphic[0].Size[0]');
-    const rotate = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
-    if (opacity) {
-      iconSymbolizer.opacity = opacity;
-    }
-    if (size) {
-      iconSymbolizer.size = parseInt(size, 10);
-    }
-    if (rotate) {
-      iconSymbolizer.rotate = parseInt(rotate, 10);
+    const inlineContent = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].InlineContent[0]');
+    let iconSymbolizer: IconSymbolizer = <IconSymbolizer> {};
+    if (onlineResource) {
+      iconSymbolizer.kind = 'Icon';
+      iconSymbolizer.image = onlineResource.$['xlink:href'];
+      const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
+      const size = _get(sldSymbolizer, 'Graphic[0].Size[0]');
+      const rotate = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
+      if (opacity) {
+        iconSymbolizer.opacity = opacity;
+      }
+      if (size) {
+        iconSymbolizer.size = parseInt(size, 10);
+      }
+      if (rotate) {
+        iconSymbolizer.rotate = parseInt(rotate, 10);
+      }
+    } else if (inlineContent) {
+      iconSymbolizer = <IconSymbolizer> {
+        kind: 'Icon',
+        image: inlineContent._
+      };
     }
 
     return iconSymbolizer;
@@ -1190,7 +1197,7 @@ export class SldStyleParser implements StyleParser {
     return {
       StyledLayerDescriptor: {
         '$': {
-          'version': '1.0.0',
+          'version': '1.1.0',
           'xsi:schemaLocation': 'http://www.opengis.net/sld StyledLayerDescriptor.xsd',
           'xmlns': 'http://www.opengis.net/sld',
           'xmlns:ogc': 'http://www.opengis.net/ogc',
@@ -1198,13 +1205,27 @@ export class SldStyleParser implements StyleParser {
           'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance'
         },
         'NamedLayer': [{
-          'Name': [geoStylerStyle.name || ''],
+          'Name': [{
+            '$': {
+              'xmlns': 'http://www.opengis.net/se'
+            },
+            '_': geoStylerStyle.name || ''
+          }],
           'UserStyle': [{
-            'Name': [geoStylerStyle.name || ''],
+            'Name': [{
+              '$': {
+                'xmlns': 'http://www.opengis.net/se'
+              },
+              '_': geoStylerStyle.name || ''
+            }],
             'Title': [geoStylerStyle.name || ''],
             'FeatureTypeStyle': [{
+              '$': {
+                'xmlns': 'http://www.opengis.net/se'
+              },
               'Rule': rules
-            }]
+              }
+            ]
           }]
         }]
       }
@@ -1758,38 +1779,53 @@ export class SldStyleParser implements StyleParser {
    * en "ExternalGraphic" (readable with xml2js)
    */
   getSldPointSymbolizerFromIconSymbolizer(iconSymbolizer: IconSymbolizer): any {
-    const onlineResource = [{
-      '$': {
-        'xlink:type': 'simple',
-        'xmlns:xlink': 'http://www.w3.org/1999/xlink',
-        'xlink:href': iconSymbolizer.image
+    let graphic: any[] = [];
+
+    if (iconSymbolizer.image && this.getBase64ImgSrc(iconSymbolizer.image)) {
+      graphic.push({
+        'ExternalGraphic': [{
+          'InlineContent': {
+            '$': {
+              'encoding': 'base64'
+            },
+            '_': this.getBase64ImgSrc(iconSymbolizer.image)
+          }
+        }]
+      });
+      graphic[0].ExternalGraphic[0].Format = ['image/jpeg'];
+    } else {
+      const onlineResource = [{
+        '$': {
+          'xlink:type': 'simple',
+          'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+          'xlink:href': iconSymbolizer.image
+        }
+      }];
+      graphic.push({
+        'ExternalGraphic': [{
+          'OnlineResource': onlineResource
+        }]
+      });
+
+      if (iconSymbolizer.image) {
+        const iconExt = iconSymbolizer.image.split('.').pop();
+        switch (iconExt) {
+          case 'png':
+          case 'jpeg':
+          case 'gif':
+            graphic[0].ExternalGraphic[0].Format = [`image/${iconExt}`];
+            break;
+          case 'jpg':
+            graphic[0].ExternalGraphic[0].Format = ['image/jpeg'];
+            break;
+          case 'svg':
+            graphic[0].ExternalGraphic[0].Format = ['image/svg+xml'];
+            break;
+          default:
+            break;
+        }
       }
-    }];
 
-    var graphic: any[] = [{
-      'ExternalGraphic': [{
-        'OnlineResource': onlineResource
-      }]
-    }];
-
-    if (iconSymbolizer.image) {
-
-      const iconExt = iconSymbolizer.image.split('.').pop();
-      switch (iconExt) {
-        case 'png':
-        case 'jpeg':
-        case 'gif':
-          graphic[0].ExternalGraphic[0].Format = [`image/${iconExt}`];
-          break;
-        case 'jpg':
-          graphic[0].ExternalGraphic[0].Format = ['image/jpeg'];
-          break;
-        case 'svg':
-          graphic[0].ExternalGraphic[0].Format = ['image/svg+xml'];
-          break;
-        default:
-          break;
-      }
     }
 
     if (iconSymbolizer.opacity) {
@@ -1806,6 +1842,29 @@ export class SldStyleParser implements StyleParser {
         'Graphic': graphic
       }]
     };
+  }
+
+  /**
+   * Parses the image source and returns the base64 string if validation was ok
+   * or null otherwise.
+   *
+   * @param {String} imgSrc Image source to check.
+   * @return {String} base64 image source or null, if any was found.
+   */
+  getBase64ImgSrc(imgSrc: String): String|null {
+    let base64ImgSrc = imgSrc;
+    const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+    if (imgSrc.indexOf('base64') > -1) {
+      const metaRegex = /^data:image\/[^;]+;base64,/i;
+      const meta = imgSrc.match(metaRegex);
+      if (meta && meta[0]) {
+        base64ImgSrc = imgSrc.replace(meta[0], '');
+      }
+    }
+    if (base64ImgSrc.match(base64Regex)) {
+      return base64ImgSrc;
+    }
+    return null;
   }
 
   /**
