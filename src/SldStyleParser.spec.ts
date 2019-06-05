@@ -19,6 +19,7 @@ import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplep
 import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
+import point_externalgraphic_floatingPoint from '../data/styles/point_externalgraphic_floatingPoint';
 import point_externalgraphic_svg from '../data/styles/point_externalgraphic_svg';
 import multi_simplelineLabel from '../data/styles/multi_simplelineLabel';
 import point_simplesquare from '../data/styles/point_simplesquare';
@@ -75,6 +76,15 @@ describe('SldStyleParser implements StyleParser', () => {
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_externalgraphic);
+        });
+      });
+    it('can read a SLD PointSymbolizer with ExternalGraphic with floating-point values', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_externalgraphic_floatingPoint.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_externalgraphic_floatingPoint);
         });
       });
     it('can read a SLD PointSymbolizer with ExternalGraphic svg', () => {

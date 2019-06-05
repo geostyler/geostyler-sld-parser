@@ -472,10 +472,10 @@ export class SldStyleParser implements StyleParser {
       iconSymbolizer.opacity = opacity;
     }
     if (size) {
-      iconSymbolizer.size = parseInt(size, 10);
+      iconSymbolizer.size = parseFloat(size);
     }
     if (rotate) {
-      iconSymbolizer.rotate = parseInt(rotate, 10);
+      iconSymbolizer.rotate = parseFloat(rotate);
     }
 
     return iconSymbolizer;
@@ -655,12 +655,12 @@ export class SldStyleParser implements StyleParser {
       if (name === 'stroke') {
         fillSymbolizer.outlineColor = value;
       } else if (name === 'stroke-width') {
-        fillSymbolizer.outlineWidth = parseInt(value, 10);
+        fillSymbolizer.outlineWidth = parseFloat(value);
       } else if (name === 'stroke-dasharray') {
         const outlineDasharrayStr = value.split(' ');
         const outlineDasharray: number[] = [];
         outlineDasharrayStr.forEach((dashStr: string) => {
-          outlineDasharray.push(parseInt(dashStr, 10));
+          outlineDasharray.push(parseFloat(dashStr));
         });
         fillSymbolizer.outlineDasharray = outlineDasharray;
       }
