@@ -25,10 +25,10 @@
   },
   "homepage": "https://github.com/terrestris/geostyler-sld-parser#readme",
   "dependencies": {
-    "geostyler-style": "1.2.0",
-    "lodash": "4.17.11",
-    "xml2js": "0.4.19",
-    "xmldom": "0.1.27"
+    "geostyler-style": "^1.2.0",
+    "lodash": "^4.17.11",
+    "xml2js": "^0.4.19",
+    "xmldom": "^0.1.27"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && npm run build:browser",
@@ -43,24 +43,24 @@
     "release": "np --no-yarn && git push https://github.com/terrestris/geostyler-sld-parser.git master --tags"
   },
   "devDependencies": {
-    "@babel/core": "7.4.5",
-    "@babel/plugin-proposal-class-properties": "7.4.4",
-    "@babel/plugin-proposal-object-rest-spread": "7.4.4",
-    "@babel/polyfill": "7.4.4",
-    "@babel/preset-env": "7.4.5",
-    "@babel/preset-typescript": "7.3.3",
-    "@types/jest": "24.0.15",
-    "@types/lodash": "4.14.135",
-    "@types/node": "12.0.12",
-    "@types/xml2js": "0.4.4",
-    "babel-jest": "24.8.0",
-    "coveralls": "3.0.4",
-    "jest": "24.8.0",
-    "np": "5.0.3",
-    "ts-loader": "5.3.3",
-    "tslint": "5.16.0",
-    "typescript": "3.4.5",
-    "webpack": "4.35.2",
-    "webpack-cli": "3.3.5"
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.4.4",
+    "@babel/polyfill": "^7.4.4",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/jest": "^24.0.15",
+    "@types/lodash": "^4.14.135",
+    "@types/node": "^12.0.12",
+    "@types/xml2js": "^0.4.4",
+    "babel-jest": "^24.8.0",
+    "coveralls": "^3.0.4",
+    "jest": "^24.8.0",
+    "np": "^5.0.3",
+    "ts-loader": "^5.3.3",
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.5",
+    "webpack": "^4.35.2",
+    "webpack-cli": "^3.3.5"
   }
 }
