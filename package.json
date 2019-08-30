@@ -57,7 +57,7 @@
     "coveralls": "^3.0.6",
     "jest": "^24.9.0",
     "np": "^5.0.3",
-    "ts-loader": "^5.4.5",
+    "ts-loader": "^6.0.4",
     "tslint": "^5.19.0",
     "typescript": "^3.6.2",
     "webpack": "^4.39.3",
