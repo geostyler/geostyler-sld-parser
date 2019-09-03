@@ -20,6 +20,7 @@
               <CssParameter name="stroke">#FFFFFF</CssParameter>
               <CssParameter name="stroke-width">2</CssParameter>
               <CssParameter name="stroke-dasharray">1 0</CssParameter>
+              <CssParameter name="stroke-opacity">0.9</CssParameter>
             </Stroke>
           </PolygonSymbolizer>
         </Rule>
