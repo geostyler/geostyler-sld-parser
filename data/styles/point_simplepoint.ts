@@ -8,7 +8,10 @@ const pointSimplePoint: Style = {
       kind: 'Mark',
       wellKnownName: 'Circle',
       color: '#FF0000',
-      radius: 3
+      radius: 3,
+      fillOpacity: 0.5,
+      strokeColor: '#0000FF',
+      strokeOpacity: 0.7
     }]
   }]
 };

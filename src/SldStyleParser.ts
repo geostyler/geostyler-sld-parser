@@ -392,12 +392,20 @@ export class SldStyleParser implements StyleParser {
       }
     }
 
+    const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
+      return cssParam.$.name === 'fill-opacity';
+    });
+    let fillOpacity: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
+
     let markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
     } as MarkSymbolizer;
 
     if (opacity) {
       markSymbolizer.opacity = parseFloat(opacity);
+    }
+    if (fillOpacity) {
+      markSymbolizer.fillOpacity = parseFloat(fillOpacity);
     }
     if (color) {
       markSymbolizer.color = color;
@@ -636,7 +644,7 @@ export class SldStyleParser implements StyleParser {
           fillSymbolizer.color = value;
           break;
         case 'fill-opacity':
-          fillSymbolizer.opacity = parseFloat(value);
+          fillSymbolizer.fillOpacity = parseFloat(value);
           break;
         default:
           break;
@@ -656,6 +664,8 @@ export class SldStyleParser implements StyleParser {
         fillSymbolizer.outlineColor = value;
       } else if (name === 'stroke-width') {
         fillSymbolizer.outlineWidth = parseFloat(value);
+      } else if (name === 'stroke-opacity') {
+        fillSymbolizer.outlineOpacity = parseFloat(value);
       } else if (name === 'stroke-dasharray') {
         const outlineDasharrayStr = value.split(' ');
         const outlineDasharray: number[] = [];
@@ -1508,11 +1518,12 @@ export class SldStyleParser implements StyleParser {
     const strokePropertyMap = {
       outlineColor: 'stroke',
       outlineWidth: 'stroke-width',
+      outlineOpacity: 'stroke-opacity',
       outlineDasharray: 'stroke-dasharray'
     };
     const fillPropertyMap = {
       color: 'fill',
-      opacity: 'fill-opacity'
+      fillOpacity: 'fill-opacity'
     };
     let strokeCssParameters: any[] = [];
     let fillCssParameters: any[] = [];
@@ -1555,6 +1566,8 @@ export class SldStyleParser implements StyleParser {
               }
             });
           } else if (property === 'outlineWidth') {
+            transformedValue = fillSymbolizer[property] + '';
+          }  else if (property === 'outlineOpacity') {
             transformedValue = fillSymbolizer[property] + '';
           } else {
             transformedValue = fillSymbolizer[property];
@@ -1687,16 +1700,30 @@ export class SldStyleParser implements StyleParser {
         markSymbolizer.wellKnownName.toLowerCase()
       ]
     }];
-    if (markSymbolizer.color) {
-      mark[0].Fill = [{
-        'CssParameter': [{
+
+    if (markSymbolizer.color || markSymbolizer.fillOpacity) {
+      const cssParameters = [];
+      if (markSymbolizer.color) {
+        cssParameters.push({
           '_': markSymbolizer.color,
           '$': {
             'name': 'fill'
           }
-        }]
+        });
+      }
+      if (markSymbolizer.fillOpacity) {
+        cssParameters.push({
+          '_': markSymbolizer.fillOpacity,
+          '$': {
+            'name': 'fill-opacity'
+          }
+        });
+      }
+      mark[0].Fill = [{
+        'CssParameter': cssParameters
       }];
     }
+
     if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity) {
       mark[0].Stroke = [{}];
       const strokeCssParameters = [];
