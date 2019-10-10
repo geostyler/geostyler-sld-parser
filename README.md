@@ -7,9 +7,6 @@
 
 [GeoStyler](https://github.com/terrestris/geostyler/) Style Parser implementation for Styled Layer Descriptor (SLD)
 
-### Issues
-Please provide related issues here https://github.com/terrestris/geostyler/issues
-
 ### How to use
 
 ES6:
