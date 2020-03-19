@@ -13,6 +13,7 @@ import polygon_transparentpolygon from '../data/styles/polygon_transparentpolygo
 import polygon_graphicFill from '../data/styles/polygon_graphicFill';
 import polygon_graphicFill_externalGraphic from '../data/styles/polygon_graphicFill_externalGraphic';
 import point_styledlabel from '../data/styles/point_styledlabel';
+import point_simpleLabel from '../data/styles/point_simpleLabel';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
@@ -238,6 +239,15 @@ describe('SldStyleParser implements StyleParser', () => {
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_styledlabel);
+        });
+    });
+    it('can read a SLD TextSymbolizer with a static label', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_simpleLabel.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simpleLabel);
         });
     });
     it('can read a simple SLD RasterSymbolizer', () => {
