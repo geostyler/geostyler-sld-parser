@@ -943,6 +943,8 @@ export class SldStyleParser implements StyleParser {
       // if no placeholders are being used
       // create a simple string
       label = literals.join('');
+    } else if (typeof sldLabel === 'string') {
+      label = sldLabel;
     }
     return label;
   }
