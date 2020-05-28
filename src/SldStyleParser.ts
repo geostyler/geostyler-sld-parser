@@ -44,6 +44,8 @@ export type ConstructorParams = {
   prettyOutput?: boolean;
 };
 
+const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
+
 /**
  * This parser can be used with the GeoStyler.
  * It implements the GeoStyler-Style StyleParser interface.
@@ -440,6 +442,10 @@ export class SldStyleParser implements StyleParser {
         markSymbolizer.wellKnownName = wellKnownName as WellKnownName;
         break;
       default:
+        if (WELLKNOWNNAME_TTF_REGEXP.test(wellKnownName)) {
+          markSymbolizer.wellKnownName = wellKnownName as WellKnownName;
+          break;
+        }
         throw new Error('MarkSymbolizer cannot be parsed. Unsupported WellKnownName.');
     }
 
@@ -1699,9 +1705,10 @@ export class SldStyleParser implements StyleParser {
    * Mark (readable with xml2js)
    */
   getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: MarkSymbolizer): any {
+    const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
     const mark: any[] = [{
       'WellKnownName': [
-        markSymbolizer.wellKnownName.toLowerCase()
+        isFontSymbol ? markSymbolizer.wellKnownName : markSymbolizer.wellKnownName.toLowerCase()
       ]
     }];
 
