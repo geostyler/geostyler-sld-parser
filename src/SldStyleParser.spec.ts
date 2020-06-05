@@ -1,3 +1,5 @@
+/* eslint camelcase: 0 */
+
 import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
 import { Style } from 'geostyler-style';
@@ -63,34 +65,34 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD PointSymbolizer', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simplepoint.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simplepoint.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_simplepoint);
         });
-      });
+    });
     it('can read a SLD PointSymbolizer with ExternalGraphic', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_externalgraphic.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_externalgraphic.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_externalgraphic);
         });
-      });
+    });
     it('can read a SLD PointSymbolizer with ExternalGraphic with floating-point values', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_externalgraphic_floatingPoint.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_externalgraphic_floatingPoint.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_externalgraphic_floatingPoint);
         });
-      });
+    });
     it('can read a SLD PointSymbolizer with ExternalGraphic svg', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_externalgraphic_svg.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_externalgraphic_svg.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -99,7 +101,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD PointSymbolizer with wellKnownName square', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simplesquare.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simplesquare.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -108,7 +110,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD PointSymbolizer with wellKnownName triangle', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simpletriangle.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simpletriangle.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -117,7 +119,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD PointSymbolizer with wellKnownName star', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simplestar.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simplestar.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -126,7 +128,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD PointSymbolizer with wellKnownName cross', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simplecross.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simplecross.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -135,7 +137,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD PointSymbolizer with wellKnownName x', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simplex.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simplex.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -144,7 +146,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD PointSymbolizer with wellKnownName shape://slash', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simpleslash.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simpleslash.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -153,25 +155,25 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD LineSymbolizer', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/line_simpleline.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/line_simpleline.sld', 'utf8');
       return styleParser.readStyle(sld)
-      .then((geoStylerStyle: Style) => {
-        expect(geoStylerStyle).toBeDefined();
-        expect(geoStylerStyle).toEqual(line_simpleline);
-      });
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(line_simpleline);
+        });
     });
     it('can read a SLD LineSymbolizer with Perpendicular Offset', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/line_perpendicularOffset.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/line_perpendicularOffset.sld', 'utf8');
       return styleParser.readStyle(sld)
-      .then((geostylerStyle: Style) => {
-        expect(geostylerStyle).toBeDefined();
-        expect(geostylerStyle).toEqual(line_perpendicularOffset);
-      });
+        .then((geostylerStyle: Style) => {
+          expect(geostylerStyle).toBeDefined();
+          expect(geostylerStyle).toEqual(line_perpendicularOffset);
+        });
     });
     it('can read a SLD LineSymbolizer with GraphicStroke', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/line_graphicStroke.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/line_graphicStroke.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -180,7 +182,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD LineSymbolizer with GraphicStroke and ExternalGraphic', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/line_graphicStroke_externalGraphic.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/line_graphicStroke_externalGraphic.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -189,7 +191,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD LineSymbolizer with GraphicFill', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/line_graphicFill.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/line_graphicFill.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -198,7 +200,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD LineSymbolizer with GraphicFill and ExternalGraphic', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/line_graphicFill_externalGraphic.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/line_graphicFill_externalGraphic.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -207,34 +209,34 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD PolygonSymbolizer', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/polygon_transparentpolygon.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/polygon_transparentpolygon.sld', 'utf8');
       return styleParser.readStyle(sld)
-      .then((geoStylerStyle: Style) => {
-        expect(geoStylerStyle).toBeDefined();
-        expect(geoStylerStyle).toEqual(polygon_transparentpolygon);
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(polygon_transparentpolygon);
         });
     });
     it('can read a SLD PolygonSymbolizer with GraphicFill', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/polygon_graphicFill.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/polygon_graphicFill.sld', 'utf8');
       return styleParser.readStyle(sld)
-      .then((geoStylerStyle: Style) => {
-        expect(geoStylerStyle).toBeDefined();
-        expect(geoStylerStyle).toEqual(polygon_graphicFill);
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(polygon_graphicFill);
         });
     });
     it('can read a SLD PolygonSymbolizer with GraphicFill and ExternalGraphic', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/polygon_graphicFill_externalGraphic.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/polygon_graphicFill_externalGraphic.sld', 'utf8');
       return styleParser.readStyle(sld)
-      .then((geoStylerStyle: Style) => {
-        expect(geoStylerStyle).toBeDefined();
-        expect(geoStylerStyle).toEqual(polygon_graphicFill_externalGraphic);
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(polygon_graphicFill_externalGraphic);
         });
     });
     it('can read a SLD TextSymbolizer', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_styledlabel.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_styledlabel.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -243,7 +245,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD TextSymbolizer with a static label', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simpleLabel.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simpleLabel.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -270,7 +272,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD style with a filter', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simplepoint_filter.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simplepoint_filter.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -279,7 +281,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD style with nested logical filters', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simplepoint_nestedLogicalFilters.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simplepoint_nestedLogicalFilters.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -288,7 +290,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD style with functionfilters', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_simplepoint_functionfilter.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_simplepoint_functionfilter.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -297,7 +299,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD style with multiple symbolizers in one Rule', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/multi_simplelineLabel.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/multi_simplelineLabel.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -306,7 +308,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('can read a SLD style with a styled label containing a PropertyName and a Literal', () => {
       expect.assertions(2);
-      const sld = fs.readFileSync( './data/slds/point_styledLabel_literalPlaceholder.sld', 'utf8');
+      const sld = fs.readFileSync('./data/slds/point_styledLabel_literalPlaceholder.sld', 'utf8');
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
@@ -791,11 +793,11 @@ describe('SldStyleParser implements StyleParser', () => {
 
     it('can write a non-prettified SLD by setting flag "prettyOutput" to false', () => {
       expect.assertions(2);
-      const styleParserPrettyFalse = new SldStyleParser({prettyOutput: false});
+      const styleParserPrettyFalse = new SldStyleParser({ prettyOutput: false });
       return styleParserPrettyFalse.writeStyle(point_simplepoint)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
-          const sld = fs.readFileSync( './data/slds/point_simplepoint_oneline.sld', 'utf8');
+          const sld = fs.readFileSync('./data/slds/point_simplepoint_oneline.sld', 'utf8');
           expect(sldString).toEqual(sld.trim());
         });
     });

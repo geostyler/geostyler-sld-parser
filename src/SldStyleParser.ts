@@ -38,10 +38,10 @@ const _set = require('lodash/set');
 const _isEmpty = require('lodash/isEmpty');
 
 export type ConstructorParams = {
-  forceCasting?: boolean,
-  numericFilterFields?: string[],
-  boolFilterFields?: string[],
-  prettyOutput?: boolean
+  forceCasting?: boolean;
+  numericFilterFields?: string[];
+  boolFilterFields?: string[];
+  prettyOutput?: boolean;
 };
 
 /**
@@ -282,7 +282,7 @@ export class SldStyleParser implements StyleParser {
 
     } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
-      let filters: Filter[] = [];
+      const filters: Filter[] = [];
       Object.keys(sldFilter).forEach((op) => {
         if (sldFilter[op].length === 1) {
           filters.push(this.getFilterFromOperatorAndComparison(op, sldFilter[op][0]));
@@ -330,7 +330,7 @@ export class SldStyleParser implements StyleParser {
       return;
     }
     const sldFilter = sldFilters[0];
-    const operator = Object.keys(sldFilter).find((key, index) => {
+    const operator = Object.keys(sldFilter).find((key) => {
       return key !== '$';
     });
     if (!operator) {
@@ -348,7 +348,7 @@ export class SldStyleParser implements StyleParser {
    * @return {ScaleDenominator} The GeoStyler-Style ScaleDenominator
    */
   getScaleDenominatorFromRule(sldRule: any): ScaleDenominator | undefined {
-    let scaleDenominator: ScaleDenominator = <ScaleDenominator> {};
+    const scaleDenominator: ScaleDenominator = <ScaleDenominator> {};
     if (sldRule.MinScaleDenominator) {
       scaleDenominator.min = parseFloat(sldRule.MinScaleDenominator[0]);
     }
@@ -386,7 +386,7 @@ export class SldStyleParser implements StyleParser {
     });
     let color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
     if (!color) {
-      let svg = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter[' + colorIdx + ']._');
+      const svg = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter[' + colorIdx + ']._');
       if (svg) {
         color = svg;
       }
@@ -395,9 +395,10 @@ export class SldStyleParser implements StyleParser {
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill-opacity';
     });
-    let fillOpacity: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
+    const fillOpacity: string = _get(sldSymbolizer,
+      'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
 
-    let markSymbolizer: MarkSymbolizer = {
+    const markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
     } as MarkSymbolizer;
 
@@ -439,7 +440,7 @@ export class SldStyleParser implements StyleParser {
         markSymbolizer.wellKnownName = wellKnownName as WellKnownName;
         break;
       default:
-        throw new Error(`MarkSymbolizer cannot be parsed. Unsupported WellKnownName.`);
+        throw new Error('MarkSymbolizer cannot be parsed. Unsupported WellKnownName.');
     }
 
     strokeParams.forEach((param: any) => {
@@ -469,7 +470,7 @@ export class SldStyleParser implements StyleParser {
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
     const onlineResource = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0].OnlineResource[0]');
-    let iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
+    const iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
       kind: 'Icon',
       image: onlineResource.$['xlink:href']
     };
@@ -525,12 +526,12 @@ export class SldStyleParser implements StyleParser {
    * @return {LineSymbolizer} The GeoStyler-Style LineSymbolizer
    */
   getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any): LineSymbolizer {
-    let lineSymbolizer: LineSymbolizer = <LineSymbolizer> {
+    const lineSymbolizer: LineSymbolizer = <LineSymbolizer> {
       kind: 'Line'
     };
     const strokeKeys = Object.keys(_get(sldSymbolizer, 'Stroke[0]')) || [];
     if (strokeKeys.length < 1) {
-      throw new Error(`LineSymbolizer cannot be parsed. No Stroke detected`);
+      throw new Error('LineSymbolizer cannot be parsed. No Stroke detected');
     }
     strokeKeys.forEach((strokeKey: string) => {
       switch (strokeKey) {
@@ -541,7 +542,7 @@ export class SldStyleParser implements StyleParser {
             cssParameters = _get(sldSymbolizer, 'Stroke[0].SvgParameter') || [];
           }
           if (cssParameters.length < 1) {
-            throw new Error(`LineSymbolizer can not be parsed. No CssParameters detected.`);
+            throw new Error('LineSymbolizer can not be parsed. No CssParameters detected.');
           }
           cssParameters.forEach((cssParameter: any) => {
             const {
@@ -614,7 +615,7 @@ export class SldStyleParser implements StyleParser {
    * @return {FillSymbolizer} The GeoStyler-Style FillSymbolizer
    */
   getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): FillSymbolizer {
-    let fillSymbolizer: FillSymbolizer = <FillSymbolizer> {
+    const fillSymbolizer: FillSymbolizer = <FillSymbolizer> {
       kind: 'Fill'
     };
     let fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameter') || [];
@@ -684,15 +685,15 @@ export class SldStyleParser implements StyleParser {
    * @param {object} sldColorMap The SLD ColorMap
    */
   getColorMapFromSldColorMap(sldColorMap: any): ColorMap {
-    let colorMap: ColorMap = {} as ColorMap;
-    let type = _get(sldColorMap, '$.type');
+    const colorMap: ColorMap = {} as ColorMap;
+    const type = _get(sldColorMap, '$.type');
     if (type) {
       colorMap.type = type;
     } else {
       colorMap.type = 'ramp';
     }
 
-    let extended = _get(sldColorMap, '$.extended');
+    const extended = _get(sldColorMap, '$.extended');
     if (extended) {
       if (extended === 'true') {
         colorMap.extended = true;
@@ -701,12 +702,12 @@ export class SldStyleParser implements StyleParser {
       }
     }
 
-    let colorMapEntries = _get(sldColorMap, 'ColorMapEntry');
+    const colorMapEntries = _get(sldColorMap, 'ColorMapEntry');
     if (Array.isArray(colorMapEntries)) {
       const cmEntries = colorMapEntries.map((cm: ColorMapEntry) => {
         const color = _get(cm, '$.color');
         if (!color) {
-          throw new Error(`Cannot parse ColorMapEntries. color is undefined.`);
+          throw new Error('Cannot parse ColorMapEntries. color is undefined.');
         }
         let quantity = _get(cm, '$.quantity');
         if (quantity) {
@@ -736,7 +737,7 @@ export class SldStyleParser implements StyleParser {
    * @param {object} sldContrastEnhancement The SLD ContrastEnhancement
    */
   getContrastEnhancementFromSldContrastEnhancement(sldContrastEnhancement: any): ContrastEnhancement {
-    let contrastEnhancement: ContrastEnhancement = {};
+    const contrastEnhancement: ContrastEnhancement = {};
 
     // parse enhancementType
     const hasHistogram = typeof sldContrastEnhancement.Histogram !== 'undefined';
@@ -765,10 +766,10 @@ export class SldStyleParser implements StyleParser {
    * @param {object} sldChannel The SLD Channel
    */
   getChannelFromSldChannel(sldChannel: any): Channel {
-    let channel: Channel = {
+    const channel: Channel = {
       sourceChannelName: _get(sldChannel, 'SourceChannelName[0]'),
     } as Channel;
-    let contrastEnhancement = _get(sldChannel, 'ContrastEnhancement[0]');
+    const contrastEnhancement = _get(sldChannel, 'ContrastEnhancement[0]');
     if (contrastEnhancement) {
       channel.contrastEnhancement = this.getContrastEnhancementFromSldContrastEnhancement(contrastEnhancement);
     }
@@ -788,7 +789,7 @@ export class SldStyleParser implements StyleParser {
     const gray = _get(sldChannelSelection, 'GrayChannel[0]');
 
     if (gray && red && blue && green) {
-      throw new Error(`Cannot parse ChannelSelection. RGB and Grayscale are mutually exclusive`);
+      throw new Error('Cannot parse ChannelSelection. RGB and Grayscale are mutually exclusive');
     }
     if (gray) {
       const grayChannel = this.getChannelFromSldChannel(gray);
@@ -805,7 +806,7 @@ export class SldStyleParser implements StyleParser {
         greenChannel
       };
     } else {
-      throw new Error(`Cannot parse ChannelSelection. Red, Green and Blue channels must be defined.`);
+      throw new Error('Cannot parse ChannelSelection. Red, Green and Blue channels must be defined.');
     }
     return channelSelection;
   }
@@ -816,7 +817,7 @@ export class SldStyleParser implements StyleParser {
    * @param {object} sldSymbolizer The SLD Symbolizer
    */
   getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any): RasterSymbolizer {
-    let rasterSymbolizer: RasterSymbolizer = <RasterSymbolizer> {
+    const rasterSymbolizer: RasterSymbolizer = <RasterSymbolizer> {
       kind: 'Raster'
     };
     // parse Opacity
@@ -947,7 +948,7 @@ export class SldStyleParser implements StyleParser {
       label = sldLabel;
     }
     return label;
-  }
+  };
 
   /**
    * Get the GeoStyler-Style TextSymbolizer from an SLD Symbolizer.
@@ -956,7 +957,7 @@ export class SldStyleParser implements StyleParser {
    * @return {TextSymbolizer} The GeoStyler-Style TextSymbolizer
    */
   getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): TextSymbolizer {
-    let textSymbolizer: TextSymbolizer = <TextSymbolizer> {
+    const textSymbolizer: TextSymbolizer = <TextSymbolizer> {
       kind: 'Text'
     };
     let fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
@@ -1048,7 +1049,7 @@ export class SldStyleParser implements StyleParser {
    */
   getSymbolizersFromRule(sldRule: any): Symbolizer[] {
 
-    let symbolizers: Symbolizer[] = <Symbolizer[]> [];
+    const symbolizers: Symbolizer[] = <Symbolizer[]> [];
     const symbolizerNames: string[] = Object.keys(sldRule).filter(key => key.endsWith('Symbolizer'));
     symbolizerNames.forEach((sldSymbolizerName: string) => {
       sldRule[sldSymbolizerName].forEach((sldSymbolizer: Symbolizer) => {
@@ -1088,7 +1089,7 @@ export class SldStyleParser implements StyleParser {
   getRulesFromSldObject(sldObject: any): Rule[] {
     const layers = sldObject.StyledLayerDescriptor.NamedLayer;
 
-    let rules: Rule[] = [];
+    const rules: Rule[] = [];
     layers.forEach((layer: any) => {
       layer.UserStyle.forEach((userStyle: any) => {
         userStyle.FeatureTypeStyle.forEach((featureTypeStyle: any) => {
@@ -1096,9 +1097,10 @@ export class SldStyleParser implements StyleParser {
             const filter: Filter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
             const symbolizers: Symbolizer[] = this.getSymbolizersFromRule(sldRule);
-            const name = sldRule.Title ? sldRule.Title[0]
+            const name = sldRule.Title
+              ? sldRule.Title[0]
               : (sldRule.Name ? sldRule.Name[0] : '');
-            let rule: Rule = <Rule> {
+            const rule: Rule = <Rule> {
               name
             };
             if (filter) {
@@ -1121,10 +1123,10 @@ export class SldStyleParser implements StyleParser {
   /**
    * Get the GeoStyler-Style Style from an SLD Object (created with xml2js).
    *
-   * @param {object} sldObject The SLD object representation (created with xml2js)
-   * @return {Style} The GeoStyler-Style Style
+   * @param sldObject The SLD object representation (created with xml2js)
+   * @return The GeoStyler-Style Style
    */
-  sldObjectToGeoStylerStyle(sldObject: object): Style {
+  sldObjectToGeoStylerStyle(sldObject: any): Style {
     const rules = this.getRulesFromSldObject(sldObject);
     const name = this.getStyleNameFromSldObject(sldObject);
     return {
@@ -1171,7 +1173,7 @@ export class SldStyleParser implements StyleParser {
   writeStyle(geoStylerStyle: Style): Promise<string> {
     return new Promise<any>((resolve, reject) => {
       try {
-        let builderOpts = {
+        const builderOpts = {
           renderOpts: {pretty: this.prettyOutput}
         } as OptionsV2;
 
@@ -1274,8 +1276,8 @@ export class SldStyleParser implements StyleParser {
    * @return {object} The object representation of a SLD Symbolizer (readable with xml2js)
    */
   getSldSymbolizersFromSymbolizers(symbolizers: Symbolizer[]): any {
-    let sldSymbolizers: any = [];
-    let sldSymbolizer: any = {};
+    const sldSymbolizers: any = [];
+    const sldSymbolizer: any = {};
     symbolizers.forEach(symb => {
       let sldSymb: any;
       switch (symb.kind) {
@@ -1369,8 +1371,8 @@ export class SldStyleParser implements StyleParser {
     const suffix: string = '\\}\\}';
     // RegExp to match all occurences encapsuled between two curly braces
     // including the curly braces
-    let regExp: RegExp = new RegExp(prefix + '.*?' + suffix, 'g');
-    let regExpRes = template.match(regExp);
+    const regExp: RegExp = new RegExp(prefix + '.*?' + suffix, 'g');
+    const regExpRes = template.match(regExp);
     // check if a template starts with a placeholder or a literal
     const startsWithPlaceholder = template.startsWith('{{');
 
@@ -1413,7 +1415,7 @@ export class SldStyleParser implements StyleParser {
         }];
       }
     }
-  }
+  };
 
   /**
    * Get the SLD Object (readable with xml2js) from an GeoStyler-Style TextSymbolizer.
@@ -1422,7 +1424,7 @@ export class SldStyleParser implements StyleParser {
    * @return {object} The object representation of a SLD TextSymbolizer (readable with xml2js)
    */
   getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: TextSymbolizer): any {
-    let sldTextSymbolizer: any = [{
+    const sldTextSymbolizer: any = [{
       'Label': textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
     }];
 
@@ -1453,7 +1455,7 @@ export class SldStyleParser implements StyleParser {
     }
 
     if (textSymbolizer.offset || textSymbolizer.rotate !== undefined) {
-      let pointPlacement: any = [{}];
+      const pointPlacement: any = [{}];
 
       if (textSymbolizer.offset) {
         pointPlacement[0].Displacement = [{
@@ -1527,8 +1529,8 @@ export class SldStyleParser implements StyleParser {
       color: 'fill',
       fillOpacity: 'fill-opacity'
     };
-    let strokeCssParameters: any[] = [];
-    let fillCssParameters: any[] = [];
+    const strokeCssParameters: any[] = [];
+    const fillCssParameters: any[] = [];
     let graphicFill: any;
 
     if (_get(fillSymbolizer, 'graphicFill')) {
@@ -1584,7 +1586,7 @@ export class SldStyleParser implements StyleParser {
         }
       });
 
-    let polygonSymbolizer: any = [{}];
+    const polygonSymbolizer: any = [{}];
     if (fillCssParameters.length > 0 || graphicFill) {
       polygonSymbolizer[0].Fill = [{}];
       if (graphicFill) {
@@ -1623,7 +1625,7 @@ export class SldStyleParser implements StyleParser {
       dashOffset: 'stroke-dashoffset'
     };
 
-    let result: any = {
+    const result: any = {
       'LineSymbolizer': [{
         'Stroke': [{}]
       }]
@@ -1697,7 +1699,7 @@ export class SldStyleParser implements StyleParser {
    * Mark (readable with xml2js)
    */
   getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: MarkSymbolizer): any {
-    let mark: any[] = [{
+    const mark: any[] = [{
       'WellKnownName': [
         markSymbolizer.wellKnownName.toLowerCase()
       ]
@@ -1756,7 +1758,7 @@ export class SldStyleParser implements StyleParser {
       mark[0].Stroke[0].CssParameter = strokeCssParameters;
     }
 
-    let graphic: any[] = [{
+    const graphic: any[] = [{
       'Mark': mark
     }];
 
@@ -1795,7 +1797,7 @@ export class SldStyleParser implements StyleParser {
       }
     }];
 
-    var graphic: any[] = [{
+    const graphic: any[] = [{
       'ExternalGraphic': [{
         'OnlineResource': onlineResource
       }]
@@ -1844,7 +1846,7 @@ export class SldStyleParser implements StyleParser {
    * @return {object} The object representation of a SLD RasterSymbolizer (readable with xml2js)
    */
   getSldRasterSymbolizerFromRasterSymbolizer(rasterSymbolizer: RasterSymbolizer): any {
-    let sldRasterSymbolizer: any = [{}];
+    const sldRasterSymbolizer: any = [{}];
     let opacity: any;
     if (typeof rasterSymbolizer.opacity !== 'undefined') {
       opacity = [rasterSymbolizer.opacity.toString()];
@@ -1887,7 +1889,7 @@ export class SldStyleParser implements StyleParser {
    * @return {object} The object representation of a SLD ColorMap (readable with xml2js)
    */
   getSldColorMapFromColorMap(colorMap: ColorMap): any {
-    let sldColorMap: any[] = [{
+    const sldColorMap: any[] = [{
       '$': {}
     }];
     // parse colorMap.type
@@ -1903,7 +1905,7 @@ export class SldStyleParser implements StyleParser {
     // parse colorMap.colorMapEntries
     if (colorMap.colorMapEntries && colorMap.colorMapEntries.length > 0) {
       const colorMapEntries: any[] = colorMap.colorMapEntries.map((entry: ColorMapEntry) => {
-        let result: any = {
+        const result: any = {
           '$': {}
         };
 
@@ -1944,9 +1946,9 @@ export class SldStyleParser implements StyleParser {
       'grayChannel': 'GrayChannel'
     };
     const keys = Object.keys(channelSelection);
-    let sldChannelSelection: any[] = [{}];
+    const sldChannelSelection: any[] = [{}];
     keys.forEach((key: string) => {
-      let channel: any = [{}];
+      const channel: any = [{}];
       // parse sourceChannelName
       const sourceChannelName = _get(channelSelection, `${key}.sourceChannelName`);
       // parse contrastEnhancement
@@ -1972,7 +1974,7 @@ export class SldStyleParser implements StyleParser {
    * @return {object} The object representation of a SLD ContrastEnhancement (readable with xml2js)
    */
   getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement: ContrastEnhancement): any {
-    let sldContrastEnhancement: any = [{}];
+    const sldContrastEnhancement: any = [{}];
     const enhancementType = _get(contrastEnhancement, 'enhancementType');
     if (enhancementType === 'normalize') {
       // parse normalize
@@ -2036,7 +2038,7 @@ export class SldStyleParser implements StyleParser {
     const value = comparisonFilter[2];
 
     const sldOperators: string[] = SldStyleParser.keysByValue(SldStyleParser.comparisonMap, operator);
-    let sldOperator: string = (sldOperators.length > 1 && value === null)
+    const sldOperator: string = (sldOperators.length > 1 && value === null)
       ? sldOperators[1] : sldOperators[0];
 
     let propertyKey = 'PropertyName';
