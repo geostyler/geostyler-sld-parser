@@ -31,6 +31,7 @@ import point_simplestar from '../data/styles/point_simplestar';
 import point_simplecross from '../data/styles/point_simplecross';
 import point_simplex from '../data/styles/point_simplex';
 import point_simpleslash from '../data/styles/point_simpleslash';
+import point_fontglyph from '../data/styles/point_fontglyph';
 import point_styledLabel_literalPlaceholder from '../data/styles/point_styledLabel_literalPlaceholder';
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
@@ -151,6 +152,15 @@ describe('SldStyleParser implements StyleParser', () => {
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_simpleslash);
+        });
+    });
+    it('can read a SLD PointSymbolizer with wellKnownName using a font glyph (starting with ttf://)', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync( './data/slds/point_fontglyph.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_fontglyph);
         });
     });
     it('can read a SLD LineSymbolizer', () => {
@@ -507,6 +517,19 @@ describe('SldStyleParser implements StyleParser', () => {
           return styleParser.readStyle(sldString)
             .then(readStyle => {
               expect(readStyle).toEqual(point_simpleslash);
+            });
+        });
+    });
+    it('can write a SLD PointSymbolizer with wellKnownName using a font glyph (starting with ttf://)', () => {
+      expect.assertions(2);
+      return styleParser.writeStyle(point_fontglyph)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          // As string comparison between two XML-Strings is awkward and nonsens
+          // we read it again and compare the json input with the parser output
+          return styleParser.readStyle(sldString)
+            .then(readStyle => {
+              expect(readStyle).toEqual(point_fontglyph);
             });
         });
     });
