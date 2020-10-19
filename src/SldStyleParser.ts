@@ -1770,11 +1770,31 @@ export class SldStyleParser implements StyleParser {
    */
   getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: MarkSymbolizer): any {
     const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
-    const mark: any[] = [{
-      'WellKnownName': [
-        isFontSymbol ? markSymbolizer.wellKnownName : markSymbolizer.wellKnownName.toLowerCase()
-      ]
-    }];
+    let mark: any[] = [];
+    if (isFontSymbol) {
+      const fontParts = markSymbolizer.wellKnownName.split('#');
+      mark = [
+        {
+          OnlineResource: [
+            {
+              $: {
+                'xlink:type': 'simple',
+                'xlink:href': fontParts[0],
+              },
+            },
+          ],
+
+          Format: ['ttf'],
+          MarkIndex: [parseInt(fontParts[1], 16).toString(10)],
+        },
+      ];
+    } else {
+      mark = [
+        {
+          WellKnownName: [markSymbolizer.wellKnownName.toLowerCase()],
+        },
+      ];
+    }
 
     if (markSymbolizer.color || markSymbolizer.fillOpacity) {
       const cssParameters = [];
