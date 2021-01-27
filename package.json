@@ -27,6 +27,7 @@
   "dependencies": {
     "geostyler-style": "^2.1.0",
     "lodash": "^4.17.19",
+    "timers": "^0.1.1",
     "xml2js": "^0.4.23",
     "xmldom": "^0.2.1"
   },
