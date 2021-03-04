@@ -42,6 +42,8 @@ export type ConstructorParams = {
   numericFilterFields?: string[];
   boolFilterFields?: string[];
   prettyOutput?: boolean;
+  useSymbologyEncoding?: boolean;
+  symbolizerUnits?: string;
 };
 
 const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
@@ -165,6 +167,50 @@ export class SldStyleParser implements StyleParser {
    */
   set prettyOutput(prettyOutput: boolean) {
     this._prettyOutput = prettyOutput;
+  }
+
+  /**
+   * Flag to tell if the generated output SLD will use Symbology Encoding
+   * resulting in SLD 1.1.0. Default ist to use SLD 1.0.0
+   */
+  private _useSymbologyEncoding: boolean = false;
+
+  /**
+   * Getter for _useSymbologyEncoding
+   * @return {boolean}
+   */
+  get useSymbologyEncoding(): boolean {
+    return this._useSymbologyEncoding;
+  }
+
+  /**
+   * Setter for _useSymbologyEncoding
+   * @param {boolean} useSymbologyEncoding The _useSymbologyEncoding value to set
+   */
+  set useSymbologyEncoding(useSymbologyEncoding: boolean) {
+    this._useSymbologyEncoding = useSymbologyEncoding;
+  }
+
+  /**
+   * Used to add a `uom` attribute to the symbolizer tag. Can be one of
+   * `metre`, `foot` or `pixel`. Defaults to pixel.
+   */
+  private _symbolizerUnits: string = 'pixel';
+
+  /**
+   * Getter for _symbolizerUnits
+   * @return {string}
+   */
+  get symbolizerUnits(): string {
+    return this._symbolizerUnits;
+  }
+
+  /**
+   * Setter for _symbolizerUnits
+   * @param {string} symbolizerUnits The _symbolizerUnits value to set
+   */
+  set symbolizerUnits(symbolizerUnits: string) {
+    this._symbolizerUnits = symbolizerUnits;
   }
 
   /**
@@ -397,9 +443,12 @@ export class SldStyleParser implements StyleParser {
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill-opacity';
     });
-    const fillOpacity: string = _get(sldSymbolizer,
+    let fillOpacity: string = _get(sldSymbolizer,
       'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
-
+    if (!fillOpacity) {
+      fillOpacity = _get(sldSymbolizer,
+        'Graphic[0].Mark[0].Fill[0].SvgParameter[' + fillOpacityIdx + ']._');
+    }
     const markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
     } as MarkSymbolizer;
@@ -1207,6 +1256,10 @@ export class SldStyleParser implements StyleParser {
         rule.Filter.$ = { 'xmlns': 'http://www.opengis.net/ogc' };
       }
     });
+
+    if (this.useSymbologyEncoding) {
+      return this.getSymbologyEncoding(geoStylerStyle, rules);
+    }
     return {
       StyledLayerDescriptor: {
         '$': {
@@ -1224,6 +1277,99 @@ export class SldStyleParser implements StyleParser {
             'Title': [geoStylerStyle.name || ''],
             'FeatureTypeStyle': [{
               'Rule': rules
+            }]
+          }]
+        }]
+      }
+    };
+  }
+
+  /**
+   * Methods returns Symbology Encoding / SLD 1.1 from given GeoStyler
+   * style Object
+   * @param {Style} geoStylerStyle A GeoStyler-Style Style.
+   * @param {Rule[]} rules The array of rules
+   * @returns {object} The object representation of a SLD 1.1 Style
+   * (readable with xml2js)
+   */
+  getSymbologyEncoding(geoStylerStyle: Style, rules: any[]): any {
+    const setTags = (rulez: any[], isFilterElement: boolean) => {
+      if (!(rulez instanceof Array)) {
+        rulez = [rulez];
+      }
+      rulez.forEach((rule: any) => {
+        const keys = Object.keys(rule);
+        for (const key of keys) {
+          const val = rule[key][0];
+          // handle renaming of ogc filter attributes
+          if (key.toLowerCase() === 'filter') {
+            delete Object.assign(rule, {['ogc:' + key]: rule[key]})[key];
+            setTags(rule['ogc:' + key], true);
+            continue;
+          }
+          if (isFilterElement) {
+            if (key.toLowerCase().indexOf('property') > -1) {
+              rule[key].forEach((el: any) => {
+                if (el.$ && el.$.escape) {
+                  // rename escape attribute
+                  el.$.escapeChar = el.$.escape;
+                  delete el.$.escape;
+                }
+              });
+            }
+          }
+          // do not change special attribute handlers or ogc namespaces
+          if (key === '$' || key  === '_' ||
+            key.toLowerCase().indexOf('ogc:') > -1 ||
+            (rule[key].$ && rule[key].$.xmlns)) {
+            if (val instanceof Object) {
+              setTags([rule[key]], isFilterElement);
+            }
+            continue;
+          }
+          // add uom attribute to symbolizers
+          if (key.toLowerCase().indexOf('symbolizer') > -1) {
+            val.$ = {
+              uom: 'http://www.opengeospatial.org/se/units/' +
+              this.symbolizerUnits
+            };
+          }
+
+          if (key.toLowerCase() === 'cssparameter') {
+            // change naming of css and svg parameters
+            delete Object.assign(rule, {['se:SvgParameter']: rule[key]})[key];
+            continue;
+          } else if (!isFilterElement) {
+            // rename all other tags to include the "se" namespace
+            delete Object.assign(rule, {['se:' + key]: rule[key]})[key];
+          }
+          // recursive call ourselves
+          if (val instanceof Object) {
+            setTags([val], isFilterElement);
+          }
+        }
+      });
+    };
+
+    setTags(rules, false);
+
+    return {
+      StyledLayerDescriptor: {
+        '$': {
+          'version': '1.1.0',
+          'xsi:schemaLocation': 'http://www.opengis.net/sld StyledLayerDescriptor.xsd',
+          'xmlns': 'http://www.opengis.net/sld',
+          'xmlns:ogc': 'http://www.opengis.net/ogc',
+          'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+          'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+          'xmlns:se': 'http://www.opengis.net/se'
+        },
+        'NamedLayer': [{
+          'se:Name': [geoStylerStyle.name || ''],
+          'UserStyle': [{
+            'se:Name': [geoStylerStyle.name || ''],
+            'se:FeatureTypeStyle': [{
+              'se:Rule': rules
             }]
           }]
         }]
@@ -1481,17 +1627,6 @@ export class SldStyleParser implements StyleParser {
       }];
     }
 
-    if (textSymbolizer.color) {
-      sldTextSymbolizer[0].Fill = [{
-        'CssParameter': [{
-          '_': textSymbolizer.color,
-          '$': {
-            'name': 'fill'
-          }
-        }]
-      }];
-    }
-
     if (textSymbolizer.haloWidth || textSymbolizer.haloColor) {
       const halo: any = {};
       const haloCssParameter = [];
@@ -1513,6 +1648,18 @@ export class SldStyleParser implements StyleParser {
       }
       sldTextSymbolizer[0].Halo = [halo];
     }
+
+    if (textSymbolizer.color) {
+      sldTextSymbolizer[0].Fill = [{
+        'CssParameter': [{
+          '_': textSymbolizer.color,
+          '$': {
+            'name': 'fill'
+          }
+        }]
+      }];
+    }
+
     return {
       'TextSymbolizer': sldTextSymbolizer
     };
