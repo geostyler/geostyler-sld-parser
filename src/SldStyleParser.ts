@@ -31,6 +31,8 @@ import {
   OptionsV2
 } from 'xml2js';
 
+import SymbologyEncoder from './SymbologyEncoder';
+
 const _isString = require('lodash/isString');
 const _isNumber = require('lodash/isNumber');
 const _get = require('lodash/get');
@@ -42,6 +44,8 @@ export type ConstructorParams = {
   numericFilterFields?: string[];
   boolFilterFields?: string[];
   prettyOutput?: boolean;
+  sldVersion?: string;
+  symbolizerUnits?: string;
 };
 
 const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
@@ -165,6 +169,50 @@ export class SldStyleParser implements StyleParser {
    */
   set prettyOutput(prettyOutput: boolean) {
     this._prettyOutput = prettyOutput;
+  }
+
+  /**
+   * String indicating the SLD version to use. 1.1.0 will make use of
+   * Symbology Encoding. Default ist to use SLD 1.0.0
+   */
+  private _sldVersion: string = '1.0.0';
+
+  /**
+   * Getter for _sldVersion
+   * @return {boolean}
+   */
+  get sldVersion(): string {
+    return this._sldVersion;
+  }
+
+  /**
+   * Setter for _sldVersion
+   * @param {string} sldVersion The _sldVersion value to set
+   */
+  set sldVersion(sldVersion: string) {
+    this._sldVersion = sldVersion;
+  }
+
+  /**
+   * Used to add a `uom` attribute to the symbolizer tag. Can be one of
+   * `metre`, `foot` or `pixel`. Defaults to pixel.
+   */
+  private _symbolizerUnits: string = 'pixel';
+
+  /**
+   * Getter for _symbolizerUnits
+   * @return {string}
+   */
+  get symbolizerUnits(): string {
+    return this._symbolizerUnits;
+  }
+
+  /**
+   * Setter for _symbolizerUnits
+   * @param {string} symbolizerUnits The _symbolizerUnits value to set
+   */
+  set symbolizerUnits(symbolizerUnits: string) {
+    this._symbolizerUnits = symbolizerUnits;
   }
 
   /**
@@ -397,9 +445,12 @@ export class SldStyleParser implements StyleParser {
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill-opacity';
     });
-    const fillOpacity: string = _get(sldSymbolizer,
+    let fillOpacity: string = _get(sldSymbolizer,
       'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
-
+    if (!fillOpacity) {
+      fillOpacity = _get(sldSymbolizer,
+        'Graphic[0].Mark[0].Fill[0].SvgParameter[' + fillOpacityIdx + ']._');
+    }
     const markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
     } as MarkSymbolizer;
@@ -1207,6 +1258,11 @@ export class SldStyleParser implements StyleParser {
         rule.Filter.$ = { 'xmlns': 'http://www.opengis.net/ogc' };
       }
     });
+
+    if (this.sldVersion !== '1.0.0') {
+      return SymbologyEncoder.getSymbologyEncoding(
+        geoStylerStyle, rules, this.symbolizerUnits);
+    }
     return {
       StyledLayerDescriptor: {
         '$': {
@@ -1481,17 +1537,6 @@ export class SldStyleParser implements StyleParser {
       }];
     }
 
-    if (textSymbolizer.color) {
-      sldTextSymbolizer[0].Fill = [{
-        'CssParameter': [{
-          '_': textSymbolizer.color,
-          '$': {
-            'name': 'fill'
-          }
-        }]
-      }];
-    }
-
     if (textSymbolizer.haloWidth || textSymbolizer.haloColor) {
       const halo: any = {};
       const haloCssParameter = [];
@@ -1513,6 +1558,18 @@ export class SldStyleParser implements StyleParser {
       }
       sldTextSymbolizer[0].Halo = [halo];
     }
+
+    if (textSymbolizer.color) {
+      sldTextSymbolizer[0].Fill = [{
+        'CssParameter': [{
+          '_': textSymbolizer.color,
+          '$': {
+            'name': 'fill'
+          }
+        }]
+      }];
+    }
+
     return {
       'TextSymbolizer': sldTextSymbolizer
     };
