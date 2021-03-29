@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "declaration": true,
+    "esModuleInterop": true,
     "outDir": "build/dist",
     "module": "commonjs",
     "target": "es5",
