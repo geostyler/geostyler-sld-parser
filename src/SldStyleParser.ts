@@ -26,6 +26,12 @@ import {
 } from 'geostyler-style';
 
 import {
+  isCombinationFilter,
+  isComparisonFilter,
+  isNegationFilter
+} from 'geostyler-style/typeguards';
+
+import {
   parseString,
   Builder,
   OptionsV2
@@ -453,7 +459,8 @@ export class SldStyleParser implements StyleParser {
     }
     const markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
-    } as MarkSymbolizer;
+      wellKnownName: 'circle'
+    };
 
     if (opacity) {
       markSymbolizer.opacity = parseFloat(opacity);
@@ -2145,25 +2152,24 @@ export class SldStyleParser implements StyleParser {
    */
   getSldFilterFromFilter(filter: Filter): any[] {
     let sldFilter: any = {};
-    const [
-      operator,
-      ...args
-    ] = filter;
 
-    if (Object.values(SldStyleParser.comparisonMap).includes(operator)) {
-      sldFilter = this.getSldComparisonFilterFromComparisonFilter(<ComparisonFilter> filter);
-    } else if (Object.values(SldStyleParser.combinationMap).includes(operator)) {
+    if (isComparisonFilter(filter)) {
+      sldFilter = this.getSldComparisonFilterFromComparisonFilter(filter);
+    } else if (isCombinationFilter(filter)) {
+      const [
+        operator,
+        ...args
+      ] = filter;
       const sldOperators: string[] = SldStyleParser.keysByValue(SldStyleParser.combinationMap, operator);
       // TODO Implement logic for "PropertyIsBetween" filter
       const combinator = sldOperators[0];
       sldFilter[combinator] = [{}];
-      (args as Filter[]).forEach((subFilter: Filter, subFilterIdx: number) => {
+      args.forEach((subFilter: Filter, subFilterIdx: number) => {
         const sldSubFilter = this.getSldFilterFromFilter(subFilter);
         const filterName = Object.keys(sldSubFilter)[0];
-        const isCombinationFilter = (fName: string) => ['And', 'Or'].includes(fName);
 
         if (subFilter[0] === '||' || subFilter[0] === '&&') {
-          if (isCombinationFilter(filterName)) {
+          if (isCombinationFilter(sldSubFilter)) {
             if (!(sldFilter[combinator][0][filterName])) {
               sldFilter[combinator][0][filterName] = [];
             }
@@ -2195,8 +2201,8 @@ export class SldStyleParser implements StyleParser {
           }
         }
       });
-    } else if (Object.values(SldStyleParser.negationOperatorMap).includes(operator)) {
-      sldFilter.Not = (args as Filter[]).map(subFilter => this.getSldFilterFromFilter(subFilter));
+    } else if (isNegationFilter(filter)) {
+      sldFilter.Not = this.getSldFilterFromFilter(filter[1]);
     }
     return sldFilter;
   }
