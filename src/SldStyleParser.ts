@@ -2157,7 +2157,7 @@ export class SldStyleParser implements StyleParser {
       // TODO Implement logic for "PropertyIsBetween" filter
       const combinator = sldOperators[0];
       sldFilter[combinator] = [{}];
-      args.forEach((subFilter, subFilterIdx) => {
+      (args as Filter[]).forEach((subFilter: Filter, subFilterIdx: number) => {
         const sldSubFilter = this.getSldFilterFromFilter(subFilter);
         const filterName = Object.keys(sldSubFilter)[0];
         const isCombinationFilter = (fName: string) => ['And', 'Or'].includes(fName);
@@ -2196,7 +2196,7 @@ export class SldStyleParser implements StyleParser {
         }
       });
     } else if (Object.values(SldStyleParser.negationOperatorMap).includes(operator)) {
-      sldFilter.Not = args.map(subFilter => this.getSldFilterFromFilter(subFilter));
+      sldFilter.Not = (args as Filter[]).map(subFilter => this.getSldFilterFromFilter(subFilter));
     }
     return sldFilter;
   }
