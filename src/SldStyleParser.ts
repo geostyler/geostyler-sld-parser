@@ -2169,7 +2169,7 @@ export class SldStyleParser implements StyleParser {
         const filterName = Object.keys(sldSubFilter)[0];
 
         if (subFilter[0] === '||' || subFilter[0] === '&&') {
-          if (isCombinationFilter(sldSubFilter)) {
+          if (isCombinationFilter(subFilter)) {
             if (!(sldFilter[combinator][0][filterName])) {
               sldFilter[combinator][0][filterName] = [];
             }
