@@ -62,7 +62,7 @@
     "eslint": "^7.6.0",
     "jest": "^26.3.0",
     "np": "^6.4.0",
-    "ts-loader": "^7.0.5",
+    "ts-loader": "^8.1.0",
     "typescript": "^3.9.7",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
