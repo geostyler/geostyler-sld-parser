@@ -1,13 +1,16 @@
+const testRegex = 'src/.*\\.spec.ts$';
+
 module.exports = {
-  "moduleFileExtensions": [
-    "ts",
-    "js"
+  'moduleFileExtensions': [
+    'ts',
+    'js'
   ],
-  "transform": {
-    "^.+\\.ts$": "<rootDir>/node_modules/babel-jest"
-  },
-  "testRegex": "/src/.*\\.spec.(ts|js)$",
-  "collectCoverageFrom": [
-    "src/*.ts"
+  'transformIgnorePatterns': [
+    'node_modules/(?!(geostyler-style)/)'
+  ],
+  'testRegex': testRegex,
+  'collectCoverageFrom': [
+    'src/*.ts',
+    '!' + testRegex
   ]
 };
