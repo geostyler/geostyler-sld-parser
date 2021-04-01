@@ -33,16 +33,16 @@
     "xmldom": "^0.5.0"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && npm run build:browser",
-    "build:browser": "webpack --config browser-build.config.js",
-    "start:dev": "webpack --config dev-build.config.js --watch",
-    "prebuild": "npm run test",
-    "pretest": "npm run lint",
-    "prepublishOnly": "npm run build",
-    "test": "jest",
-    "test:watch": "jest --watchAll",
+    "build-browser": "webpack --config browser-build.config.js",
+    "build": "tsc -p tsconfig.json && npm run build-browser",
+    "lint:test:build": "npm run lint && npm run test && npm run build",
+    "lint:test": "npm run lint && npm run test",
     "lint": "eslint -c .eslintrc.js --ext .ts . && tsc --noEmit --project tsconfig.json",
-    "release": "np --no-yarn && git push https://github.com/geostyler/geostyler-sld-parser.git master --tags"
+    "prepublishOnly": "npm run lint:test:build",
+    "release": "np --no-yarn && git push https://github.com/geostyler/geostyler-sld-parser.git master --tags",
+    "start:dev": "webpack --config dev-build.config.js --watch",
+    "test-watch": "jest --watchAll",
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",
