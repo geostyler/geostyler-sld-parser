@@ -9,7 +9,7 @@
     "lib": ["es6", "dom"],
     "sourceMap": true,
     "moduleResolution": "node",
-    "rootDir": "src",
+    "rootDir": ".",
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,

@@ -23,11 +23,17 @@ module.exports = {
       // All files with a '.ts'
       {
         test: /\.ts$/,
-        include: __dirname + '/src',
+        include: [
+          __dirname + '/src',
+          __dirname + '/node_modules/geostyler-style'
+        ],
         use: [
           {
             loader: require.resolve('ts-loader'),
-          },
+            options: {
+              allowTsInNodeModules: true
+            }
+          }
         ],
       }
     ]
