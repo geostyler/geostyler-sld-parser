@@ -40,7 +40,7 @@
     "lint": "eslint -c .eslintrc.js --ext .ts . && tsc --noEmit --project tsconfig.json",
     "prepublishOnly": "npm run lint:test:build",
     "release": "np --no-yarn && git push https://github.com/geostyler/geostyler-sld-parser.git master --tags",
-    "start:dev": "webpack --config dev-build.config.js --watch",
+    "start-dev": "webpack --config dev-build.config.js --watch",
     "test-watch": "jest --watchAll",
     "test": "jest"
   },
