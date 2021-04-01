@@ -31,7 +31,12 @@ module.exports = {
           {
             loader: require.resolve('ts-loader'),
             options: {
-              allowTsInNodeModules: true
+              allowTsInNodeModules: true,
+              compilerOptions: {
+                "declaration": false,
+                "outDir": "browser",
+                "rootDir": "."
+              }
             }
           }
         ],
