@@ -52,7 +52,7 @@
     "@babel/polyfill": "^7.10.4",
     "@babel/preset-env": "^7.11.0",
     "@babel/preset-typescript": "^7.10.4",
-    "@types/jest": "^25.2.3",
+    "@types/jest": "^26.0.22",
     "@types/lodash": "^4.14.159",
     "@types/node": "^14.14.37",
     "@types/xml2js": "^0.4.5",
