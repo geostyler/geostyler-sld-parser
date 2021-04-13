@@ -25,7 +25,7 @@ const pointSimplePoint: Style = {
     'symbolizers': [{
       'color': '#FF0000',
       'kind': 'Mark',
-      'wellKnownName': 'Circle',
+      'wellKnownName': 'circle',
       'radius': 3,
       'strokeColor': '#000000',
       'strokeWidth': 2

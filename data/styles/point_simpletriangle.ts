@@ -6,7 +6,7 @@ const pointSimpleTriangle: Style = {
     'name': 'Small populated New Yorks',
     'symbolizers': [{
       'kind': 'Mark',
-      'wellKnownName': 'Triangle',
+      'wellKnownName': 'triangle',
       'color': '#FF0000',
       'radius': 5,
       'strokeColor': '#000000',

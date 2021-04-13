@@ -6,7 +6,7 @@ const pointSimpleCross: Style = {
     'name': 'Small populated New Yorks',
     'symbolizers': [{
       'kind': 'Mark',
-      'wellKnownName': 'Cross',
+      'wellKnownName': 'cross',
       'color': '#FF0000',
       'radius': 5,
       'strokeColor': '#000000',

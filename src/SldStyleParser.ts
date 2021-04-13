@@ -29,7 +29,7 @@ import {
   isCombinationFilter,
   isComparisonFilter,
   isNegationFilter
-} from 'geostyler-style/typeguards';
+} from 'geostyler-style';
 
 import {
   parseString,
@@ -424,7 +424,7 @@ export class SldStyleParser implements StyleParser {
    * @return {MarkSymbolizer} The GeoStyler-Style MarkSymbolizer
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
-    const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
+    const wellKnownName: WellKnownName = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
     let strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
     if (strokeParams.length === 0) {
       strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].SvgParameter') || [];
@@ -485,9 +485,6 @@ export class SldStyleParser implements StyleParser {
       case 'star':
       case 'cross':
       case 'x':
-        const wkn = wellKnownName.charAt(0).toUpperCase() + wellKnownName.slice(1);
-        markSymbolizer.wellKnownName = wkn as WellKnownName;
-        break;
       case 'shape://vertline':
       case 'shape://horline':
       case 'shape://slash':
@@ -497,11 +494,11 @@ export class SldStyleParser implements StyleParser {
       case 'shape://times':
       case 'shape://oarrow':
       case 'shape://carrow':
-        markSymbolizer.wellKnownName = wellKnownName as WellKnownName;
+        markSymbolizer.wellKnownName = wellKnownName;
         break;
       default:
         if (WELLKNOWNNAME_TTF_REGEXP.test(wellKnownName)) {
-          markSymbolizer.wellKnownName = wellKnownName as WellKnownName;
+          markSymbolizer.wellKnownName = wellKnownName;
           break;
         }
         throw new Error('MarkSymbolizer cannot be parsed. Unsupported WellKnownName.');

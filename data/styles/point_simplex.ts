@@ -6,7 +6,7 @@ const pointSimpleX: Style = {
     'name': 'Small populated New Yorks',
     'symbolizers': [{
       'kind': 'Mark',
-      'wellKnownName': 'X',
+      'wellKnownName': 'x',
       'color': '#FF0000',
       'radius': 5,
       'strokeColor': '#000000',

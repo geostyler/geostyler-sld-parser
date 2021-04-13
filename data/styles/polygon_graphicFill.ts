@@ -12,7 +12,7 @@ const polygonGraphicFill: Style = {
       outlineDasharray: [1, 0],
       graphicFill: {
         kind: 'Mark',
-        wellKnownName: 'Circle',
+        wellKnownName: 'circle',
         color: '#FF0000'
       }
     }]
