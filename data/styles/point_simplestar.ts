@@ -6,7 +6,7 @@ const pointSimpleStar: Style = {
     'name': 'Small populated New Yorks',
     'symbolizers': [{
       'kind': 'Mark',
-      'wellKnownName': 'Star',
+      'wellKnownName': 'star',
       'color': '#FF0000',
       'radius': 5,
       'strokeColor': '#000000',

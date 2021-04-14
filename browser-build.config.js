@@ -23,10 +23,7 @@ module.exports = {
       // All files with a '.ts'
       {
         test: /\.ts$/,
-        include: [
-          __dirname + '/src',
-          __dirname + '/node_modules/geostyler-style'
-        ],
+        include: __dirname + '/src',
         use: [
           {
             loader: require.resolve('ts-loader'),
@@ -34,8 +31,7 @@ module.exports = {
               allowTsInNodeModules: true,
               compilerOptions: {
                 "declaration": false,
-                "outDir": "browser",
-                "rootDir": "."
+                "outDir": "browser"
               }
             }
           }

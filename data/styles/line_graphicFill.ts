@@ -13,7 +13,7 @@ const lineSimpleLine: Style = {
       join: 'miter',
       graphicFill: {
         kind: 'Mark',
-        wellKnownName: 'Circle',
+        wellKnownName: 'circle',
         color: '#FF0000',
         radius: 3.5
       }

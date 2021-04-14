@@ -6,7 +6,7 @@ const pointSimplePoint: Style = {
     name: '',
     symbolizers: [{
       kind: 'Mark',
-      wellKnownName: 'Circle',
+      wellKnownName: 'circle',
       color: '#FF0000',
       radius: 3,
       fillOpacity: 0.5,
