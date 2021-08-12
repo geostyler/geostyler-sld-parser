@@ -1388,56 +1388,47 @@ export class SldStyleParser implements StyleParser {
    * Get the Label from a TextSymbolizer
    */
   getSldLabelFromTextSymbolizer = (template: string): [any] => {
-    // prefix indicating that a template is being used
-    const prefix: string = '\\{\\{';
-    // suffix indicating that a template is being used
-    const suffix: string = '\\}\\}';
-    // RegExp to match all occurences encapsuled between two curly braces
-    // including the curly braces
-    const regExp: RegExp = new RegExp(prefix + '.*?' + suffix, 'g');
-    const regExpRes = template.match(regExp);
-    // check if a template starts with a placeholder or a literal
-    const startsWithPlaceholder = template.startsWith('{{');
+    // matches anything inside double curly braces (non-greedy)
+    const placeholderReg = /^{{(.*?)}}/;
+    // matches anything that does not start with curly braces
+    const literalReg = /(^.+?){{|^([^{]+)$/;
 
-    // if no template was used, return as fix string
-    if (!regExpRes) {
-      return [
-        {
-          'ogc:Literal': [template]
-        }
-      ];
-      // if templates are being used
-    } else {
-      // split the original string at occurences of placeholders
-      // the resulting array will be used for the Literal property
-      const literalsWEmptyStrings = template.split(regExp);
-      const literals: string[] = [];
-      // remove empty strings
-      literalsWEmptyStrings.forEach((lit: string) => {
-        if (lit.length !== 0) {
-          literals.push(lit);
-        }
-      });
-      // slice the curly braces of the placeholder matches
-      // and use the resulting array for the PropertyName property
-      const propertyName = regExpRes.map(reg => {
-        return reg.slice(2, reg.length - 2);
-      });
+    const tokens = [];
+    const placeholderType = 'placeholder';
+    const literalType = 'literal';
+    let templateReducer = template;
+    while (templateReducer.length) {
+      const phMatch = placeholderReg.exec(templateReducer);
+      if (phMatch) {
+        tokens.push({type: placeholderType, value: phMatch[1]});
+        // we have to strip the curly braces too
+        templateReducer = templateReducer.substr(phMatch[1].length + 4);
+      }
 
-      // if template starts with a placeholder, PropertyName must be set first
-      // otherwise Literal must be set first.
-      if (startsWithPlaceholder) {
-        return [{
-          'ogc:PropertyName': propertyName,
-          'ogc:Literal': literals
-        }];
-      } else {
-        return [{
-          'ogc:Literal': literals,
-          'ogc:PropertyName': propertyName
-        }];
+      const litMatch = literalReg.exec(templateReducer);
+      if (litMatch) {
+        if (litMatch[1]) {
+          tokens.push({type: literalType, value: litMatch[1]});
+          templateReducer = templateReducer.substr(litMatch[1].length);
+        } else {
+          tokens.push({type: literalType, value: litMatch[2]});
+          templateReducer = templateReducer.substr(litMatch[2].length);
+        }
       }
     }
+
+    const sldLabel = tokens.map((token: any) => {
+      if (token.type === placeholderType) {
+        return {
+          'ogc:PropertyName': token.value
+        };
+      }
+      return {
+        'ogc:Literal': token.value
+      };
+
+    });
+    return [sldLabel];
   };
 
   /**

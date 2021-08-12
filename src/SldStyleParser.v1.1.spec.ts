@@ -33,6 +33,7 @@ import point_simplex from '../data/styles/point_simplex';
 import point_simpleslash from '../data/styles/point_simpleslash';
 import point_fontglyph from '../data/styles/point_fontglyph';
 import point_styledLabel_literalPlaceholder from '../data/styles/point_styledLabel_literalPlaceholder';
+import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_elementOrder';
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
 
@@ -312,6 +313,15 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_styledLabel_literalPlaceholder);
+        });
+    });
+    it('can read a SLD style with a styled label and preserve its order', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync('./data/slds/1.1/point_styledLabel_elementOrder.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_styledLabel_elementOrder);
         });
     });
 
@@ -820,7 +830,7 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
     it('creates the correct order in a text symbolizer', () => {
       expect.assertions(2);
       const styleParserOrder = new SldStyleParser({ sldVersion: '1.1.0' });
-      return styleParserOrder.writeStyle(point_styledLabel_literalPlaceholder)
+      return styleParserOrder.writeStyle(point_styledLabel_elementOrder)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
           const sld = fs.readFileSync('./data/slds/1.1/point_styledLabel_elementOrder.sld', 'utf8');
