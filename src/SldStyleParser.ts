@@ -253,8 +253,8 @@ export class SldStyleParser implements StyleParser {
    * @return {string} The name to be used for the GeoStyler Style Style
    */
   getStyleNameFromSldObject(sldObject: any): string {
-    const userStyleTitle = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle[0].Title[0]');
-    const namedLayerName = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].Name[0]');
+    const userStyleTitle = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle[0].Title[0]._');
+    const namedLayerName = _get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].Name[0]._');
     return userStyleTitle ? userStyleTitle
       : namedLayerName ? namedLayerName : '';
   }
@@ -266,8 +266,8 @@ export class SldStyleParser implements StyleParser {
    * @return {Filter} The GeoStyler-Style FunctionFilter
    */
   getStrMatchesFunctionFilterFromSldFilter(sldFilter: any): StrMatchesFunctionFilter {
-    const propertyName = _get(sldFilter, 'Function[0].PropertyName[0]');
-    const literal = _get(sldFilter, 'Function[0].Literal[0]');
+    const propertyName = _get(sldFilter, 'Function[0].PropertyName[0]._');
+    const literal = _get(sldFilter, 'Function[0].Literal[0]._');
     const regex = new RegExp(literal);
     return [
       'FN_strMatches',
@@ -308,11 +308,11 @@ export class SldStyleParser implements StyleParser {
       const propertyIsFilter = !!sldFilter.Function;
       const propertyOrFilter = propertyIsFilter
         ? this.getFunctionFilterFromSldFilter(sldFilter)
-        : sldFilter.PropertyName[0];
+        : sldFilter.PropertyName[0]._;
 
       let value = null;
       if (sldOperatorName !== 'PropertyIsNull') {
-        value = sldFilter.Literal[0];
+        value = sldFilter.Literal[0]._;
       }
       const shouldParseFloat = this.forceCasting || propertyIsFilter ||
           this.numericFilterFields.indexOf(propertyOrFilter as string) !== -1;
@@ -338,15 +338,8 @@ export class SldStyleParser implements StyleParser {
 
     } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
-      const filters: Filter[] = [];
-      Object.keys(sldFilter).forEach((op) => {
-        if (sldFilter[op].length === 1) {
-          filters.push(this.getFilterFromOperatorAndComparison(op, sldFilter[op][0]));
-        } else {
-          sldFilter[op].forEach((el: any) => {
-            filters.push(this.getFilterFromOperatorAndComparison(op, el));
-          });
-        }
+      const filters: Filter[] = sldFilter.$$.map((op: any) => {
+        return this.getFilterFromOperatorAndComparison(op['#name'], op);
       });
       filter = [
         combinationOperator,
@@ -354,8 +347,8 @@ export class SldStyleParser implements StyleParser {
       ];
     } else if (Object.keys(SldStyleParser.negationOperatorMap).includes(sldOperatorName)) {
       const negationOperator = SldStyleParser.negationOperatorMap[sldOperatorName];
-      const negatedOperator = Object.keys(sldFilter)[0];
-      const negatedComparison = sldFilter[negatedOperator][0];
+      const negatedComparison = sldFilter.$$[0];
+      const negatedOperator = negatedComparison['#name'];
       const negatedFilter: Filter = this.getFilterFromOperatorAndComparison(
         negatedOperator,
         negatedComparison
@@ -385,14 +378,11 @@ export class SldStyleParser implements StyleParser {
     if (!sldFilters) {
       return;
     }
-    const sldFilter = sldFilters[0];
-    const operator = Object.keys(sldFilter).find((key) => {
-      return key !== '$';
-    });
+    const comparison = _get(sldFilters, '[0].$$[0]');
+    const operator = comparison['#name'];
     if (!operator) {
       return;
     }
-    const comparison = sldFilter[operator][0];
     const filter = this.getFilterFromOperatorAndComparison(operator, comparison);
     return filter;
   }
@@ -406,10 +396,10 @@ export class SldStyleParser implements StyleParser {
   getScaleDenominatorFromRule(sldRule: any): ScaleDenominator | undefined {
     const scaleDenominator: ScaleDenominator = <ScaleDenominator> {};
     if (sldRule.MinScaleDenominator) {
-      scaleDenominator.min = parseFloat(sldRule.MinScaleDenominator[0]);
+      scaleDenominator.min = parseFloat(sldRule.MinScaleDenominator[0]._);
     }
     if (sldRule.MaxScaleDenominator) {
-      scaleDenominator.max = parseFloat(sldRule.MaxScaleDenominator[0]);
+      scaleDenominator.max = parseFloat(sldRule.MaxScaleDenominator[0]._);
     }
 
     return (scaleDenominator.min || scaleDenominator.max)
@@ -424,28 +414,31 @@ export class SldStyleParser implements StyleParser {
    * @return {MarkSymbolizer} The GeoStyler-Style MarkSymbolizer
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
-    const wellKnownName: WellKnownName = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
-    let strokeParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
-    if (strokeParams.length === 0) {
+    const wellKnownName: WellKnownName = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]._');
+    let strokeParams: any[];
+    if (this.sldVersion === '1.0.0') {
+      strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].CssParameter') || [];
+    } else {
       strokeParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Stroke[0].SvgParameter') || [];
     }
-    const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
-    const size: string = _get(sldSymbolizer, 'Graphic[0].Size[0]');
-    const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
+    const opacity: string = _get(sldSymbolizer, 'Graphic[0].Opacity[0]._');
+    const size: string = _get(sldSymbolizer, 'Graphic[0].Size[0]._');
+    const rotation: string = _get(sldSymbolizer, 'Graphic[0].Rotation[0]._');
 
-    let fillParams: any[] = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
-    if (fillParams.length === 0) {
+    let fillParams: any[];
+    if (this.sldVersion === '1.0.0') {
+      fillParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter') || [];
+    } else {
       fillParams = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter') || [];
     }
     const colorIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill';
     });
     let color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
-    if (!color) {
-      const svg = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter[' + colorIdx + ']._');
-      if (svg) {
-        color = svg;
-      }
+    if (this.sldVersion === '1.0.0') {
+      color = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
+    } else {
+      color = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter[' + colorIdx + ']._');
     }
 
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
@@ -453,7 +446,10 @@ export class SldStyleParser implements StyleParser {
     });
     let fillOpacity: string = _get(sldSymbolizer,
       'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
-    if (!fillOpacity) {
+    if (this.sldVersion === '1.0.0') {
+      fillOpacity = _get(sldSymbolizer,
+        'Graphic[0].Mark[0].Fill[0].CssParameter[' + fillOpacityIdx + ']._');
+    } else {
       fillOpacity = _get(sldSymbolizer,
         'Graphic[0].Mark[0].Fill[0].SvgParameter[' + fillOpacityIdx + ']._');
     }
@@ -535,9 +531,9 @@ export class SldStyleParser implements StyleParser {
       kind: 'Icon',
       image: onlineResource.$['xlink:href']
     };
-    const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]');
-    const size = _get(sldSymbolizer, 'Graphic[0].Size[0]');
-    const rotate = _get(sldSymbolizer, 'Graphic[0].Rotation[0]');
+    const opacity = _get(sldSymbolizer, 'Graphic[0].Opacity[0]._');
+    const size = _get(sldSymbolizer, 'Graphic[0].Size[0]._');
+    const rotate = _get(sldSymbolizer, 'Graphic[0].Rotation[0]._');
     if (opacity) {
       iconSymbolizer.opacity = opacity;
     }
@@ -561,7 +557,7 @@ export class SldStyleParser implements StyleParser {
    */
   getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
     let pointSymbolizer: PointSymbolizer = <PointSymbolizer> {};
-    const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]');
+    const wellKnownName: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]._');
     const externalGraphic: any = _get(sldSymbolizer, 'Graphic[0].ExternalGraphic[0]');
     if (externalGraphic) {
 
@@ -571,7 +567,7 @@ export class SldStyleParser implements StyleParser {
       // geoserver does not set a wellKnownName for square explicitly since it is the default value.
       // Therefore, we have to set the wellKnownName to square if no wellKownName is given.
       if (!wellKnownName) {
-        _set(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]', 'square');
+        _set(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]._', 'square');
       }
       pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer);
     }
@@ -590,77 +586,73 @@ export class SldStyleParser implements StyleParser {
     const lineSymbolizer: LineSymbolizer = <LineSymbolizer> {
       kind: 'Line'
     };
-    const strokeKeys = Object.keys(_get(sldSymbolizer, 'Stroke[0]')) || [];
-    if (strokeKeys.length < 1) {
+    const strokeParameters = _get(sldSymbolizer, 'Stroke[0].$$') || [];
+    if (strokeParameters.length < 1) {
       throw new Error('LineSymbolizer cannot be parsed. No Stroke detected');
     }
-    strokeKeys.forEach((strokeKey: string) => {
-      switch (strokeKey) {
-        case 'CssParameter':
-        case 'SvgParameter':
-          let cssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
-          if (cssParameters.length === 0) {
-            cssParameters = _get(sldSymbolizer, 'Stroke[0].SvgParameter') || [];
-          }
-          if (cssParameters.length < 1) {
-            throw new Error('LineSymbolizer can not be parsed. No CssParameters detected.');
-          }
-          cssParameters.forEach((cssParameter: any) => {
-            const {
-              $: {
-                name
-              },
-              _: value
-            } = cssParameter;
+    let cssParameters: any[];
+    if (this.sldVersion === '1.0.0') {
+      cssParameters = strokeParameters.filter((strokeParam: any) => strokeParam['#name'] === 'CssParameter');
+    } else {
+      cssParameters = strokeParameters.filter((strokeParam: any) => strokeParam['#name'] === 'SvgParameter');
+    }
+    if (cssParameters.length < 1) {
+      throw new Error('LineSymbolizer can not be parsed. No CssParameters detected.');
+    }
+    cssParameters.forEach((cssParameter: any) => {
+      const {
+        $: {
+          name
+        },
+        _: value
+      } = cssParameter;
 
-            switch (name) {
-              case 'stroke':
-                lineSymbolizer.color = value;
-                break;
-              case 'stroke-width':
-                lineSymbolizer.width = parseFloat(value);
-                break;
-              case 'stroke-opacity':
-                lineSymbolizer.opacity = parseFloat(value);
-                break;
-              case 'stroke-linejoin':
-                // geostyler-style and ol use 'miter' whereas sld uses 'mitre'
-                if (value === 'mitre') {
-                  lineSymbolizer.join = 'miter';
-                } else {
-                  lineSymbolizer.join = value;
-                }
-                break;
-              case 'stroke-linecap':
-                lineSymbolizer.cap = value;
-                break;
-              case 'stroke-dasharray':
-                const dashStringAsArray = value.split(' ').map((a: string) => parseFloat(a));
-                lineSymbolizer.dasharray = dashStringAsArray;
-                break;
-              case 'stroke-dashoffset':
-                lineSymbolizer.dashOffset = parseFloat(value);
-                break;
-              default:
-                break;
-            }
-          });
+      switch (name) {
+        case 'stroke':
+          lineSymbolizer.color = value;
           break;
-        case 'GraphicStroke':
-          lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(
-            sldSymbolizer.Stroke[0].GraphicStroke[0]
-          );
+        case 'stroke-width':
+          lineSymbolizer.width = parseFloat(value);
           break;
-        case 'GraphicFill':
-          lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
-            sldSymbolizer.Stroke[0].GraphicFill[0]
-          );
+        case 'stroke-opacity':
+          lineSymbolizer.opacity = parseFloat(value);
+          break;
+        case 'stroke-linejoin':
+          // geostyler-style and ol use 'miter' whereas sld uses 'mitre'
+          if (value === 'mitre') {
+            lineSymbolizer.join = 'miter';
+          } else {
+            lineSymbolizer.join = value;
+          }
+          break;
+        case 'stroke-linecap':
+          lineSymbolizer.cap = value;
+          break;
+        case 'stroke-dasharray':
+          const dashStringAsArray = value.split(' ').map((a: string) => parseFloat(a));
+          lineSymbolizer.dasharray = dashStringAsArray;
+          break;
+        case 'stroke-dashoffset':
+          lineSymbolizer.dashOffset = parseFloat(value);
           break;
         default:
           break;
       }
     });
-    const perpendicularOffset = _get(sldSymbolizer, 'PerpendicularOffset[0]');
+
+    const graphicStroke = strokeParameters.find(
+      (strokeParameter: any) => strokeParameter['#name'] === 'GraphicStroke');
+    if (graphicStroke !== undefined) {
+      lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(graphicStroke);
+    }
+
+    const graphicFill = strokeParameters.find(
+      (strokeParameter: any) => strokeParameter['#name'] === 'GraphicFill');
+    if (graphicFill !== undefined) {
+      lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(graphicFill);
+    }
+
+    const perpendicularOffset = _get(sldSymbolizer, 'PerpendicularOffset[0]._');
     if (perpendicularOffset !== undefined) {
       lineSymbolizer.perpendicularOffset = Number(perpendicularOffset);
     }
@@ -679,16 +671,21 @@ export class SldStyleParser implements StyleParser {
     const fillSymbolizer: FillSymbolizer = <FillSymbolizer> {
       kind: 'Fill'
     };
-    let fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameter') || [];
-    if (fillCssParameters.length === 0) {
+    let fillCssParameters;
+    if (this.sldVersion === '1.0.0') {
+      fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameter') || [];
+    } else {
       fillCssParameters = _get(sldSymbolizer, 'Fill[0].SvgParameter') || [];
     }
-    let strokeCssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
-    if (strokeCssParameters.length === 0) {
+
+    let strokeCssParameters;
+    if (this.sldVersion === '1.0.0') {
+      strokeCssParameters = _get(sldSymbolizer, 'Stroke[0].CssParameter') || [];
+    } else {
       strokeCssParameters = _get(sldSymbolizer, 'Stroke[0].SvgParameter') || [];
     }
-    const graphicFill = _get(sldSymbolizer, 'Fill[0].GraphicFill[0]');
 
+    const graphicFill = _get(sldSymbolizer, 'Fill[0].GraphicFill[0]');
     if (graphicFill) {
       fillSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
         graphicFill
@@ -812,7 +809,7 @@ export class SldStyleParser implements StyleParser {
       contrastEnhancement.enhancementType = 'normalize';
     }
     // parse gammavalue
-    let gammaValue = _get(sldContrastEnhancement, 'GammaValue[0]');
+    let gammaValue = _get(sldContrastEnhancement, 'GammaValue[0]._');
     if (gammaValue) {
       gammaValue = parseFloat(gammaValue);
     }
@@ -828,7 +825,7 @@ export class SldStyleParser implements StyleParser {
    */
   getChannelFromSldChannel(sldChannel: any): Channel {
     const channel: Channel = {
-      sourceChannelName: _get(sldChannel, 'SourceChannelName[0]'),
+      sourceChannelName: _get(sldChannel, 'SourceChannelName[0]._'),
     } as Channel;
     const contrastEnhancement = _get(sldChannel, 'ContrastEnhancement[0]');
     if (contrastEnhancement) {
@@ -882,7 +879,7 @@ export class SldStyleParser implements StyleParser {
       kind: 'Raster'
     };
     // parse Opacity
-    let opacity = _get(sldSymbolizer, 'Opacity[0]');
+    let opacity = _get(sldSymbolizer, 'Opacity[0]._');
     if (opacity) {
       opacity = parseFloat(opacity);
       rasterSymbolizer.opacity = opacity;
@@ -910,12 +907,7 @@ export class SldStyleParser implements StyleParser {
 
   /**
    * Create a template string from a TextSymbolizer Label element.
-   * Due to the non-bidirectional behaviour of xml2js, we cannot
-   * recreate any template configuration. The current behaviour is as follows:
-   *
-   * Literals and Placeholders will be merge alternating, beginning with the property
-   * that comes first. If the number of properties between Literals and Placeholders
-   * is not equal, the remaining ones will be appended to the end of the template string.
+   * The ordering of the elemments inside the Label element is preserved.
    *
    * Examples:
    * <Label>
@@ -942,72 +934,33 @@ export class SldStyleParser implements StyleParser {
    *  <PropertyName>john</PropertyName>
    *  <Literal>foo</Literal>
    * </Label>
-   * --> "{{bar}}foo{{john}}"
+   * --> "{{bar}}{{john}}foo"
    *
    * <Label>
    *  <PropertyName>bar</PropertyName>
    *  <PropertyName>john</PropertyName>
-   *  <PropertyName>doe</PropertyName>
    *  <Literal>foo</Literal>
+   *  <PropertyName>doe</PropertyName>
    * </Label>
-   * --> "{{bar}}foo{{john}}{{doe}}"
+   * --> "{{bar}}{{john}}foo{{doe}}"
    *
    */
   getTextSymbolizerLabelFromSldSymbolizer = (sldLabel: any): string => {
-    let label = '';
-    const literals = _get(sldLabel, 'Literal');
-    const placeholders = _get(sldLabel, 'PropertyName');
-    const literalIsFirst: boolean = Object.keys(sldLabel)[0] === 'Literal';
-
-    if (placeholders && placeholders.length > 0) {
-      // if placeholders are being used
-
-      // add braces around placeholders
-      const placeholdersBraces = placeholders.map((plc: string) => `{{${plc}}}`);
-
-      if (literals && literals.length > 0) {
-        // if there are placeholders and literals
-        if (literalIsFirst) {
-          // start with literals
-          literals.forEach((lit: string, idx: number) => {
-            label += `${lit}`;
-            if (placeholdersBraces[idx]) {
-              label += `${placeholdersBraces[idx]}`;
-            }
-          });
-          // if there are more placeholders than literals,
-          // add the remaining placeholders at the end
-          if (placeholdersBraces.length > literals.length) {
-            label += placeholdersBraces.join('');
-          }
-        } else {
-          // start with placeholders
-          placeholdersBraces.forEach((plc: string, idx: number) => {
-            label += `${plc}`;
-            if (literals[idx]) {
-              label += `${literals[idx]}`;
-            }
-          });
-          // if there are more literals than placeholders,
-          // add the remaining literals at the end
-          if (literals.length > placeholdersBraces.length) {
-            label += literals.join('');
-          }
+    const label: string = sldLabel.$$
+      .map((labelEl: any) => {
+        const labelName = labelEl['#name'];
+        switch (labelName) {
+          case '__text__':
+          case 'Literal':
+            return labelEl._;
+          case 'PropertyName':
+            return `{{${labelEl._}}}`;
+          // TODO handle CDATA property
+          default:
+            return '';
         }
-
-      } else {
-        // if there are placeholders but no literals
-        // set curly braces around placeholders and simply join them with no spaces
-        label = placeholdersBraces.join('');
-      }
-
-    } else if (literals && literals.length > 0) {
-      // if no placeholders are being used
-      // create a simple string
-      label = literals.join('');
-    } else if (typeof sldLabel === 'string') {
-      label = sldLabel;
-    }
+      })
+      .join('');
     return label;
   };
 
@@ -1021,8 +974,10 @@ export class SldStyleParser implements StyleParser {
     const textSymbolizer: TextSymbolizer = <TextSymbolizer> {
       kind: 'Text'
     };
-    let fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
-    if (fontCssParameters.length === 0) {
+    let fontCssParameters;
+    if (this.sldVersion === '1.0.0') {
+      fontCssParameters = _get(sldSymbolizer, 'Font[0].CssParameter') || [];
+    } else {
       fontCssParameters = _get(sldSymbolizer, 'Font[0].SvgParameter') || [];
     }
 
@@ -1031,15 +986,21 @@ export class SldStyleParser implements StyleParser {
       textSymbolizer.label = this.getTextSymbolizerLabelFromSldSymbolizer(label);
     }
 
-    let color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
-    if (!color) {
+    let color;
+    if (this.sldVersion === '1.0.0') {
+      color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
+    } else {
       color = _get(sldSymbolizer, 'Fill[0].SvgParameter[0]._');
     }
-    let haloColorCssParameter = _get(sldSymbolizer, 'Halo[0].Fill[0].CssParameter') || [];
-    if (haloColorCssParameter.length === 0) {
+
+    let haloColorCssParameter;
+    if (this.sldVersion === '1.0.0') {
+      haloColorCssParameter = _get(sldSymbolizer, 'Halo[0].Fill[0].CssParameter') || [];
+    } else {
       haloColorCssParameter = _get(sldSymbolizer, 'Halo[0].Fill[0].SvgParameter') || [];
     }
-    const haloRadius = _get(sldSymbolizer, 'Halo[0].Radius[0]');
+
+    const haloRadius = _get(sldSymbolizer, 'Halo[0].Radius[0]._');
     if (color) {
       textSymbolizer.color = color;
     }
@@ -1064,14 +1025,14 @@ export class SldStyleParser implements StyleParser {
     });
     const displacement = _get(sldSymbolizer, 'LabelPlacement[0].PointPlacement[0].Displacement[0]');
     if (displacement) {
-      const x = displacement.DisplacementX[0];
-      const y = displacement.DisplacementY[0];
+      const x = displacement.DisplacementX[0]._;
+      const y = displacement.DisplacementY[0]._;
       textSymbolizer.offset = [
         x ? parseFloat(x) : 0,
         y ? parseFloat(y) : 0,
       ];
     }
-    const rotation = _get(sldSymbolizer, 'LabelPlacement[0].PointPlacement[0].Rotation[0]');
+    const rotation = _get(sldSymbolizer, 'LabelPlacement[0].PointPlacement[0].Rotation[0]._');
     if (rotation) {
       textSymbolizer.rotate = parseFloat(rotation);
     }
@@ -1109,34 +1070,25 @@ export class SldStyleParser implements StyleParser {
    * @return {Symbolizer[]} The GeoStyler-Style Symbolizer Array
    */
   getSymbolizersFromRule(sldRule: any): Symbolizer[] {
-
-    const symbolizers: Symbolizer[] = <Symbolizer[]> [];
-    const symbolizerNames: string[] = Object.keys(sldRule).filter(key => key.endsWith('Symbolizer'));
-    symbolizerNames.forEach((sldSymbolizerName: string) => {
-      sldRule[sldSymbolizerName].forEach((sldSymbolizer: Symbolizer) => {
-        let symbolizer: any;
+    const symbolizers: Symbolizer[] = sldRule.$$
+      .filter((subEl: any) => subEl['#name'].endsWith('Symbolizer'))
+      .map((sldSymbolizer: any) => {
+        const sldSymbolizerName: string = sldSymbolizer['#name'];
         switch (sldSymbolizerName) {
           case 'PointSymbolizer':
-            symbolizer = this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer);
-            break;
+            return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer);
           case 'LineSymbolizer':
-            symbolizer = this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer);
-            break;
+            return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer);
           case 'TextSymbolizer':
-            symbolizer = this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
-            break;
+            return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
           case 'PolygonSymbolizer':
-            symbolizer = this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
-            break;
+            return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
           case 'RasterSymbolizer':
-            symbolizer = this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer);
-            break;
+            return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer);
           default:
             throw new Error('Failed to parse SymbolizerKind from SldRule');
         }
-        symbolizers.push(symbolizer);
       });
-    });
 
     return symbolizers;
   }
@@ -1158,9 +1110,11 @@ export class SldStyleParser implements StyleParser {
             const filter: Filter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
             const symbolizers: Symbolizer[] = this.getSymbolizersFromRule(sldRule);
-            const name = sldRule.Title
-              ? sldRule.Title[0]
-              : (sldRule.Name ? sldRule.Name[0] : '');
+            const ruleTitle = _get(sldRule, 'Title[0]._');
+            const ruleName = _get(sldRule, 'Name[0]._');
+            const name = ruleTitle !== undefined
+              ? ruleTitle
+              : (ruleName !== undefined ? ruleName : '');
             const rule: Rule = <Rule> {
               name
             };
@@ -1207,7 +1161,10 @@ export class SldStyleParser implements StyleParser {
   readStyle(sldString: string): Promise<Style> {
     return new Promise<Style>((resolve, reject) => {
       const options = {
-        tagNameProcessors: [this.tagNameProcessor]
+        tagNameProcessors: [this.tagNameProcessor],
+        explicitChildren: true,
+        preserveChildrenOrder: true,
+        charsAsChildren: true
       };
       try {
         parseString(sldString, options, (err: any, result: any) => {
@@ -1431,56 +1388,47 @@ export class SldStyleParser implements StyleParser {
    * Get the Label from a TextSymbolizer
    */
   getSldLabelFromTextSymbolizer = (template: string): [any] => {
-    // prefix indicating that a template is being used
-    const prefix: string = '\\{\\{';
-    // suffix indicating that a template is being used
-    const suffix: string = '\\}\\}';
-    // RegExp to match all occurences encapsuled between two curly braces
-    // including the curly braces
-    const regExp: RegExp = new RegExp(prefix + '.*?' + suffix, 'g');
-    const regExpRes = template.match(regExp);
-    // check if a template starts with a placeholder or a literal
-    const startsWithPlaceholder = template.startsWith('{{');
+    // matches anything inside double curly braces (non-greedy)
+    const placeholderReg = /^{{(.*?)}}/;
+    // matches anything that does not start with curly braces
+    const literalReg = /(^.+?){{|^([^{]+)$/;
 
-    // if no template was used, return as fix string
-    if (!regExpRes) {
-      return [
-        {
-          'ogc:Literal': [template]
-        }
-      ];
-      // if templates are being used
-    } else {
-      // split the original string at occurences of placeholders
-      // the resulting array will be used for the Literal property
-      const literalsWEmptyStrings = template.split(regExp);
-      const literals: string[] = [];
-      // remove empty strings
-      literalsWEmptyStrings.forEach((lit: string) => {
-        if (lit.length !== 0) {
-          literals.push(lit);
-        }
-      });
-      // slice the curly braces of the placeholder matches
-      // and use the resulting array for the PropertyName property
-      const propertyName = regExpRes.map(reg => {
-        return reg.slice(2, reg.length - 2);
-      });
+    const tokens = [];
+    const placeholderType = 'placeholder';
+    const literalType = 'literal';
+    let templateReducer = template;
+    while (templateReducer.length) {
+      const phMatch = placeholderReg.exec(templateReducer);
+      if (phMatch) {
+        tokens.push({type: placeholderType, value: phMatch[1]});
+        // we have to strip the curly braces too
+        templateReducer = templateReducer.substr(phMatch[1].length + 4);
+      }
 
-      // if template starts with a placeholder, PropertyName must be set first
-      // otherwise Literal must be set first.
-      if (startsWithPlaceholder) {
-        return [{
-          'ogc:PropertyName': propertyName,
-          'ogc:Literal': literals
-        }];
-      } else {
-        return [{
-          'ogc:Literal': literals,
-          'ogc:PropertyName': propertyName
-        }];
+      const litMatch = literalReg.exec(templateReducer);
+      if (litMatch) {
+        if (litMatch[1]) {
+          tokens.push({type: literalType, value: litMatch[1]});
+          templateReducer = templateReducer.substr(litMatch[1].length);
+        } else {
+          tokens.push({type: literalType, value: litMatch[2]});
+          templateReducer = templateReducer.substr(litMatch[2].length);
+        }
       }
     }
+
+    const sldLabel = tokens.map((token: any) => {
+      if (token.type === placeholderType) {
+        return {
+          'ogc:PropertyName': token.value
+        };
+      }
+      return {
+        'ogc:Literal': token.value
+      };
+
+    });
+    return [sldLabel];
   };
 
   /**

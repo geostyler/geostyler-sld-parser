@@ -9,7 +9,9 @@
           <se:Name/>
           <se:TextSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
             <se:Label>
+              <ogc:Literal>prefix: </ogc:Literal>
               <ogc:PropertyName>name</ogc:PropertyName>
+              <ogc:PropertyName>title</ogc:PropertyName>
               <ogc:Literal> entity</ogc:Literal>
             </se:Label>
             <se:Font>

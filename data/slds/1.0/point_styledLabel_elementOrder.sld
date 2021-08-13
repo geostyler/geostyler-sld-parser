@@ -10,7 +10,9 @@
           <Name/>
           <TextSymbolizer>
             <Label>
+              <ogc:Literal>prefix: </ogc:Literal>
               <ogc:PropertyName>name</ogc:PropertyName>
+              <ogc:PropertyName>title</ogc:PropertyName>
               <ogc:Literal> entity</ogc:Literal>
             </Label>
             <Font>
