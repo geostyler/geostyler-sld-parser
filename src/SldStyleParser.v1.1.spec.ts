@@ -20,6 +20,7 @@ import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
 import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
+import point_simplepoint_categorizefunctionfilter from '../data/styles/point_simplepoint_categorizefunctionfilter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_floatingPoint from '../data/styles/point_externalgraphic_floatingPoint';
@@ -322,6 +323,15 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
         .then((geoStylerStyle: Style) => {
           expect(geoStylerStyle).toBeDefined();
           expect(geoStylerStyle).toEqual(point_styledLabel_elementOrder);
+        });
+    });
+    it('can read a SLD style with a categorize function', () => {
+      expect.assertions(2);
+      const sld = fs.readFileSync('./data/slds/1.1/point_simplepoint_categorizefunctionfilter.sld', 'utf8');
+      return styleParser.readStyle(sld)
+        .then((geoStylerStyle: Style) => {
+          expect(geoStylerStyle).toBeDefined();
+          expect(geoStylerStyle).toEqual(point_simplepoint_categorizefunctionfilter);
         });
     });
 
@@ -827,13 +837,24 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
         });
     });
 
-    it('creates the correct order in a text symbolizer', () => {
+    it('can write the correct order in a text symbolizer', () => {
       expect.assertions(2);
       const styleParserOrder = new SldStyleParser({ sldVersion: '1.1.0' });
       return styleParserOrder.writeStyle(point_styledLabel_elementOrder)
         .then((sldString: string) => {
           expect(sldString).toBeDefined();
           const sld = fs.readFileSync('./data/slds/1.1/point_styledLabel_elementOrder.sld', 'utf8');
+          expect(sldString).toEqual(sld.trim());
+        });
+    });
+
+    it('can write a SLD 1.1 style with a categorize function', () => {
+      expect.assertions(2);
+      const styleParserOrder = new SldStyleParser({ sldVersion: '1.1.0' });
+      return styleParserOrder.writeStyle(point_simplepoint_categorizefunctionfilter)
+        .then((sldString: string) => {
+          expect(sldString).toBeDefined();
+          const sld = fs.readFileSync('./data/slds/1.1/point_simplepoint_categorizefunctionfilter.sld', 'utf8');
           expect(sldString).toEqual(sld.trim());
         });
     });
