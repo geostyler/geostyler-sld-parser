@@ -24,6 +24,8 @@ import {
   ContrastEnhancement,
   StrMatchesFunctionFilter,
   UnsupportedProperties
+  ReadStyleResult,
+  WriteStyleResult
 } from 'geostyler-style';
 
 import {
@@ -64,7 +66,7 @@ const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
  * @class SldStyleParser
  * @implements StyleParser
  */
-export class SldStyleParser implements StyleParser {
+export class SldStyleParser implements StyleParser<string> {
 
   /**
    * The name of the SLD Style Parser.
@@ -1242,8 +1244,8 @@ export class SldStyleParser implements StyleParser {
    * @param {string} sldString A SLD as a string.
    * @return {Promise} The Promise resolving with the GeoStyler-Style Style
    */
-  readStyle(sldString: string): Promise<Style> {
-    return new Promise<Style>((resolve, reject) => {
+  readStyle(sldString: string): Promise<ReadStyleResult> {
+    return new Promise<ReadStyleResult>((resolve) => {
       const options = {
         tagNameProcessors: [this.tagNameProcessor],
         explicitChildren: true,
@@ -1253,13 +1255,19 @@ export class SldStyleParser implements StyleParser {
       try {
         parseString(sldString, options, (err: any, result: any) => {
           if (err) {
-            reject(`Error while parsing sldString: ${err}`);
+            resolve({
+              errors: [err]
+            });
           }
           const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(result);
-          resolve(geoStylerStyle);
+          resolve({
+            output: geoStylerStyle
+          });
         });
       } catch (error) {
-        reject(error);
+        resolve({
+          errors: [error]
+        });
       }
     });
   }
@@ -1272,8 +1280,8 @@ export class SldStyleParser implements StyleParser {
    * @param {Style} geoStylerStyle A GeoStyler-Style Style.
    * @return {Promise} The Promise resolving with the SLD as a string.
    */
-  writeStyle(geoStylerStyle: Style): Promise<string> {
-    return new Promise<any>((resolve, reject) => {
+  writeStyle(geoStylerStyle: Style): Promise<WriteStyleResult<string>> {
+    return new Promise<WriteStyleResult<string>>(resolve => {
       try {
         const builderOpts = {
           renderOpts: {pretty: this.prettyOutput}
@@ -1282,9 +1290,13 @@ export class SldStyleParser implements StyleParser {
         const builder = new Builder(builderOpts);
         const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
         const sldString = builder.buildObject(sldObject);
-        resolve(sldString);
+        resolve({
+          output: sldString
+        });
       } catch (error) {
-        reject(error);
+        resolve({
+          errors: [error]
+        });
       }
     });
   }
