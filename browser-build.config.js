@@ -7,35 +7,30 @@ module.exports = {
   output: {
     filename: "sldStyleParser.js",
     path: __dirname + "/browser",
-    library: "GeoStylerSLDParser"
+    library: "GeoStylerSLDParser",
+    chunkFormat: "array-push"
   },
   resolve: {
-    // Add '.ts' as resolvable extensions.
-    extensions: [".ts", ".js", ".json"]
+    extensions: [".ts", ".js", ".json"],
+    fallback: {
+      'string_decoder': require.resolve("string_decoder"),
+      emitter: require.resolve("emitter"),
+      buffer: require.resolve("buffer")
+    }
   },
   optimization: {
     minimizer: [
       new TerserPlugin()
     ]
   },
+  target: 'es5',
   module: {
     rules: [
-      // All files with a '.ts'
       {
-        test: /\.ts$/,
-        include: __dirname + '/src',
-        use: [
-          {
-            loader: require.resolve('ts-loader'),
-            options: {
-              allowTsInNodeModules: true,
-              compilerOptions: {
-                "declaration": false,
-                "outDir": "browser"
-              }
-            }
-          }
-        ],
+        test: /\.(ts|js)$/,
+        use: {
+          loader: 'babel-loader'
+        }
       }
     ]
   }
