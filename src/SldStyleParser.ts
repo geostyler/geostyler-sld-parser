@@ -22,7 +22,8 @@ import {
   ColorMapEntry,
   Channel,
   ContrastEnhancement,
-  StrMatchesFunctionFilter
+  StrMatchesFunctionFilter,
+  UnsupportedProperties
 } from 'geostyler-style';
 
 import {
@@ -71,6 +72,66 @@ export class SldStyleParser implements StyleParser {
   public static title = 'SLD Style Parser';
 
   title = 'SLD Style Parser';
+
+  unsupportedProperties: UnsupportedProperties = {
+    Symbolizer: {
+      MarkSymbolizer: {
+        avoidEdges: 'none',
+        blur: 'none',
+        offset: 'none',
+        offsetAnchor: 'none',
+        pitchAlignment: 'none',
+        pitchScale: 'none',
+        visibility: 'none'
+      },
+      FillSymbolizer: {
+        antialias: 'none',
+        opacity: {
+          support: 'none',
+          info: 'General opacity not supported. Use fillOpacity and strokeOpacity instead.'
+        },
+        visibility: 'none'
+      },
+      IconSymbolizer: {
+        allowOverlap: 'none',
+        anchor: 'none',
+        avoidEdges: 'none',
+        color: 'none',
+        haloBlur: 'none',
+        haloColor: 'none',
+        haloWidth: 'none',
+        keepUpright: 'none',
+        offset: 'none',
+        offsetAnchor: 'none',
+        optional: 'none',
+        padding: 'none',
+        pitchAlignment: 'none',
+        rotationAlignment: 'none',
+        textFit: 'none',
+        textFitPadding: 'none',
+        visibility: 'none'
+      },
+      LineSymbolizer: {
+        blur: 'none',
+        gapWidth: 'none',
+        gradient: 'none',
+        miterLimit: 'none',
+        roundLimit: 'none',
+        spacing: 'none',
+        visibility: 'none'
+      },
+      RasterSymbolizer: {
+        brightnessMax: 'none',
+        brightnessMin: 'none',
+        contrast: 'none',
+        fadeDuration: 'none',
+        hueRotate: 'none',
+        resampling: 'none',
+        saturation: 'none',
+        visibility: 'none'
+      }
+    }
+  };
 
   static negationOperatorMap = {
     Not: '!'
