@@ -88,7 +88,7 @@ export class SldStyleParser implements StyleParser {
         antialias: 'none',
         opacity: {
           support: 'none',
-          info: 'General opacity not supported. Use fillOpacity and strokeOpacity instead.'
+          info: 'General opacity is not supported. Use fillOpacity and strokeOpacity instead.'
         },
         visibility: 'none'
       },
