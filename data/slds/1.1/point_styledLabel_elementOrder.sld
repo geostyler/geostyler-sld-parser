@@ -37,6 +37,7 @@
             </se:Halo>
             <se:Fill>
               <se:SvgParameter name="fill">#000000</se:SvgParameter>
+              <se:SvgParameter name="fill-opacity">1</se:SvgParameter>
             </se:Fill>
           </se:TextSymbolizer>
         </se:Rule>

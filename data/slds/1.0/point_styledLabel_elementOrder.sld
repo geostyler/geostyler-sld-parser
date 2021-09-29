@@ -38,6 +38,7 @@
             </Halo>
             <Fill>
               <CssParameter name="fill">#000000</CssParameter>
+              <CssParameter name="fill-opacity">1</CssParameter>
             </Fill>
           </TextSymbolizer>
         </Rule>

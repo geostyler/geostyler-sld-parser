@@ -1047,12 +1047,32 @@ export class SldStyleParser implements StyleParser {
       textSymbolizer.label = this.getTextSymbolizerLabelFromSldSymbolizer(label);
     }
 
-    let color;
+    let fillCssParameters;
     if (this.sldVersion === '1.0.0') {
-      color = _get(sldSymbolizer, 'Fill[0].CssParameter[0]._');
+      fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameters') || [];
     } else {
-      color = _get(sldSymbolizer, 'Fill[0].SvgParameter[0]._');
+      fillCssParameters = _get(sldSymbolizer, 'Fill[0].SvgParameters') || [];
     }
+    let color = '#000000';
+    let opacity = 1;
+    fillCssParameters.forEach((cssParameter: any) => {
+      const {
+        $: {
+          name
+        },
+        _: value
+      } = cssParameter;
+      switch (name) {
+        case 'fill':
+          color = value;
+          break;
+        case 'fill-opacity':
+          opacity = parseFloat(value);
+          break;
+        default:
+          break;
+      }
+    });
 
     let haloColorCssParameter;
     if (this.sldVersion === '1.0.0') {
@@ -1064,6 +1084,9 @@ export class SldStyleParser implements StyleParser {
     const haloRadius = _get(sldSymbolizer, 'Halo[0].Radius[0]._');
     if (color) {
       textSymbolizer.color = color;
+    }
+    if (opacity) {
+      textSymbolizer.opacity = opacity;
     }
     if (haloRadius) {
       textSymbolizer.haloWidth = parseFloat(haloRadius);
@@ -1571,13 +1594,17 @@ export class SldStyleParser implements StyleParser {
       }
       sldTextSymbolizer[0].Halo = [halo];
     }
-
-    if (textSymbolizer.color) {
+    if (textSymbolizer.color || textSymbolizer.opacity) {
       sldTextSymbolizer[0].Fill = [{
         'CssParameter': [{
-          '_': textSymbolizer.color,
+          '_': textSymbolizer.color || '#000000',
           '$': {
             'name': 'fill'
+          }
+        }, {
+          '_': textSymbolizer.opacity || '1',
+          '$': {
+            'name': 'fill-opacity'
           }
         }]
       }];
