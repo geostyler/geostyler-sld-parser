@@ -20,7 +20,7 @@ module.exports = {
         include: __dirname + '/src',
         use: [
           {
-            loader: require.resolve('ts-loader'),
+            loader: require.resolve('babel-loader')
           }
         ]
       }

@@ -7,8 +7,7 @@ module.exports = {
   output: {
     filename: "sldStyleParser.js",
     path: __dirname + "/browser",
-    library: "GeoStylerSLDParser",
-    chunkFormat: "array-push"
+    library: "GeoStylerSLDParser"
   },
   resolve: {
     extensions: [".ts", ".js", ".json"],
@@ -23,7 +22,6 @@ module.exports = {
       new TerserPlugin()
     ]
   },
-  target: 'es5',
   module: {
     rules: [
       {
