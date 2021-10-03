@@ -40,7 +40,7 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "core-js": "^3.18.1",
-    "emitter": "0.0.2",
+    "emitter": "0.0.5",
     "geostyler-style": "^4.0.3",
     "lodash": "^4.17.21",
     "stream": "0.0.2",
