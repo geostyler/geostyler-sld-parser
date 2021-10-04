@@ -23,7 +23,7 @@ import {
   Channel,
   ContrastEnhancement,
   StrMatchesFunctionFilter,
-  UnsupportedProperties
+  UnsupportedProperties,
   ReadStyleResult,
   WriteStyleResult
 } from 'geostyler-style';
