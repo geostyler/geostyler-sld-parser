@@ -24,11 +24,15 @@ module.exports = {
   },
   module: {
     rules: [
+      // All files with a '.ts'
       {
-        test: /\.(ts|js)$/,
-        use: {
-          loader: 'babel-loader'
-        }
+        test: /\.ts$/,
+        include: __dirname + '/src',
+        use: [
+          {
+            loader: require.resolve('babel-loader')
+          }
+        ]
       }
     ]
   }
