@@ -8,6 +8,7 @@
     "target": "es5",
     "lib": ["es6", "dom"],
     "sourceMap": true,
+    "inlineSources": true,
     "moduleResolution": "node",
     "rootDir": "src",
     "forceConsistentCasingInFileNames": true,
