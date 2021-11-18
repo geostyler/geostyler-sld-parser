@@ -9,6 +9,44 @@
 
 ### How to use
 
+Node (v14):
+
+Run with `node app.js`
+
+app.js:
+```js
+const geostylerSldParser = require("geostyler-sld-parser")
+
+var parser = new geostylerSldParser.SldStyleParser();
+
+const pointSimplePoint = {
+  name: "My Style",
+  rules: [
+    {
+      name: "My Rule",
+      symbolizers: [
+        {
+          kind: "Mark",
+          wellKnownName: "Circle",
+          color: "#FF0000",
+          radius: 6
+        }
+      ]
+    }
+  ]
+};
+
+ 
+parser
+  .writeStyle(pointSimplePoint)
+  .then(function(sld) {
+    console.log(sld);
+  })
+  .catch(function(error) {
+    console.log(error);
+  });
+```
+
 ES6:
 ```js
 import SLDParser from "geostyler-sld-parser";
@@ -30,7 +68,7 @@ const pointSimplePoint = {
   ]
 };
 
-const parser = new SLDParser();
+const parser = new SldStyleParser();
 
 parser
   .writeStyle(pointSimplePoint)
