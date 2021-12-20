@@ -399,6 +399,12 @@ export class SldStyleParser implements StyleParser<string> {
         value
       ];
 
+    } else if (sldOperatorName === 'PropertyIsBetween') {
+      const propertyName = sldFilter.PropertyName[0]._;
+      const lower = sldFilter.LowerBoundary[0].Literal[0]._;
+      const upper = sldFilter.UpperBoundary[0].Literal[0]._;
+
+      filter = ['<=x<=', propertyName, lower, upper];
     } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
       const filters: Filter[] = sldFilter.$$.map((op: any) => {
