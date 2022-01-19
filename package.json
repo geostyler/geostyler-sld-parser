@@ -41,7 +41,7 @@
     "buffer": "^6.0.3",
     "core-js": "^3.18.1",
     "emitter": "0.0.5",
-    "geostyler-style": "^5.0.0",
+    "geostyler-style": "^5.0.1",
     "lodash": "^4.17.21",
     "stream": "0.0.2",
     "string_decoder": "^1.3.0",
