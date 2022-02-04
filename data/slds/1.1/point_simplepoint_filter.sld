@@ -44,6 +44,15 @@
                   <Literal>2</Literal>
                 </PropertyIsEqualTo>
               </Or>
+              <PropertyIsBetween>
+                <PropertyName>TEST3</PropertyName>
+                <LowerBoundary>
+                  <Literal>1</Literal>
+                </LowerBoundary>
+                <UpperBoundary>
+                  <Literal>5</Literal>
+                </UpperBoundary>
+              </PropertyIsBetween>
             </And>
           </ogc:Filter>
           <se:MinScaleDenominator>10000</se:MinScaleDenominator>

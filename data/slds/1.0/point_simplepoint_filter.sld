@@ -48,6 +48,15 @@
                   <Literal>2</Literal>
                 </PropertyIsEqualTo>
               </Or>
+              <PropertyIsBetween>
+                <PropertyName>TEST3</PropertyName>
+                <LowerBoundary>
+                  <Literal>1</Literal>
+                </LowerBoundary>
+                <UpperBoundary>
+                  <Literal>5</Literal>
+                </UpperBoundary>
+              </PropertyIsBetween>
             </And>
           </Filter>
           <MinScaleDenominator>10000</MinScaleDenominator>

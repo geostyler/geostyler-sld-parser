@@ -25,7 +25,8 @@ import {
   StrMatchesFunctionFilter,
   UnsupportedProperties,
   ReadStyleResult,
-  WriteStyleResult
+  WriteStyleResult,
+  RangeFilter
 } from 'geostyler-style';
 
 import {
@@ -151,7 +152,8 @@ export class SldStyleParser implements StyleParser<string> {
     PropertyIsLessThanOrEqualTo: '<=',
     PropertyIsGreaterThan: '>',
     PropertyIsGreaterThanOrEqualTo: '>=',
-    PropertyIsNull: '=='
+    PropertyIsNull: '==',
+    PropertyIsBetween: '<=x<='
   };
 
   constructor(opts?: ConstructorParams) {
@@ -366,7 +368,18 @@ export class SldStyleParser implements StyleParser<string> {
   getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): Filter {
     let filter: Filter;
 
-    if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
+    // we have to first check for PropertyIsBetween,
+    // since it is also a comparisonOperator. But it
+    // needs to be treated differently.
+    if (sldOperatorName === 'PropertyIsBetween') {
+      // TODO PropertyIsBetween spec allows more than just a
+      //      PropertyName as its first argument.
+      const propertyName = sldFilter.PropertyName[0]._;
+      const lower = parseFloat(sldFilter.LowerBoundary[0].Literal[0]._);
+      const upper = parseFloat(sldFilter.UpperBoundary[0].Literal[0]._);
+
+      filter = ['<=x<=', propertyName, lower, upper];
+    } else if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
       const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
       const propertyIsFilter = !!sldFilter.Function;
       const propertyOrFilter = propertyIsFilter
@@ -399,12 +412,6 @@ export class SldStyleParser implements StyleParser<string> {
         value
       ];
 
-    } else if (sldOperatorName === 'PropertyIsBetween') {
-      const propertyName = sldFilter.PropertyName[0]._;
-      const lower = sldFilter.LowerBoundary[0].Literal[0]._;
-      const upper = sldFilter.UpperBoundary[0].Literal[0]._;
-
-      filter = ['<=x<=', propertyName, lower, upper];
     } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
       const filters: Filter[] = sldFilter.$$.map((op: any) => {
@@ -2184,6 +2191,18 @@ export class SldStyleParser implements StyleParser<string> {
         },
         [propertyKey]: [key],
         'Literal': [value]
+      }];
+    } else if (sldOperator === 'PropertyIsBetween') {
+      // Currently we only support Literals as values.
+      const betweenFilter = comparisonFilter as RangeFilter;
+      sldComparisonFilter[sldOperator] = [{
+        [propertyKey]: [key],
+        'LowerBoundary': [{
+          'Literal': [betweenFilter[2]]
+        }],
+        'UpperBoundary': [{
+          'Literal': [betweenFilter[3]]
+        }]
       }];
     } else {
       sldComparisonFilter[sldOperator] = [{

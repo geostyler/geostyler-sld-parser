@@ -13,7 +13,8 @@ const pointSimplePoint: Style = {
       ['||',
         ['==', 'TEST2', '1'],
         ['==', 'TEST2', '2']
-      ]
+      ],
+      ['<=x<=', 'TEST3', 1, 5]
     ],
     'name': 'Small populated New Yorks',
     'scaleDenominator': {
