@@ -1064,9 +1064,9 @@ export class SldStyleParser implements StyleParser<string> {
 
     let fillCssParameters;
     if (this.sldVersion === '1.0.0') {
-      fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameters') || [];
+      fillCssParameters = _get(sldSymbolizer, 'Fill[0].CssParameter') || [];
     } else {
-      fillCssParameters = _get(sldSymbolizer, 'Fill[0].SvgParameters') || [];
+      fillCssParameters = _get(sldSymbolizer, 'Fill[0].SvgParameter') || [];
     }
     let color = '#000000';
     let opacity = 1;
