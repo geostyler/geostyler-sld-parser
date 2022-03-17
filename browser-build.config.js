@@ -12,8 +12,7 @@ module.exports = {
   resolve: {
     extensions: [".ts", ".js", ".json"],
     fallback: {
-      'string_decoder': require.resolve("string_decoder"),
-      emitter: require.resolve("emitter"),
+      string_decoder: require.resolve("string_decoder"),
       buffer: require.resolve("buffer")
     }
   },
