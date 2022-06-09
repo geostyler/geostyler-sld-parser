@@ -1329,19 +1329,19 @@ export class SldStyleParser implements StyleParser<string> {
         const key = capitalizeFirstLetter(`${symbolizer.kind}Symbolizer`);
         const value = this.unsupportedProperties?.Symbolizer?.[key];
         if (value) {
-          if (!unsupportedProperties.Symbolizer) {
-            unsupportedProperties.Symbolizer = {};
-          }
           if (typeof value === 'string' || value instanceof String ) {
+            if (!unsupportedProperties.Symbolizer) {
+              unsupportedProperties.Symbolizer = {};
+            }
             unsupportedProperties.Symbolizer[key] = value;
           } else {
-            if (!unsupportedProperties.Symbolizer[key]) {
-              unsupportedProperties.Symbolizer[key] = {};
-            }
             Object.keys(symbolizer).forEach(property => {
               if (value[property]) {
                 if (!unsupportedProperties.Symbolizer) {
                   unsupportedProperties.Symbolizer = {};
+                }
+                if (!unsupportedProperties.Symbolizer[key]) {
+                  unsupportedProperties.Symbolizer[key] = {};
                 }
                 unsupportedProperties.Symbolizer[key][property] = value[property];
               }
