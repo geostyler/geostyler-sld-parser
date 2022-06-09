@@ -37,6 +37,7 @@ import point_styledLabel_literalPlaceholder from '../data/styles/point_styledLab
 import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_elementOrder';
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
+import unsupported_properties from '../data/styles/unsupported_properties';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -606,6 +607,30 @@ describe('SldStyleParser implements StyleParser', () => {
       const { output: sldString} = await styleParserOrder.writeStyle(point_styledLabel_elementOrder);
       expect(sldString).toBeDefined();
       const sld = fs.readFileSync('./data/slds/1.0/point_styledLabel_elementOrder.sld', 'utf8');
+      expect(sldString).toEqual(sld.trim());
+    });
+    it('adds unsupportedProperties to the write output', async () => {
+      const styleParserOrder = new SldStyleParser();
+      const {
+        output: sldString,
+        unsupportedProperties,
+        warnings
+      } = await styleParserOrder.writeStyle(unsupported_properties);
+      expect(sldString).toBeDefined();
+      const unsupportedGot = {
+        Symbolizer: {
+          FillSymbolizer: {
+            opacity: {
+              info: 'General opacity is not supported. Use fillOpacity and strokeOpacity instead.',
+              support: 'none'
+            }
+          }
+        }
+      };
+      const warningsGot = ['Your style contains unsupportedProperties!'];
+      expect(unsupportedProperties).toEqual(unsupportedGot);
+      expect(warnings).toEqual(warningsGot);
+      const sld = fs.readFileSync('./data/slds/1.0/unsupported_properties.sld', 'utf8');
       expect(sldString).toEqual(sld.trim());
     });
 
