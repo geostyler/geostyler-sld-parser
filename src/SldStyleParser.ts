@@ -455,6 +455,9 @@ export class SldStyleParser implements StyleParser<string> {
       return;
     }
     const comparison = _get(sldFilters, '[0].$$[0]');
+    if (!comparison) {
+      return;
+    }
     const operator = comparison['#name'];
     if (!operator) {
       return;

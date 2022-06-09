@@ -3,6 +3,7 @@
 import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
 
+import empty_filter from '../data/styles/empty_filter';
 import point_simplepoint from '../data/styles/point_simplepoint';
 import line_simpleline from '../data/styles/line_simpleline';
 import line_perpendicularOffset from '../data/styles/line_perpendicularOffset';
@@ -239,6 +240,13 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       const { output: geoStylerStyle} = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_styledLabel_elementOrder);
+    });
+
+    it('can read a SLD with an empty filter', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/empty_filter.sld', 'utf8');
+      const readResult = await styleParser.readStyle(sld);
+      expect(readResult.output).toBeDefined();
+      expect(readResult.output).toEqual(empty_filter);
     });
 
     describe('#getFilterFromOperatorAndComparison', () => {
