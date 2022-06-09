@@ -38,6 +38,7 @@ import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_ele
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
 import unsupported_properties from '../data/styles/unsupported_properties';
+import polygonExpression from '../data/styles/polygon_expression';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -794,6 +795,14 @@ describe('SldStyleParser implements StyleParser', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString);
       expect(readStyle).toEqual(point_simplepoint_nestedLogicalFilters);
+    });
+    it('can write a SLD style with expressions', async () => {
+      const { output: sldString } = await styleParser.writeStyle(polygonExpression);
+      expect(sldString).toBeDefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle, errors } = await styleParser.readStyle(sldString);
+      expect(readStyle).toEqual(polygonExpression);
     });
     it('can write a SLD style with functionfilters', async () => {
       const {
