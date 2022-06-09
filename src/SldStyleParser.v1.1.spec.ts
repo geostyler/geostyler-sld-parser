@@ -250,7 +250,7 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       return styleParser.readStyle(sld)
         .then((geoStylerStyle: WriteStyleResult) => {
           expect(geoStylerStyle).toBeDefined();
-          expect(geoStylerStyle).toEqual(point_simplepoint_categorizefunctionfilter);
+          expect(geoStylerStyle.output).toEqual(point_simplepoint_categorizefunctionfilter);
         });
     });
 
@@ -582,7 +582,7 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       expect(sldString).toBeDefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString);
+      const { output: readStyle } = await styleParser.readStyle(sldString);
       expect(readStyle).toEqual(multi_simplelineLabel);
     });
     it('can write a SLD 1.1 style with a styled label containing a placeholder and static text', async () => {
@@ -644,7 +644,7 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
         .then((sldString: WriteStyleResult) => {
           expect(sldString).toBeDefined();
           const sld = fs.readFileSync('./data/slds/1.1/point_simplepoint_categorizefunctionfilter.sld', 'utf8');
-          expect(sldString).toEqual(sld.trim());
+          expect(sldString.output).toEqual(sld.trim());
         });
     });
 

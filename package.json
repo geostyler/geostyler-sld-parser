@@ -40,12 +40,13 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "core-js": "^3.22.4",
+    "events": "^3.3.0",
     "geostyler-style": "^5.0.2",
     "lodash": "^4.17.21",
     "stream": "^0.0.2",
     "string_decoder": "^1.3.0",
     "timers": "^0.1.1",
-    "xml2js": "^0.4.23"
+    "xml2js": "jansule/node-xml2js#d2f8280924618bd09c606f039cda477635de109f"
   },
   "devDependencies": {
     "@babel/core": "^7.17.10",

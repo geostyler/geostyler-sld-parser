@@ -331,10 +331,21 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   getLiteralFromSldObject(sldObject: any): LiteralValue {
-    return {
+    const result = {
       type: 'literal',
       value: sldObject._
     };
+    const num = parseFloat(sldObject._);
+    if (!Number.isNaN(num)) {
+      result.value = num;
+    }
+    if (result.value === 'true') {
+      result.value = true;
+    }
+    if (result.value === 'false') {
+      result.value = false;
+    }
+    return result as LiteralValue;
   }
 
   getFunctionFromSldObject(sldObject: any): FunctionCall {
@@ -1819,12 +1830,22 @@ export class SldStyleParser implements StyleParser<string> {
       .filter((property: any) => fillSymbolizer[property] !== undefined && fillSymbolizer[property] !== null)
       .forEach((property: any) => {
         if (Object.keys(fillPropertyMap).includes(property)) {
-          fillCssParameters.push({
-            ...this.getSldExpressionFromExpression(fillSymbolizer[property]),
-            '$': {
-              'name': fillPropertyMap[property]
-            }
-          });
+          const expr = this.getSldExpressionFromExpression(fillSymbolizer[property]);
+          if ((typeof expr !== 'object')) {
+            fillCssParameters.push({
+              _: fillSymbolizer[property],
+              $: {
+                name: fillPropertyMap[property]
+              }
+            });
+          } else {
+            fillCssParameters.push({
+              ...expr,
+              '$': {
+                'name': fillPropertyMap[property]
+              }
+            });
+          }
         } else if (Object.keys(strokePropertyMap).includes(property)) {
 
           let transformedValue: string = '';
@@ -1847,7 +1868,7 @@ export class SldStyleParser implements StyleParser<string> {
           }
 
           strokeCssParameters.push({
-            ...this.getSldExpressionFromExpression(transformedValue),
+            _: transformedValue,
             '$': {
               'name': strokePropertyMap[property]
             }
@@ -1907,14 +1928,30 @@ export class SldStyleParser implements StyleParser<string> {
         let value = lineSymbolizer[property];
         if (property === 'dasharray') {
           value = lineSymbolizer.dasharray ? lineSymbolizer.dasharray.join(' ') : undefined;
+          return {
+            _: value,
+            $: {
+              name: propertyMap[property]
+            }
+          };
         }
         // simple transformation since geostyler-style uses prop 'miter' whereas sld uses 'mitre'
         if (property === 'join' && value === 'miter') {
           value = 'mitre';
         }
 
+        const expr = this.getSldExpressionFromExpression(lineSymbolizer[property]);
+        if (typeof expr !== 'object') {
+          return {
+            _: value,
+            $: {
+              name: propertyMap[property]
+            }
+          };
+        }
+
         return {
-          ...this.getSldExpressionFromExpression(lineSymbolizer[property]),
+          ...expr,
           '$': {
             'name': propertyMap[property]
           }
@@ -1979,12 +2016,22 @@ export class SldStyleParser implements StyleParser<string> {
     if (markSymbolizer.color || markSymbolizer.fillOpacity) {
       const cssParameters = [];
       if (markSymbolizer.color) {
-        cssParameters.push({
-          ...this.getSldExpressionFromExpression(markSymbolizer.color),
-          '$': {
-            'name': 'fill'
-          }
-        });
+        const expr = this.getSldExpressionFromExpression(markSymbolizer.color);
+        if (typeof expr !== 'object') {
+          cssParameters.push({
+            _: expr,
+            $: {
+              name: 'fill'
+            }
+          });
+        } else {
+          cssParameters.push({
+            ...expr,
+            '$': {
+              'name': 'fill'
+            }
+          });
+        }
       }
       if (markSymbolizer.fillOpacity) {
         cssParameters.push({
@@ -2428,7 +2475,7 @@ export class SldStyleParser implements StyleParser<string> {
     return sldFilter;
   }
 
-  getSldExpressionFromExpression(expression: Expression | string): any {
+  getSldExpressionFromExpression(expression: Expression | string, rootExpression: boolean = true): any {
     if (isLiteralValue(expression)) {
       return this.getSldLiteralFromLiteral(expression as LiteralValue);
     }
@@ -2436,17 +2483,14 @@ export class SldStyleParser implements StyleParser<string> {
       return this.getSldPropertyNameFromPropertyName(expression);
     }
     if (isFunctionCall(expression)) {
-      return this.getSldFunctionFromFunction(expression);
+      return this.getSldFunctionFromFunction(expression, rootExpression);
     }
-    return this.getSldLiteralFromLiteral({
-      type: 'literal',
-      value: expression
-    });
+    return expression;
   }
 
-  getSldFunctionFromFunction(functionCall: FunctionCall): any {
+  getSldFunctionFromFunction(functionCall: FunctionCall, rootExpression: boolean): any {
     const functionArgs = functionCall.args
-      .map((arg: Expression) => this.getSldExpressionFromExpression(arg), this);
+      .map((arg: Expression) => this.getSldExpressionFromExpression(arg, false), this);
 
     interface CustomArray extends Array<any> {
       $?: any;
@@ -2457,19 +2501,22 @@ export class SldStyleParser implements StyleParser<string> {
       'name': functionCall.name
     };
     return {
-      'Function': [argsWithProps]
+      // HBD: if the expression is a root expression (i.e. corresponding to a single child element) the
+      // xmlbuilder library expects an extra array around the child properties of the SLD function element
+      // definition for unknown reasons
+      'ogc:Function': rootExpression ? [argsWithProps] : argsWithProps
     };
   }
 
   getSldPropertyNameFromPropertyName(propertyName: PropertyName): any {
     return {
-      'PropertyName': propertyName.name
+      'ogc:PropertyName': propertyName.name
     };
   }
 
   getSldLiteralFromLiteral(literal: LiteralValue): any {
     return {
-      'Literal': literal.value
+      'ogc:Literal': literal.value
     };
   }
 

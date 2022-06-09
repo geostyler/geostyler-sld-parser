@@ -15,19 +15,19 @@ const pointSimplePoint: Style = {
           'name': 'TEST_PROPERTY'
         }, {
           'type': 'literal',
-          'value': '10'
+          'value': 10
         }, {
           'type': 'property',
           'name': 'TEST_PROPERTY'
         }, {
           'type': 'literal',
-          'value': '6'
+          'value': 6
         }, {
           'type': 'literal',
-          'value': '2500'
+          'value': 2500
         }, {
           'type': 'literal',
-          'value': '1'
+          'value': 1
         }]
       }
     }]
