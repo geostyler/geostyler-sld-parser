@@ -1298,6 +1298,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   writeStyle(geoStylerStyle: Style): Promise<WriteStyleResult<string>> {
     return new Promise<WriteStyleResult<string>>(resolve => {
+      const unsupportedProperties = this.checkForUnsupportedProperites(geoStylerStyle);
       try {
         const builderOpts = {
           renderOpts: {pretty: this.prettyOutput}
@@ -1307,7 +1308,9 @@ export class SldStyleParser implements StyleParser<string> {
         const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
         const sldString = builder.buildObject(sldObject);
         resolve({
-          output: sldString
+          output: sldString,
+          unsupportedProperties,
+          warnings: unsupportedProperties && ['Your style contains unsupportedProperties!']
         });
       } catch (error) {
         resolve({
@@ -1315,6 +1318,42 @@ export class SldStyleParser implements StyleParser<string> {
         });
       }
     });
+  }
+
+  checkForUnsupportedProperites(geoStylerStyle: Style): UnsupportedProperties | undefined {
+    const capitalizeFirstLetter = (a: string) => a[0].toUpperCase() + a.slice(1);
+    const unsupportedProperties: UnsupportedProperties = {};
+    geoStylerStyle.rules.forEach(rule => {
+      // ScaleDenominator and Filters are completly supported so we just check for symbolizers
+      rule.symbolizers.forEach(symbolizer => {
+        const key = capitalizeFirstLetter(`${symbolizer.kind}Symbolizer`);
+        const value = this.unsupportedProperties?.Symbolizer?.[key];
+        if (value) {
+          if (!unsupportedProperties.Symbolizer) {
+            unsupportedProperties.Symbolizer = {};
+          }
+          if (typeof value === 'string' || value instanceof String ) {
+            unsupportedProperties.Symbolizer[key] = value;
+          } else {
+            if (!unsupportedProperties.Symbolizer[key]) {
+              unsupportedProperties.Symbolizer[key] = {};
+            }
+            Object.keys(symbolizer).forEach(property => {
+              if (value[property]) {
+                if (!unsupportedProperties.Symbolizer) {
+                  unsupportedProperties.Symbolizer = {};
+                }
+                unsupportedProperties.Symbolizer[key][property] = value[property];
+              }
+            });
+          }
+        }
+      });
+    });
+    if (Object.keys(unsupportedProperties).length > 0) {
+      return unsupportedProperties;
+    }
+    return undefined;
   }
 
   /**
