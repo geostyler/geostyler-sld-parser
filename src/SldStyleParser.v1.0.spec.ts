@@ -801,7 +801,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(sldString).toBeDefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle, errors } = await styleParser.readStyle(sldString);
+      const { output: readStyle } = await styleParser.readStyle(sldString);
       expect(readStyle).toEqual(polygonExpression);
     });
     it('can write a SLD style with functionfilters', async () => {
