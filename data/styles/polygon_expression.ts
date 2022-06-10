@@ -15,8 +15,7 @@ const polygonExpression: Style = {
         }, {
           type: 'property',
           name: 'myProp'
-        }
-        , {
+        }, {
           type: 'functioncall',
           name: 'hans',
           args: [{
@@ -26,8 +25,7 @@ const polygonExpression: Style = {
             type: 'literal',
             value: 12
           }]
-        }
-        ]
+        }]
       }
     }]
   }]
