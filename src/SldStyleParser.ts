@@ -330,7 +330,8 @@ export class SldStyleParser implements StyleParser<string> {
     }
   }
 
-  getLiteralFromSldObject(sldObject: any): LiteralValue {
+  getLiteralFromSldObject(sldObject: any):
+  LiteralValue<string> | LiteralValue<number> | LiteralValue<boolean> | LiteralValue<null> {
     const result = {
       type: 'literal',
       value: sldObject._
@@ -345,7 +346,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (result.value === 'false') {
       result.value = false;
     }
-    return result as LiteralValue;
+    return result as LiteralValue<string> | LiteralValue<number> | LiteralValue<boolean> | LiteralValue<null>;
   }
 
   getFunctionFromSldObject(sldObject: any): FunctionCall {
@@ -2477,7 +2478,9 @@ export class SldStyleParser implements StyleParser<string> {
 
   getSldExpressionFromExpression(expression: Expression | string, rootExpression: boolean = true): any {
     if (isLiteralValue(expression)) {
-      return this.getSldLiteralFromLiteral(expression as LiteralValue);
+      return this.getSldLiteralFromLiteral(
+        expression as LiteralValue<string> | LiteralValue<number> | LiteralValue<boolean> | LiteralValue<null>
+      );
     }
     if (isPropertyName(expression)) {
       return this.getSldPropertyNameFromPropertyName(expression);
@@ -2514,7 +2517,8 @@ export class SldStyleParser implements StyleParser<string> {
     };
   }
 
-  getSldLiteralFromLiteral(literal: LiteralValue): any {
+  getSldLiteralFromLiteral(literal: LiteralValue<string> |
+  LiteralValue<number> | LiteralValue<boolean> | LiteralValue<null>): any {
     return {
       'ogc:Literal': literal.value
     };
