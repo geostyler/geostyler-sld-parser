@@ -1,11 +1,15 @@
 require("@babel/polyfill");
+const path = require('path');
 
 module.exports = {
-  entry: ["@babel/polyfill", "./src/SldStyleParser.ts"],
+  entry: [
+    "@babel/polyfill",
+    path.join(__dirname, "src", "SldStyleParser.ts")
+  ],
   mode: 'development',
   output: {
     filename: "sldStyleParser.js",
-    path: __dirname + "/browser",
+    path: path.join(__dirname, "browser"),
     library: "GeoStylerSLDParser"
   },
   resolve: {
@@ -17,7 +21,7 @@ module.exports = {
       // All files with a '.ts'
       {
         test: /\.ts$/,
-        include: __dirname + '/src',
+        include: path.join(__dirname, 'src'),
         use: [
           {
             loader: require.resolve('babel-loader')
