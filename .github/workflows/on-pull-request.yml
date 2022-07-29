@@ -4,11 +4,12 @@ on: pull_request
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [12.x, 14.x, 16.x]
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout sources
