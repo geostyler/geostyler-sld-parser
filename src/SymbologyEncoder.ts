@@ -80,9 +80,6 @@ export class SymbologyEncoder {
           // recursive call ourselves
           if (val instanceof Object) {
             setTags([val], isFilterElement);
-          // } else {
-          //   console.log("asfdasdfasdfa");
-          //   console.log(val);
           }
         }
       });
