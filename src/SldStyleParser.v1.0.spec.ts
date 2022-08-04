@@ -799,7 +799,7 @@ describe('SldStyleParser implements StyleParser', () => {
     it('can write a SLD style with expressions', async () => {
       const { output: sldString } = await styleParser.writeStyle(polygonExpression);
       expect(sldString).toBeDefined();
-      // As string comparison between two XML-Strings is awkward and nonsens
+      // As string comparison between two XML-Strings is awkward and nonsense
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString);
       expect(readStyle).toEqual(polygonExpression);
