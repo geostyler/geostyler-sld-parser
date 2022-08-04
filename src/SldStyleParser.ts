@@ -43,9 +43,8 @@ import {
 
 import {
   parseString,
-  Builder,
-  OptionsV2
-} from 'xml2js';
+  Builder
+} from '@geostyler/xml2js';
 
 import SymbologyEncoder from './SymbologyEncoder';
 
@@ -1388,7 +1387,7 @@ export class SldStyleParser implements StyleParser<string> {
       try {
         const builderOpts = {
           renderOpts: {pretty: this.prettyOutput}
-        } as OptionsV2;
+        };
 
         const builder = new Builder(builderOpts);
         const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
