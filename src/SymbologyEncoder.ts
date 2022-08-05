@@ -65,7 +65,14 @@ export class SymbologyEncoder {
           if (key.toLowerCase() === 'cssparameter') {
             // change naming of css and svg parameters
             delete Object.assign(rule, {['se:SvgParameter']: rule[key]})[key];
+          } else if (key.toLowerCase() === 'function') {
+            delete Object.assign(rule, {['se:' + key]: rule[key]})[key];
+            setTags(val, isFilterElement);
             continue;
+          } else if (key.toLowerCase() === 'literal') {
+            delete Object.assign(rule, {['ogc:' + key]: rule[key]})[key];
+          } else if (key.toLowerCase() === 'propertyname') {
+            delete Object.assign(rule, {['ogc:' + key]: rule[key]})[key];
           } else if (!isFilterElement) {
             // rename all other tags to include the "se" namespace
             delete Object.assign(rule, {['se:' + key]: rule[key]})[key];

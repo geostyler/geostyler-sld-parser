@@ -26,10 +26,16 @@ import {
   UnsupportedProperties,
   ReadStyleResult,
   WriteStyleResult,
-  RangeFilter
-} from 'geostyler-style';
-
-import {
+  RangeFilter,
+  Expression,
+  LiteralValue,
+  FunctionCall,
+  PropertyName,
+  isExpression,
+  isFunctionCall,
+  isPropertyValue,
+  isPropertyName,
+  isLiteralValue,
   isCombinationFilter,
   isComparisonFilter,
   isNegationFilter
@@ -37,9 +43,8 @@ import {
 
 import {
   parseString,
-  Builder,
-  OptionsV2
-} from 'xml2js';
+  Builder
+} from '@geostyler/xml2js';
 
 import SymbologyEncoder from './SymbologyEncoder';
 
@@ -310,6 +315,71 @@ export class SldStyleParser implements StyleParser<string> {
     return name.replace(prefixMatch, '');
   }
 
+  getExpressionFromSldObject(sldObject: any): Expression {
+    const elementName = sldObject['#name'];
+    switch (elementName) {
+      case 'Function':
+        return this.getFunctionFromSldObject(sldObject);
+      case 'Literal':
+        return this.getLiteralFromSldObject(sldObject);
+      case 'PropertyName':
+        return this.getPropertyNameFromSldObject(sldObject);
+      default:
+        throw new Error('Unsupported expression.');
+    }
+  }
+
+  getLiteralFromSldObject(sldObject: any):
+  LiteralValue<string> | LiteralValue<number> | LiteralValue<boolean> | LiteralValue<null> {
+    const result = {
+      type: 'literal',
+      value: sldObject._
+    };
+    const num = parseFloat(sldObject._);
+    if (!Number.isNaN(num)) {
+      result.value = num;
+    }
+    if (result.value === 'true') {
+      result.value = true;
+    }
+    if (result.value === 'false') {
+      result.value = false;
+    }
+    return result as LiteralValue<string> | LiteralValue<number> | LiteralValue<boolean> | LiteralValue<null>;
+  }
+
+  getFunctionFromSldObject(sldObject: any): FunctionCall {
+    return {
+      type: 'functioncall',
+      name: sldObject.$.name,
+      args: sldObject.$$.map((sldArg: any) => this.getExpressionFromSldObject(sldArg))
+    };
+  }
+
+  getPropertyNameFromSldObject(sldObject: any): PropertyName {
+    return {
+      type: 'property',
+      name: sldObject._
+    };
+  }
+
+  getValueFromSldObject(sldObject: any): string {
+    return sldObject._;
+  }
+
+  getExpressionOrValueFromSldObject(sldObject: any): Expression | string | undefined {
+    if (!sldObject) {
+      return undefined;
+    }
+    const expressionOrValue =_get(sldObject, '$$[0]');
+    const expressionOrValueName = _get(sldObject, '$$[0]["#name"]');
+    if (expressionOrValueName === '__text__') {
+      return this.getValueFromSldObject(expressionOrValue);
+    } else {
+      return this.getExpressionFromSldObject(expressionOrValue);
+    }
+  }
+
   /**
    * Get the name for the Style from the SLD Object. Returns the Title of the UserStyle
    * if defined or the Name of the NamedLayer if defined or an empty string.
@@ -513,12 +583,13 @@ export class SldStyleParser implements StyleParser<string> {
     const colorIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill';
     });
-    let color: string = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
+    let colorObj: any;
     if (this.sldVersion === '1.0.0') {
-      color = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']._');
+      colorObj = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].CssParameter[' + colorIdx + ']');
     } else {
-      color = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter[' + colorIdx + ']._');
+      colorObj = _get(sldSymbolizer, 'Graphic[0].Mark[0].Fill[0].SvgParameter[' + colorIdx + ']');
     }
+    const color = this.getExpressionOrValueFromSldObject(colorObj);
 
     const fillOpacityIdx: number = fillParams.findIndex((cssParam: any) => {
       return cssParam.$.name === 'fill-opacity';
@@ -582,7 +653,10 @@ export class SldStyleParser implements StyleParser<string> {
     strokeParams.forEach((param: any) => {
       switch (param.$.name) {
         case 'stroke':
-          markSymbolizer.strokeColor = param._;
+          const strokeColor = this.getExpressionOrValueFromSldObject(param);
+          if (strokeColor) {
+            markSymbolizer.strokeColor = strokeColor;
+          }
           break;
         case 'stroke-width':
           markSymbolizer.strokeWidth = parseFloat(param._);
@@ -688,7 +762,10 @@ export class SldStyleParser implements StyleParser<string> {
 
       switch (name) {
         case 'stroke':
-          lineSymbolizer.color = value;
+          const color = this.getExpressionOrValueFromSldObject(cssParameter);
+          if (color) {
+            lineSymbolizer.color = color;
+          }
           break;
         case 'stroke-width':
           lineSymbolizer.width = parseFloat(value);
@@ -779,7 +856,10 @@ export class SldStyleParser implements StyleParser<string> {
       } = cssParameter;
       switch (name) {
         case 'fill':
-          fillSymbolizer.color = value;
+          const color = this.getExpressionOrValueFromSldObject(cssParameter);
+          if (color) {
+            fillSymbolizer.color = color;
+          }
           break;
         case 'fill-opacity':
           fillSymbolizer.fillOpacity = parseFloat(value);
@@ -799,7 +879,10 @@ export class SldStyleParser implements StyleParser<string> {
         _: value
       } = cssParameter;
       if (name === 'stroke') {
-        fillSymbolizer.outlineColor = value;
+        const outlineColor = this.getExpressionOrValueFromSldObject(cssParameter);
+        if (outlineColor) {
+          fillSymbolizer.outlineColor = outlineColor;
+        }
       } else if (name === 'stroke-width') {
         fillSymbolizer.outlineWidth = parseFloat(value);
       } else if (name === 'stroke-opacity') {
@@ -1113,12 +1196,14 @@ export class SldStyleParser implements StyleParser<string> {
       const {
         $: {
           name
-        },
-        _: value
+        }
       } = cssParameter;
       switch (name) {
         case 'fill':
-          textSymbolizer.haloColor = value;
+          const haloColor = this.getExpressionOrValueFromSldObject(cssParameter);
+          if (haloColor) {
+            textSymbolizer.haloColor = haloColor;
+          }
           break;
         case 'fill-opacity':
         default:
@@ -1302,7 +1387,7 @@ export class SldStyleParser implements StyleParser<string> {
       try {
         const builderOpts = {
           renderOpts: {pretty: this.prettyOutput}
-        } as OptionsV2;
+        };
 
         const builder = new Builder(builderOpts);
         const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
@@ -1647,12 +1732,21 @@ export class SldStyleParser implements StyleParser<string> {
         halo.Radius = [textSymbolizer.haloWidth.toString()];
       }
       if (textSymbolizer.haloColor) {
-        haloCssParameter.push({
-          '_': textSymbolizer.haloColor,
-          '$': {
-            'name': 'fill'
-          }
-        });
+        if (isExpression(textSymbolizer.haloColor)) {
+          haloCssParameter.push({
+            ...this.getSldExpressionFromExpression(textSymbolizer.haloColor),
+            '$': {
+              'name': 'fill'
+            }
+          });
+        } else {
+          haloCssParameter.push({
+            '_': textSymbolizer.haloColor,
+            '$': {
+              'name': 'fill'
+            }
+          });
+        }
       }
       if (haloCssParameter.length > 0) {
         halo.Fill = [{
@@ -1662,19 +1756,35 @@ export class SldStyleParser implements StyleParser<string> {
       sldTextSymbolizer[0].Halo = [halo];
     }
     if (textSymbolizer.color || textSymbolizer.opacity) {
-      sldTextSymbolizer[0].Fill = [{
-        'CssParameter': [{
-          '_': textSymbolizer.color || '#000000',
-          '$': {
-            'name': 'fill'
-          }
-        }, {
-          '_': textSymbolizer.opacity || '1',
-          '$': {
-            'name': 'fill-opacity'
-          }
-        }]
-      }];
+      if (isExpression(textSymbolizer.color)) {
+        sldTextSymbolizer[0].Fill = [{
+          'CssParameter': [{
+            ...this.getSldExpressionFromExpression(textSymbolizer.color),
+            '$': {
+              'name': 'fill'
+            }
+          }, {
+            '_': textSymbolizer.opacity || '1',
+            '$': {
+              'name': 'fill-opacity'
+            }
+          }]
+        }];
+      } else {
+        sldTextSymbolizer[0].Fill = [{
+          'CssParameter': [{
+            '_': textSymbolizer.color || '#000000',
+            '$': {
+              'name': 'fill'
+            }
+          }, {
+            '_': textSymbolizer.opacity || '1',
+            '$': {
+              'name': 'fill-opacity'
+            }
+          }]
+        }];
+      }
     }
 
     return {
@@ -1720,12 +1830,22 @@ export class SldStyleParser implements StyleParser<string> {
       .filter((property: any) => fillSymbolizer[property] !== undefined && fillSymbolizer[property] !== null)
       .forEach((property: any) => {
         if (Object.keys(fillPropertyMap).includes(property)) {
-          fillCssParameters.push({
-            '_': fillSymbolizer[property],
-            '$': {
-              'name': fillPropertyMap[property]
-            }
-          });
+          const expr = this.getSldExpressionFromExpression(fillSymbolizer[property]);
+          if ((typeof expr !== 'object')) {
+            fillCssParameters.push({
+              _: fillSymbolizer[property],
+              $: {
+                name: fillPropertyMap[property]
+              }
+            });
+          } else {
+            fillCssParameters.push({
+              ...expr,
+              '$': {
+                'name': fillPropertyMap[property]
+              }
+            });
+          }
         } else if (Object.keys(strokePropertyMap).includes(property)) {
 
           let transformedValue: string = '';
@@ -1748,7 +1868,7 @@ export class SldStyleParser implements StyleParser<string> {
           }
 
           strokeCssParameters.push({
-            '_': transformedValue,
+            _: transformedValue,
             '$': {
               'name': strokePropertyMap[property]
             }
@@ -1808,13 +1928,30 @@ export class SldStyleParser implements StyleParser<string> {
         let value = lineSymbolizer[property];
         if (property === 'dasharray') {
           value = lineSymbolizer.dasharray ? lineSymbolizer.dasharray.join(' ') : undefined;
+          return {
+            _: value,
+            $: {
+              name: propertyMap[property]
+            }
+          };
         }
         // simple transformation since geostyler-style uses prop 'miter' whereas sld uses 'mitre'
         if (property === 'join' && value === 'miter') {
           value = 'mitre';
         }
+
+        const expr = this.getSldExpressionFromExpression(lineSymbolizer[property]);
+        if (typeof expr !== 'object') {
+          return {
+            _: value,
+            $: {
+              name: propertyMap[property]
+            }
+          };
+        }
+
         return {
-          '_': value,
+          ...expr,
           '$': {
             'name': propertyMap[property]
           }
@@ -1879,12 +2016,22 @@ export class SldStyleParser implements StyleParser<string> {
     if (markSymbolizer.color || markSymbolizer.fillOpacity) {
       const cssParameters = [];
       if (markSymbolizer.color) {
-        cssParameters.push({
-          '_': markSymbolizer.color,
-          '$': {
-            'name': 'fill'
-          }
-        });
+        const expr = this.getSldExpressionFromExpression(markSymbolizer.color);
+        if (typeof expr !== 'object') {
+          cssParameters.push({
+            _: expr,
+            $: {
+              name: 'fill'
+            }
+          });
+        } else {
+          cssParameters.push({
+            ...expr,
+            '$': {
+              'name': 'fill'
+            }
+          });
+        }
       }
       if (markSymbolizer.fillOpacity) {
         cssParameters.push({
@@ -1903,12 +2050,21 @@ export class SldStyleParser implements StyleParser<string> {
       mark[0].Stroke = [{}];
       const strokeCssParameters = [];
       if (markSymbolizer.strokeColor) {
-        strokeCssParameters.push({
-          '_': markSymbolizer.strokeColor,
-          '$': {
-            'name': 'stroke'
-          }
-        });
+        if (isExpression(markSymbolizer.strokeColor)) {
+          strokeCssParameters.push({
+            ...this.getSldExpressionFromExpression(markSymbolizer.strokeColor),
+            '$': {
+              'name': 'stroke'
+            }
+          });
+        } else {
+          strokeCssParameters.push({
+            '_': markSymbolizer.strokeColor,
+            '$': {
+              'name': 'stroke'
+            }
+          });
+        }
       }
       if (markSymbolizer.strokeWidth) {
         strokeCssParameters.push({
@@ -1937,7 +2093,7 @@ export class SldStyleParser implements StyleParser<string> {
       graphic[0].Opacity = [markSymbolizer.opacity.toString()];
     }
 
-    if (markSymbolizer.radius) {
+    if (typeof markSymbolizer.radius === 'number') {
       graphic[0].Size = [(markSymbolizer.radius * 2).toString()];
     }
 
@@ -1974,7 +2130,7 @@ export class SldStyleParser implements StyleParser<string> {
       }]
     }];
 
-    if (iconSymbolizer.image) {
+    if (typeof iconSymbolizer.image === 'string') {
 
       const iconExt = iconSymbolizer.image.split('.').pop();
       switch (iconExt) {
@@ -2317,6 +2473,63 @@ export class SldStyleParser implements StyleParser<string> {
       sldFilter.Not = this.getSldFilterFromFilter(filter[1]);
     }
     return sldFilter;
+  }
+
+  getSldExpressionFromExpression(expression: Expression | string, rootExpression: boolean = true): any {
+    if (isLiteralValue(expression)) {
+      return this.getSldLiteralFromLiteral(
+        expression as LiteralValue<string> | LiteralValue<number> | LiteralValue<boolean> | LiteralValue<null>
+      );
+    }
+    if (isPropertyName(expression)) {
+      return this.getSldPropertyNameFromPropertyName(expression);
+    }
+    if (isFunctionCall(expression)) {
+      return this.getSldFunctionFromFunction(expression, rootExpression);
+    }
+    return expression;
+  }
+
+  getSldFunctionFromFunction(functionCall: FunctionCall, rootExpression: boolean): any {
+    const functionArgs = functionCall.args
+      .map((arg: Expression) => this.getSldExpressionFromExpression(arg, false), this);
+
+    interface CustomArray extends Array<any> {
+      $?: any;
+    }
+
+    const argsWithProps: CustomArray = functionArgs;
+    argsWithProps.$ = {
+      'name': functionCall.name
+    };
+    return {
+      // HBD: if the expression is a root expression (i.e. corresponding to a single child element) the
+      // xmlbuilder library expects an extra array around the child properties of the SLD function element
+      // definition for unknown reasons
+      'ogc:Function': rootExpression ? [argsWithProps] : argsWithProps
+    };
+  }
+
+  getSldPropertyNameFromPropertyName(propertyName: PropertyName): any {
+    return {
+      'ogc:PropertyName': propertyName.name
+    };
+  }
+
+  getSldLiteralFromLiteral(literal: LiteralValue<string> |
+  LiteralValue<number> | LiteralValue<boolean> | LiteralValue<null>): any {
+    return {
+      'ogc:Literal': literal.value
+    };
+  }
+
+  getSldValueOrExpression(expressionOrValue: Expression): any {
+    if (isPropertyValue(expressionOrValue)) {
+      return expressionOrValue;
+    }
+    if (isExpression(expressionOrValue)) {
+      return this.getSldExpressionFromExpression(expressionOrValue);
+    }
   }
 
 }
