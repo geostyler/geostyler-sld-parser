@@ -12,14 +12,14 @@
       <FeatureTypeStyle>
         <Rule>
           <PointSymbolizer>
-              <Graphic>
-                  <ExternalGraphic>
-                      <OnlineResource xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://geoserver.org/img/geoserver-logo.png" />
-                      <Format>image/png</Format>
-                  </ExternalGraphic>
-                  <Size>10</Size>
-                  <Rotation>90</Rotation>
-              </Graphic>
+            <Graphic>
+              <ExternalGraphic>
+                <OnlineResource xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://geoserver.org/img/geoserver-logo.png" />
+                <Format>image/png</Format>
+              </ExternalGraphic>
+              <Size>10</Size>
+              <Rotation>90</Rotation>
+            </Graphic>
           </PointSymbolizer>
         </Rule>
       </FeatureTypeStyle>

@@ -1,5 +1,6 @@
 import {
   Filter,
+  IconSymbolizer,
   MarkSymbolizer,
   PointSymbolizer,
   ReadStyleResult,
@@ -587,6 +588,34 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     return markSymbolizer;
+  }
+
+  /**
+   * Get the GeoStyler-Style IconSymbolizer from an SLD Symbolizer
+   *
+   * @param sldSymbolizer The SLD Symbolizer
+   * @return The GeoStyler-Style IconSymbolizer
+   */
+  getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
+    const externalGraphicEl = getChild(sldSymbolizer?.Graphic, 'ExternalGraphic').ExternalGraphic;
+    const onlineResource = getChild(externalGraphicEl, 'OnlineResource');
+    const iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
+      kind: 'Icon',
+      image: onlineResource?.[':@']['@_xlink:href']
+    };
+    const opacity: string = getChild(sldSymbolizer?.Graphic, 'Opacity')?.Opacity?.[0]?.['#text'];
+    const size: string = getChild(sldSymbolizer?.Graphic, 'Size')?.Size?.[0]?.['#text'];
+    const rotation: string = getChild(sldSymbolizer?.Graphic, 'Rotation')?.Rotation?.[0]?.['#text'];
+    if (opacity) {
+      iconSymbolizer.opacity = Number(opacity);
+    }
+    if (size) {
+      iconSymbolizer.size = Number(size);
+    }
+    if (rotation) {
+      iconSymbolizer.rotate = Number(rotation);
+    }
+    return iconSymbolizer;
   }
 
   checkForUnsupportedProperites(geoStylerStyle: Style): UnsupportedProperties | undefined {
