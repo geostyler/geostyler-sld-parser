@@ -12,10 +12,10 @@ export class SymbologyEncoder {
   /**
    * Methods returns Symbology Encoding / SLD 1.1.0 from given GeoStyler
    * style Object
-   * @param {Style} geoStylerStyle A GeoStyler-Style Style.
-   * @param {Rule[]} rules The array of rules
-   * @param {string} symbolizerUnits The units to use for symbolizers
-   * @returns {object} The object representation of a SLD 1.1 Style
+   * @param geoStylerStyle A GeoStyler-Style Style.
+   * @param rules The array of rules
+   * @param symbolizerUnits The units to use for symbolizers
+   * @returns The object representation of a SLD 1.1 Style
    * (readable with xml2js)
    */
   static getSymbologyEncoding(geoStylerStyle: Style, rules: any[],
