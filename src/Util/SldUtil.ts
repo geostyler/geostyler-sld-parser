@@ -30,10 +30,13 @@ export function getChild(elements: any[], tagName: string): any {
  * @param sldVersion The sldVersion to distinguish if CssParameter or SvgParamter is used.
  * @returns The string value of the searched parameter.
  */
-export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): string {
+export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): string | undefined {
+  if (!elements) {
+    return undefined;
+  }
   const paramKey = sldVersion === '1.0.0' ? 'CssParameter' : 'SvgParameter';
   const element = elements
-    .filter(obj => Object.keys(obj).includes(paramKey))
+    .filter(obj => Object.keys(obj)?.includes(paramKey))
     .find(obj => obj[':@']['@_name'] === parameter);
   return element?.[paramKey]?.[0]?.['#text'];
 }

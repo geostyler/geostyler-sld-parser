@@ -1,6 +1,7 @@
 import {
   Filter,
   IconSymbolizer,
+  LineSymbolizer,
   MarkSymbolizer,
   PointSymbolizer,
   ReadStyleResult,
@@ -380,8 +381,8 @@ export class SldStyleParser implements StyleParser<string> {
             const filter: Filter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
             const symbolizers: Symbolizer[] = this.getSymbolizersFromRule(sldRule);
-            const ruleTitle = get(sldRule, 'Title');
-            const ruleName = get(sldRule, 'Name');
+            const ruleTitle = get(sldRule, 'Title.#text');
+            const ruleName = get(sldRule, 'Name.#text');
             const name = ruleTitle !== undefined
               ? ruleTitle
               : (ruleName !== undefined ? ruleName : '');
@@ -475,9 +476,9 @@ export class SldStyleParser implements StyleParser<string> {
         const sldSymbolizerName: string = Object.keys(sldSymbolizer)[0];
         switch (sldSymbolizerName) {
           case 'PointSymbolizer':
-            return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer.PointSymbolizer[0]);
-          // case 'LineSymbolizer':
-          //   return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer);
+            return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer.PointSymbolizer);
+          case 'LineSymbolizer':
+            return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer.LineSymbolizer);
           // case 'TextSymbolizer':
           //   return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
           // case 'PolygonSymbolizer':
@@ -516,6 +517,77 @@ export class SldStyleParser implements StyleParser<string> {
       pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer);
     }
     return pointSymbolizer;
+  }
+
+  /**
+   * Get the GeoStyler-Style LineSymbolizer from an SLD Symbolizer.
+   *
+   * Currently only the CssParameters are available.
+   *
+   * @param sldSymbolizer The SLD Symbolizer
+   * @return The GeoStyler-Style LineSymbolizer
+   */
+  getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any): LineSymbolizer {
+    const lineSymbolizer: LineSymbolizer = {
+      kind: 'Line'
+    };
+    const strokeEl = get(sldSymbolizer, 'Stroke');
+    if (strokeEl.length < 1) {
+      throw new Error('LineSymbolizer cannot be parsed. No Stroke detected');
+    }
+    const color = getParameterValue(strokeEl, 'stroke', this.sldVersion);
+    const width = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
+    const opacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
+    const lineJoin = getParameterValue(strokeEl, 'stroke-linejoin', this.sldVersion);
+    const lineCap = getParameterValue(strokeEl, 'stroke-linecap', this.sldVersion);
+    const dashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.sldVersion);
+    const dashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.sldVersion);
+
+    if (color) {
+      lineSymbolizer.color = color;
+    }
+    if (width !== undefined) {
+      lineSymbolizer.width = parseFloat(width);
+    }
+    if (opacity !== undefined) {
+      lineSymbolizer.opacity = parseFloat(opacity);
+    }
+    if (lineJoin) {
+      // geostyler-style and ol use 'miter' whereas sld uses 'mitre'
+      if (lineJoin === 'mitre') {
+        lineSymbolizer.join = 'miter';
+      } else {
+        lineSymbolizer.join = lineJoin as 'bevel' | 'miter' | 'round' | undefined;
+      }
+    }
+    if (lineCap) {
+      lineSymbolizer.cap = lineCap as 'round' | 'butt' | 'square' | undefined;
+    }
+
+    if (dashArray) {
+      const dashStringAsArray = dashArray.split(' ').map(Number);
+      lineSymbolizer.dasharray = dashStringAsArray;
+    }
+    if (dashOffset) {
+      lineSymbolizer.dashOffset = Number(dashOffset);
+    }
+
+    const graphicStroke = get(strokeEl, 'GraphicStroke');
+    if (graphicStroke !== undefined) {
+      lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(graphicStroke);
+    }
+
+    const graphicFill = get(strokeEl, 'GraphicFill');
+    if (graphicFill !== undefined) {
+      lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(graphicFill);
+    }
+
+    const perpendicularOffset = get(sldSymbolizer, 'PerpendicularOffset.#text');
+    if (perpendicularOffset !== undefined) {
+      lineSymbolizer.perpendicularOffset = Number(perpendicularOffset);
+    }
+
+    return lineSymbolizer;
   }
 
   /**
@@ -588,11 +660,11 @@ export class SldStyleParser implements StyleParser<string> {
     }
     const strokeWidth = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
     if (strokeWidth) {
-      markSymbolizer.strokeWidth = strokeWidth;
+      markSymbolizer.strokeWidth = Number(strokeWidth);
     }
     const strokeOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
     if (strokeOpacity) {
-      markSymbolizer.strokeOpacity = strokeOpacity;
+      markSymbolizer.strokeOpacity = Number(strokeOpacity);
     }
 
     return markSymbolizer;
