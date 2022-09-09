@@ -1,4 +1,5 @@
 import {
+  FillSymbolizer,
   Filter,
   IconSymbolizer,
   LineSymbolizer,
@@ -481,8 +482,8 @@ export class SldStyleParser implements StyleParser<string> {
             return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer.LineSymbolizer);
           // case 'TextSymbolizer':
           //   return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
-          // case 'PolygonSymbolizer':
-          //   return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
+          case 'PolygonSymbolizer':
+            return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer.PolygonSymbolizer);
           // case 'RasterSymbolizer':
           //   return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer);
           default:
@@ -588,6 +589,67 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     return lineSymbolizer;
+  }
+
+  /**
+   * Get the GeoStyler-Style FillSymbolizer from an SLD Symbolizer.
+   *
+   * PolygonSymbolizer Stroke is just partially supported.
+   *
+   * @param sldSymbolizer The SLD Symbolizer
+   * @return The GeoStyler-Style FillSymbolizer
+   */
+  getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): FillSymbolizer {
+    const fillSymbolizer: FillSymbolizer = {
+      kind: 'Fill'
+    };
+    const strokeEl = get(sldSymbolizer, 'Stroke');
+    const fillEl = get(sldSymbolizer, 'Fill');
+
+    const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
+    const color = getParameterValue(fillEl, 'fill', this.sldVersion);
+
+    const outlineColor = getParameterValue(strokeEl, 'stroke', this.sldVersion);
+    const outlineWidth = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
+    const outlineOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
+    const outlineDashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.sldVersion);
+    // const otulineDashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.sldVersion);
+
+    const graphicFill = get(sldSymbolizer, 'Fill.GraphicFill');
+    if (graphicFill) {
+      fillSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
+        graphicFill
+      );
+    }
+    if (color) {
+      fillSymbolizer.color = color;
+    }
+    if (fillOpacity) {
+      fillSymbolizer.fillOpacity = Number(fillOpacity);
+
+    } else {
+      if (!fillSymbolizer.color) {
+        fillSymbolizer.opacity = 0;
+      }
+    }
+
+    if (outlineColor) {
+      fillSymbolizer.outlineColor = outlineColor;
+    }
+    if (outlineWidth) {
+      fillSymbolizer.outlineWidth = Number(outlineWidth);
+    }
+    if (outlineOpacity) {
+      fillSymbolizer.outlineOpacity = Number(outlineOpacity);
+    }
+    if (outlineDashArray) {
+      fillSymbolizer.outlineDasharray = outlineDashArray.split(' ').map(Number);
+    }
+    // TODO: seems like this is missing in the geostyer-stlye
+    // if (otulineDashOffset) {
+    //   fillSymbolizer.outlineDashOffset = Number(otulineDashOffset);
+    // }
+    return fillSymbolizer;
   }
 
   /**
