@@ -23,7 +23,12 @@ import {
 } from 'fast-xml-parser';
 
 import SymbologyEncoder from './SymbologyEncoder';
-import { getChild, getChildren, getParameterValue, isSymbolizer } from './Util/SldUtil';
+import {
+  get,
+  getChildren,
+  getParameterValue,
+  isSymbolizer
+} from './Util/SldUtil';
 
 export type SldVersion = '1.0.0' | '1.1.0';
 
@@ -32,7 +37,7 @@ export type ConstructorParams = {
   numericFilterFields?: string[];
   boolFilterFields?: string[];
   prettyOutput?: boolean;
-  sldVersion?: string;
+  sldVersion?: SldVersion;
   symbolizerUnits?: string;
   parserOptions?: X2jOptionsOptional;
   builderOptions?: XmlBuilderOptionsOptional;
@@ -146,6 +151,9 @@ export class SldStyleParser implements StyleParser<string> {
       ignoreAttributes : false,
       ...opts?.builderOptions
     });
+    if (opts?.sldVersion) {
+      this.sldVersion = opts?.sldVersion;
+    }
     Object.assign(this, opts);
   }
 
@@ -372,8 +380,8 @@ export class SldStyleParser implements StyleParser<string> {
             const filter: Filter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
             const symbolizers: Symbolizer[] = this.getSymbolizersFromRule(sldRule);
-            const ruleTitle = getChild(sldRule, 'Title')?.Title;
-            const ruleName = getChild(sldRule, 'Name')?.Name;
+            const ruleTitle = get(sldRule, 'Title');
+            const ruleName = get(sldRule, 'Name');
             const name = ruleTitle !== undefined
               ? ruleTitle
               : (ruleName !== undefined ? ruleName : '');
@@ -405,8 +413,8 @@ export class SldStyleParser implements StyleParser<string> {
    * @return {string} The name to be used for the GeoStyler Style Style
    */
   getStyleNameFromSldObject(sldObject: any): string {
-    const userStyleTitle = sldObject[0]?.StyledLayerDescriptor[0]?.NamedLayer?.[0]?.UserStyle?.[0]?.Title?.[0]['#text'];
-    const namedLayerName = sldObject[0]?.StyledLayerDescriptor[0]?.NamedLayer?.[0]?.Name?.[0]?.['#text'];
+    const userStyleTitle = get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle.Title.#text');
+    const namedLayerName = get(sldObject, 'StyledLayerDescriptor.NamedLayer.Name.#text');
     return userStyleTitle ? userStyleTitle
       : namedLayerName ? namedLayerName : '';
   }
@@ -420,7 +428,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The GeoStyler-Style Filter
    */
   getFilterFromRule(sldRule: any[]): Filter | undefined {
-    const sldFilter = getChild(sldRule, 'Filter')?.Filter;
+    const sldFilter = get(sldRule, 'Filter');
     if (!sldFilter) {
       return;
     }
@@ -440,11 +448,11 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getScaleDenominatorFromRule(sldRule: any[]): ScaleDenominator | undefined {
     const scaleDenominator: ScaleDenominator = <ScaleDenominator> {};
-    const min = getChild(sldRule, 'MinScaleDenominator')?.MinScaleDenominator;
+    const min = get(sldRule, 'MinScaleDenominator');
     if (min) {
       scaleDenominator.min = Number(min);
     }
-    const max = getChild(sldRule, 'MaxScaleDenominator')?.MaxScaleDenominator;
+    const max = get(sldRule, 'MaxScaleDenominator');
     if (max) {
       scaleDenominator.max = Number(max);
     }
@@ -494,8 +502,8 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
     let pointSymbolizer: PointSymbolizer;
-    const wellKnownName: string = sldSymbolizer?.Graphic?.[0].Mark?.[0].WellKnownName?.[0]?.['#text'];
-    const externalGraphic: any = sldSymbolizer?.Graphic?.[0].ExternalGraphic?.[0];
+    const wellKnownName: string = get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text');
+    const externalGraphic: any = get(sldSymbolizer, 'Graphic.ExternalGraphic');
     if (externalGraphic) {
       pointSymbolizer = this.getIconSymbolizerFromSldSymbolizer(sldSymbolizer);
     } else {
@@ -517,13 +525,13 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The GeoStyler-Style MarkSymbolizer
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
-    const wellKnownName: WellKnownName = sldSymbolizer?.Graphic?.[0]?.Mark?.[0]?.WellKnownName[0]?.['#text'];
-    const strokeEl = getChild(sldSymbolizer?.Graphic?.[0]?.Mark, 'Stroke')?.Stroke;
-    const fillEl = getChild(sldSymbolizer?.Graphic?.[0]?.Mark, 'Fill')?.Fill;
-    const opacity: string = getChild(sldSymbolizer?.Graphic, 'Opacity')?.Opacity?.[0]?.['#text'];
-    const size: string = getChild(sldSymbolizer?.Graphic, 'Size')?.Size?.[0]?.['#text'];
-    const rotation: string = getChild(sldSymbolizer?.Graphic, 'Rotation')?.Rotation?.[0]?.['#text'];
+    const wellKnownName: WellKnownName = get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text');
+    const strokeEl = get(sldSymbolizer, 'Graphic.Mark.Stroke');
+    const fillEl = get(sldSymbolizer, 'Graphic.Mark.Fill');
 
+    const opacity: string = get(sldSymbolizer, 'Graphic.Opacity.#text');
+    const size: string = get(sldSymbolizer, 'Graphic.Size.#text');
+    const rotation: string = get(sldSymbolizer, 'Graphic.Rotation.#text');
     const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
     const color = getParameterValue(fillEl, 'fill', this.sldVersion);
 
@@ -597,15 +605,14 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The GeoStyler-Style IconSymbolizer
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
-    const externalGraphicEl = getChild(sldSymbolizer?.Graphic, 'ExternalGraphic').ExternalGraphic;
-    const onlineResource = getChild(externalGraphicEl, 'OnlineResource');
+    const image = get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@xlink:href');
     const iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
       kind: 'Icon',
-      image: onlineResource?.[':@']['@_xlink:href']
+      image
     };
-    const opacity: string = getChild(sldSymbolizer?.Graphic, 'Opacity')?.Opacity?.[0]?.['#text'];
-    const size: string = getChild(sldSymbolizer?.Graphic, 'Size')?.Size?.[0]?.['#text'];
-    const rotation: string = getChild(sldSymbolizer?.Graphic, 'Rotation')?.Rotation?.[0]?.['#text'];
+    const opacity: string = get(sldSymbolizer, 'Graphic.Opacity.#text');
+    const size: string = get(sldSymbolizer, 'Graphic.Size.#text');
+    const rotation: string = get(sldSymbolizer, 'Graphic.Rotation.#text');
     if (opacity) {
       iconSymbolizer.opacity = Number(opacity);
     }
