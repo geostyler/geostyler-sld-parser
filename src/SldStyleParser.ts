@@ -10,6 +10,7 @@ import {
   ScaleDenominator,
   StyleParser,
   Symbolizer,
+  TextSymbolizer,
   UnsupportedProperties,
   WellKnownName,
   WriteStyleResult
@@ -480,8 +481,8 @@ export class SldStyleParser implements StyleParser<string> {
             return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer.PointSymbolizer);
           case 'LineSymbolizer':
             return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer.LineSymbolizer);
-          // case 'TextSymbolizer':
-          //   return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
+          case 'TextSymbolizer':
+            return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer.TextSymbolizer);
           case 'PolygonSymbolizer':
             return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer.PolygonSymbolizer);
           // case 'RasterSymbolizer':
@@ -590,6 +591,136 @@ export class SldStyleParser implements StyleParser<string> {
 
     return lineSymbolizer;
   }
+
+  /**
+   * Get the GeoStyler-Style TextSymbolizer from an SLD Symbolizer.
+   *
+   * @param sldSymbolizer The SLD Symbolizer
+   * @return The GeoStyler-Style TextSymbolizer
+   */
+  getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): TextSymbolizer {
+    const textSymbolizer: TextSymbolizer = {
+      kind: 'Text'
+    };
+    const fontEl = get(sldSymbolizer, 'Font');
+    const fillEl = get(sldSymbolizer, 'Fill');
+    const labelEl = get(sldSymbolizer, 'Label');
+    const haloEl = get(sldSymbolizer, 'Halo');
+    const haloFillEl = get(haloEl, 'Fill');
+
+    const color = getParameterValue(fillEl, 'fill', this.sldVersion);
+    const opacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
+
+    const fontFamily = getParameterValue(fontEl, 'font-family', this.sldVersion);
+    const fontStyle = getParameterValue(fontEl, 'font-style', this.sldVersion);
+    const fontSize = getParameterValue(fontEl, 'font-size', this.sldVersion);
+    const fontWeight = getParameterValue(fontEl, 'font-weight', this.sldVersion);
+
+    const haloColor = getParameterValue(haloFillEl, 'fill', this.sldVersion);
+
+    if (labelEl) {
+      textSymbolizer.label = this.getTextSymbolizerLabelFromSldSymbolizer(labelEl);
+    }
+
+    textSymbolizer.color = color ? color : '#000000';
+    textSymbolizer.opacity = opacity ? Number(opacity) : 1;
+
+    const haloRadius = get(sldSymbolizer, 'Halo.Radius.#text');
+    if (haloRadius) {
+      textSymbolizer.haloWidth = Number(haloRadius);
+    }
+    if (haloColor) {
+      textSymbolizer.haloColor = haloColor;
+    }
+    const displacement = get(sldSymbolizer, 'LabelPlacement.PointPlacement.Displacement');
+    if (displacement) {
+      const x = get(displacement, 'DisplacementX.#text');
+      const y = get(displacement, 'DisplacementY.#text');
+      textSymbolizer.offset = [
+        x ? parseFloat(x) : 0,
+        y ? parseFloat(y) : 0,
+      ];
+    }
+    const rotation = get(sldSymbolizer, 'LabelPlacement.PointPlacement.Rotation.#text');
+    if (rotation) {
+      textSymbolizer.rotate = Number(rotation);
+    }
+    if (fontFamily) {
+      textSymbolizer.font = [fontFamily];
+    }
+    if (fontStyle) {
+      textSymbolizer.fontStyle = fontStyle as 'normal' | 'italic' | 'oblique' | undefined;
+    }
+    if (fontWeight) {
+      textSymbolizer.fontWeight = fontWeight as 'normal' | 'bold' | undefined;
+    }
+    if (fontSize) {
+      textSymbolizer.size = Number(fontSize);
+    }
+    return textSymbolizer;
+  }
+
+  /**
+   * Create a template string from a TextSymbolizer Label element.
+   * The ordering of the elemments inside the Label element is preserved.
+   *
+   * Examples:
+   * <Label>
+   *  <Literal>foo</Literal>
+   *  <PropertyName>bar</PropertyName>
+   * </Label>
+   * --> "foo{{bar}}"
+   *
+   * <Label>
+   *  <PropertyName>bar</PropertyName>
+   *  <Literal>foo</Literal>
+   * </Label>
+   * --> "{{bar}}foo"
+   *
+   * <Label>
+   *  <PropertyName>bar</PropertyName>
+   *  <Literal>foo</Literal>
+   *  <PropertyName>john</PropertyName>
+   * </Label>
+   * --> "{{bar}}foo{{john}}"
+   *
+   * <Label>
+   *  <PropertyName>bar</PropertyName>
+   *  <PropertyName>john</PropertyName>
+   *  <Literal>foo</Literal>
+   * </Label>
+   * --> "{{bar}}{{john}}foo"
+   *
+   * <Label>
+   *  <PropertyName>bar</PropertyName>
+   *  <PropertyName>john</PropertyName>
+   *  <Literal>foo</Literal>
+   *  <PropertyName>doe</PropertyName>
+   * </Label>
+   * --> "{{bar}}{{john}}foo{{doe}}"
+   *
+   */
+  getTextSymbolizerLabelFromSldSymbolizer = (sldLabel: any): string => {
+    const label: string = sldLabel
+      .map((labelEl: any) => {
+        // TODO: ogc namespace should be removed on parsing. check why it is not
+        const labelName = Object.keys(labelEl)[0];
+        switch (labelName.replace('ogc:', '')) {
+          case '#text':
+            return labelEl['#text'];
+          case 'Literal':
+            return labelEl[labelName][0]['#text'];
+          case 'PropertyName':
+            const propName = labelEl[labelName][0]['#text'];
+            return `{{${propName}}}`;
+            // TODO handle CDATA property
+          default:
+            return '';
+        }
+      })
+      .join('');
+    return label;
+  };
 
   /**
    * Get the GeoStyler-Style FillSymbolizer from an SLD Symbolizer.
