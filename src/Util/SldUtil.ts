@@ -8,7 +8,7 @@ import { SldVersion } from '../SldStyleParser';
  * @returns An array of object as created by the fast-xml-parser
  */
 export function getChildren(elements: any[], tagName: string): any[] {
-  return elements.filter(obj => Object.keys(obj).includes(tagName));
+  return elements?.filter(obj => Object.keys(obj).includes(tagName));
 }
 
 /**
@@ -19,7 +19,7 @@ export function getChildren(elements: any[], tagName: string): any[] {
  * @returns An object as created by the fast-xml-parser
  */
 export function getChild(elements: any[], tagName: string): any {
-  return elements.find(obj => Object.keys(obj).includes(tagName));
+  return elements?.find(obj => Object.keys(obj).includes(tagName));
 }
 
 /**
@@ -39,6 +39,17 @@ export function getParameterValue(elements: any[], parameter: string, sldVersion
     .filter(obj => Object.keys(obj)?.includes(paramKey))
     .find(obj => obj[':@']['@_name'] === parameter);
   return element?.[paramKey]?.[0]?.['#text'];
+}
+
+/**
+ * Get the attribute value of an obj
+ *
+ * @param obj The object to check.
+ * @paramm name The name of the attribute
+ * @returns
+ */
+export function getAttribute(obj: any, name: string): any | undefined {
+  return obj?.[':@']?.[`@_${name}`];
 }
 
 /**
@@ -75,7 +86,7 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
   // handle queries for attributes
   if (rest?.startsWith('@')) {
     target = getChildren(obj, key)[index];
-    return target[':@'][`@_${rest.substring(1)}`];
+    return getAttribute(target, rest.substring(1));
   }
   if (Array.isArray(obj)) {
     // handle queries for CssParameter/SvgParameter

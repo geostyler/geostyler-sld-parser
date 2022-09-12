@@ -1,10 +1,17 @@
 import {
+  Channel,
+  ChannelSelection,
+  ColorMap,
+  ColorMapEntry,
+  ColorMapType,
+  ContrastEnhancement,
   FillSymbolizer,
   Filter,
   IconSymbolizer,
   LineSymbolizer,
   MarkSymbolizer,
   PointSymbolizer,
+  RasterSymbolizer,
   ReadStyleResult,
   Rule,
   ScaleDenominator,
@@ -28,6 +35,7 @@ import {
 import SymbologyEncoder from './SymbologyEncoder';
 import {
   get,
+  getAttribute,
   getChildren,
   getParameterValue,
   isSymbolizer
@@ -485,8 +493,8 @@ export class SldStyleParser implements StyleParser<string> {
             return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer.TextSymbolizer);
           case 'PolygonSymbolizer':
             return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer.PolygonSymbolizer);
-          // case 'RasterSymbolizer':
-          //   return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer);
+          case 'RasterSymbolizer':
+            return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer.RasterSymbolizer);
           default:
             throw new Error('Failed to parse SymbolizerKind from SldRule');
         }
@@ -784,6 +792,44 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
+   * Get the GeoStyler-Style RasterSymbolizer from a SLD Symbolizer.
+   *
+   * @param {object} sldSymbolizer The SLD Symbolizer
+   */
+  getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any): RasterSymbolizer {
+    const rasterSymbolizer: RasterSymbolizer = {
+      kind: 'Raster'
+    };
+      // parse Opacity
+    let opacity = get(sldSymbolizer, 'Opacity.#text');
+    if (opacity) {
+      opacity = parseFloat(opacity);
+      rasterSymbolizer.opacity = opacity;
+    }
+    // parse ColorMap
+    const sldColorMap = get(sldSymbolizer, 'ColorMap');
+    const sldColorMapType = get(sldSymbolizer, 'ColorMap.@type');
+    const extended = get(sldSymbolizer, 'ColorMap.@extended');
+    if (sldColorMap) {
+      const colormap = this.getColorMapFromSldColorMap(sldColorMap, sldColorMapType, extended);
+      rasterSymbolizer.colorMap = colormap;
+    }
+    // parse ChannelSelection
+    const sldChannelSelection = get(sldSymbolizer, 'ChannelSelection');
+    if (sldChannelSelection) {
+      const channelSelection = this.getChannelSelectionFromSldChannelSelection(sldChannelSelection);
+      rasterSymbolizer.channelSelection = channelSelection;
+    }
+    // parse ContrastEnhancement
+    const sldContrastEnhancement = get(sldSymbolizer, 'ContrastEnhancement');
+    if (sldContrastEnhancement) {
+      const contrastEnhancement = this.getContrastEnhancementFromSldContrastEnhancement(sldContrastEnhancement);
+      rasterSymbolizer.contrastEnhancement = contrastEnhancement;
+    }
+    return rasterSymbolizer;
+  }
+
+  /**
    * Get the GeoStyler-Style MarkSymbolizer from an SLD Symbolizer
    *
    * @param sldSymbolizer The SLD Symbolizer
@@ -888,6 +934,134 @@ export class SldStyleParser implements StyleParser<string> {
       iconSymbolizer.rotate = Number(rotation);
     }
     return iconSymbolizer;
+  }
+
+  /**
+   * Get the GeoStyler-Style ColorMap from a SLD ColorMap.
+   *
+   * @param {object} sldColorMap The SLD ColorMap
+   */
+  getColorMapFromSldColorMap(sldColorMap: any, type: ColorMapType = 'ramp', extended?: string): ColorMap {
+    const colorMap: ColorMap = {
+      type
+    };
+
+    if (extended) {
+      if (extended === 'true') {
+        colorMap.extended = true;
+      } else {
+        colorMap.extended = false;
+      }
+    }
+
+    const colorMapEntries = getChildren(sldColorMap, 'ColorMapEntry');
+    if (Array.isArray(colorMapEntries)) {
+      const cmEntries = colorMapEntries.map((cm) => {
+        const color = getAttribute(cm, 'color');
+        if (!color) {
+          throw new Error('Cannot parse ColorMapEntries. color is undefined.');
+        }
+        let quantity = getAttribute(cm, 'quantity');
+        if (quantity) {
+          quantity = parseFloat(quantity);
+        }
+        const label = getAttribute(cm, 'label');
+        let opacity = getAttribute(cm, 'opacity');
+        if (opacity) {
+          opacity = parseFloat(opacity);
+        }
+        return {
+          color,
+          quantity,
+          label,
+          opacity
+        } as ColorMapEntry;
+      });
+      colorMap.colorMapEntries = cmEntries;
+    }
+
+    return colorMap;
+  }
+
+  /**
+     * Get the GeoStyler-Style ContrastEnhancement from a SLD ContrastEnhancement.
+     *
+     * @param {object} sldContrastEnhancement The SLD ContrastEnhancement
+     */
+  getContrastEnhancementFromSldContrastEnhancement(sldContrastEnhancement: any): ContrastEnhancement {
+    const contrastEnhancement: ContrastEnhancement = {};
+
+    // parse enhancementType
+    const hasHistogram = !!get(sldContrastEnhancement, 'Histogram');
+    const hasNormalize = !!get(sldContrastEnhancement, 'Normalize');
+    if (hasHistogram && hasNormalize) {
+      throw new Error(`Cannot parse ContrastEnhancement. Histogram and Normalize
+        are mutually exclusive.`);
+    } else if (hasHistogram) {
+      contrastEnhancement.enhancementType = 'histogram';
+    } else if (hasNormalize) {
+      contrastEnhancement.enhancementType = 'normalize';
+    }
+    // parse gammavalue
+    let gammaValue = get(sldContrastEnhancement, 'GammaValue.#text');
+    if (gammaValue) {
+      gammaValue = Number(gammaValue);
+    }
+    contrastEnhancement.gammaValue = gammaValue;
+
+    return contrastEnhancement;
+  }
+
+  /**
+     * Get the GeoStyler-Style Channel from a SLD Channel.
+     *
+     * @param {object} sldChannel The SLD Channel
+     */
+  getChannelFromSldChannel(sldChannel: any): Channel {
+    const sourceChannelName = get(sldChannel, 'SourceChannelName.#text')?.toString();
+    const channel: Channel = {
+      sourceChannelName
+    };
+    const contrastEnhancement = get(sldChannel, 'ContrastEnhancement');
+    if (contrastEnhancement) {
+      channel.contrastEnhancement = this.getContrastEnhancementFromSldContrastEnhancement(contrastEnhancement);
+    }
+    return channel;
+  }
+
+  /**
+     * Get the GeoStyler-Style ChannelSelection from a SLD ChannelSelection.
+     *
+     * @param {object} sldChannelSelection The SLD ChannelSelection
+     */
+  getChannelSelectionFromSldChannelSelection(sldChannelSelection: any): ChannelSelection {
+    let channelSelection: ChannelSelection;
+    const red = get(sldChannelSelection, 'RedChannel');
+    const blue = get(sldChannelSelection, 'BlueChannel');
+    const green = get(sldChannelSelection, 'GreenChannel');
+    const gray = get(sldChannelSelection, 'GrayChannel');
+
+    if (gray && red && blue && green) {
+      throw new Error('Cannot parse ChannelSelection. RGB and Grayscale are mutually exclusive');
+    }
+    if (gray) {
+      const grayChannel = this.getChannelFromSldChannel(gray);
+      channelSelection = {
+        grayChannel
+      };
+    } else if (red && green && blue) {
+      const redChannel = this.getChannelFromSldChannel(red);
+      const blueChannel = this.getChannelFromSldChannel(blue);
+      const greenChannel = this.getChannelFromSldChannel(green);
+      channelSelection = {
+        redChannel,
+        blueChannel,
+        greenChannel
+      };
+    } else {
+      throw new Error('Cannot parse ChannelSelection. Red, Green and Blue channels must be defined.');
+    }
+    return channelSelection;
   }
 
   checkForUnsupportedProperites(geoStylerStyle: Style): UnsupportedProperties | undefined {
