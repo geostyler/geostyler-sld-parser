@@ -5,15 +5,15 @@ const pointSimplePoint: Style = {
   'rules': [{
     'filter': ['&&',
       ['||',
-        ['==', 'ID', '1'],
-        ['==', 'ID', '2']
+        ['==', 'ID', 1],
+        ['==', 'ID', 2]
       ],
       ['||',
         ['==', 'STREET', 'Main'],
         ['==', 'STREET', 'Time square'],
         ['&&',
-          ['>=', 'HOUSENO', '1909'],
-          ['<=', 'HOUSENO', '19909']
+          ['>=', 'HOUSENO', 1909],
+          ['<=', 'HOUSENO', 19909]
         ]
       ]
     ],

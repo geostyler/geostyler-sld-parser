@@ -4,9 +4,12 @@ import {
   ColorMap,
   ColorMapEntry,
   ColorMapType,
+  CombinationOperator,
+  ComparisonOperator,
   ContrastEnhancement,
   FillSymbolizer,
   Filter,
+  GeoStylerFunction,
   IconSymbolizer,
   LineSymbolizer,
   MarkSymbolizer,
@@ -44,7 +47,6 @@ import {
 export type SldVersion = '1.0.0' | '1.1.0';
 
 export type ConstructorParams = {
-  forceCasting?: boolean;
   numericFilterFields?: string[];
   boolFilterFields?: string[];
   prettyOutput?: boolean;
@@ -443,7 +445,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (!sldFilter) {
       return;
     }
-    const operator = sldFilter['#name'];
+    const operator = Object.keys(sldFilter?.[0])?.[0];
     if (!operator) {
       return;
     }
@@ -459,11 +461,11 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getScaleDenominatorFromRule(sldRule: any[]): ScaleDenominator | undefined {
     const scaleDenominator: ScaleDenominator = <ScaleDenominator> {};
-    const min = get(sldRule, 'MinScaleDenominator');
+    const min = get(sldRule, 'MinScaleDenominator.#text');
     if (min) {
       scaleDenominator.min = Number(min);
     }
-    const max = get(sldRule, 'MaxScaleDenominator');
+    const max = get(sldRule, 'MaxScaleDenominator.#text');
     if (max) {
       scaleDenominator.max = Number(max);
     }
@@ -501,6 +503,91 @@ export class SldStyleParser implements StyleParser<string> {
       });
 
     return symbolizers;
+  }
+
+  /**
+   * Creates a GeoStyler-Style Filter from a given operator name and the js
+   * SLD object representation (created with xml2js) of the SLD Filter.
+   *
+   * @param {string} sldOperatorName The Name of the SLD Filter Operator
+   * @param {object} sldFilter The SLD Filter
+   * @return {Filter} The GeoStyler-Style Filter
+   */
+  getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): Filter {
+    let filter: Filter;
+
+    // we have to first check for PropertyIsBetween,
+    // since it is also a comparisonOperator. But it
+    // needs to be treated differently.
+    if (sldOperatorName === 'PropertyIsBetween') {
+      // TODO PropertyIsBetween spec allows more than just a
+      //      PropertyName as its first argument.
+      const propertyName = get(sldFilter, 'PropertyIsBetween.PropertyName.#text');
+      const lower = Number(get(sldFilter, 'PropertyIsBetween.LowerBoundary.Literal.#text'));
+      const upper = Number(get(sldFilter, 'PropertyIsBetween.UpperBoundary.Literal.#text'));
+
+      filter = ['<=x<=', propertyName, lower, upper];
+    } else if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
+      const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
+      const propertyIsFilter = !!sldFilter.Function;
+      const propertyOrFilter = propertyIsFilter
+        ? this.getFunctionFilterFromSldFilter(sldFilter.Function)
+        : get(sldFilter[sldOperatorName], 'PropertyName.#text');
+
+      let value = null;
+      if (sldOperatorName !== 'PropertyIsNull') {
+        value = get(sldFilter[sldOperatorName], 'Literal.#text');
+      }
+
+      filter = [
+        comparisonOperator,
+        propertyOrFilter,
+        value
+      ];
+
+    } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
+      const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
+      const filters: Filter[] = get(sldFilter, sldOperatorName)?.map((op: any) => {
+        const operatorName = Object.keys(op)?.[0];
+        return this.getFilterFromOperatorAndComparison(operatorName, op);
+      });
+      filter = [
+        combinationOperator,
+        ...filters
+      ];
+    } else if (Object.keys(SldStyleParser.negationOperatorMap).includes(sldOperatorName)) {
+      const negationOperator = SldStyleParser.negationOperatorMap[sldOperatorName];
+      const negatedOperator = Object.keys(sldFilter[sldOperatorName][0])[0];
+      const negatedComparison = sldFilter[sldOperatorName][0];
+      const negatedFilter: Filter = this.getFilterFromOperatorAndComparison(
+        negatedOperator,
+        negatedComparison
+      );
+      filter = [
+        negationOperator,
+        negatedFilter
+      ];
+    } else {
+      throw new Error('No Filter detected');
+    }
+    return filter;
+  }
+
+  /**
+   * Creates a GeoStyler-Style FunctionFilter from a SLD Function.
+   *
+   * @param sldFilter The SLD Filter
+   * @return The GeoStyler-Style FunctionFilter
+   */
+  getFunctionFilterFromSldFilter(sldFilter: any): GeoStylerFunction | undefined {
+    const functionName = get(sldFilter, 'Function[0].$.name');
+    switch (functionName) {
+      // case 'strMatches':
+      //   return this.getStrMatchesFunctionFilterFromSldFilter(sldFilter);
+      //   break;
+      default:
+        return undefined;
+    }
   }
 
   /**
