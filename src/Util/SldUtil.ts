@@ -79,7 +79,7 @@ export function isSymbolizer(obj: any): boolean {
  */
 export function get(obj: any, path: string, sldVersion?: SldVersion): any | undefined {
   const parts = path.split(/\.(.*)/s);
-  const key = parts[0];
+  let key = parts[0];
   const rest = parts[1];
   let target = obj;
   let index = 0;
@@ -96,6 +96,7 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
     // handle queries with specfied indexes
     if(key.endsWith(']')) {
       index = Number(key.split('[')[1].split(']')[0]);
+      key = key.split('[')[0];
     }
     target = getChildren(obj, key)[index];
   }
