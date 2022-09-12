@@ -61,7 +61,7 @@
     "@types/xml2js": "^0.4.11",
     "@typescript-eslint/eslint-plugin": "^5.22.0",
     "@typescript-eslint/parser": "^5.22.0",
-    "babel-jest": "^28.0.3",
+    "babel-jest": "^29.0.3",
     "babel-loader": "^8.2.5",
     "coveralls": "^3.1.1",
     "eslint": "^8.14.0",
