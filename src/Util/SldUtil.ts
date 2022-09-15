@@ -108,3 +108,15 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
   }
   return target[key];
 }
+
+/**
+ * Returns the keys of an object where the value is equal to the passed in
+ * value.
+ *
+ * @param object The object to get the key from.
+ * @param value The value to get the matching key from.
+ * @return The matching keys.
+ */
+export function keysByValue(object: any, value: any): string[] {
+  return Object.keys(object).filter(key => object[key] === value);
+}

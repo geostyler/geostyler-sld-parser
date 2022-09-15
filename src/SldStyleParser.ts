@@ -5,15 +5,21 @@ import {
   ColorMapEntry,
   ColorMapType,
   CombinationOperator,
+  ComparisonFilter,
   ComparisonOperator,
   ContrastEnhancement,
+  Expression,
   FillSymbolizer,
   Filter,
   GeoStylerFunction,
   IconSymbolizer,
+  isCombinationFilter,
+  isComparisonFilter,
+  isNegationFilter,
   LineSymbolizer,
   MarkSymbolizer,
   PointSymbolizer,
+  RangeFilter,
   RasterSymbolizer,
   ReadStyleResult,
   Rule,
@@ -41,7 +47,8 @@ import {
   getAttribute,
   getChildren,
   getParameterValue,
-  isSymbolizer
+  isSymbolizer,
+  keysByValue
 } from './Util/SldUtil';
 
 export type SldVersion = '1.0.0' | '1.1.0';
@@ -49,7 +56,6 @@ export type SldVersion = '1.0.0' | '1.1.0';
 export type ConstructorParams = {
   numericFilterFields?: string[];
   boolFilterFields?: string[];
-  prettyOutput?: boolean;
   sldVersion?: SldVersion;
   symbolizerUnits?: string;
   parserOptions?: X2jOptionsOptional;
@@ -156,13 +162,19 @@ export class SldStyleParser implements StyleParser<string> {
 
   constructor(opts?: ConstructorParams) {
     this.parser = new XMLParser({
+      ...opts?.parserOptions,
+      // Fixed attributes
       ignoreDeclaration: true,
       ignoreAttributes: false,
       preserveOrder: true
     });
     this.builder = new XMLBuilder({
+      ...opts?.builderOptions,
+      // Fixed attributes
       ignoreAttributes : false,
-      ...opts?.builderOptions
+      suppressEmptyNode: true,
+      // This is fixed to false to make it easier to write the xml order should be preserved anyway
+      preserveOrder: false
     });
     if (opts?.sldVersion) {
       this.sldVersion = opts?.sldVersion;
@@ -224,48 +236,6 @@ export class SldStyleParser implements StyleParser<string> {
    */
   set boolFilterFields(boolFilterFields: string[]) {
     this._boolFilterFields = boolFilterFields;
-  }
-
-  /**
-   * Flag to tell if all values should be casted automatically
-   */
-  private _forceCasting: boolean = false;
-
-  /**
-   * Getter for _forceCasting
-   * @return
-   */
-  get forceCasting(): boolean {
-    return this._forceCasting;
-  }
-
-  /**
-   * Setter for _forceCasting
-   * @param forceCasting The forceCasting value to set
-   */
-  set forceCasting(forceCasting: boolean) {
-    this._forceCasting = forceCasting;
-  }
-
-  /**
-   * Flag to tell if the generated output SLD will be prettified
-   */
-  private _prettyOutput: boolean = true;
-
-  /**
-   * Getter for _prettyOutput
-   * @return
-   */
-  get prettyOutput(): boolean {
-    return this._prettyOutput;
-  }
-
-  /**
-   * Setter for _prettyOutput
-   * @param prettyOutput The _prettyOutput value to set
-   */
-  set prettyOutput(prettyOutput: boolean) {
-    this._prettyOutput = prettyOutput;
   }
 
   /**
@@ -333,32 +303,6 @@ export class SldStyleParser implements StyleParser<string> {
       //     errors: [error]
       //   });
       // }
-    });
-  }
-
-  /**
-   * The writeStyle implementation of the GeoStyler-Style StyleParser interface.
-   * It reads a GeoStyler-Style Style and returns a Promise.
-   * The Promise itself resolves with a SLD string.
-   *
-   * @param {Style} geoStylerStyle A GeoStyler-Style Style.
-   * @return {Promise} The Promise resolving with the SLD as a string.
-   */
-  writeStyle(geoStylerStyle: Style): Promise<WriteStyleResult<string>> {
-    return new Promise<WriteStyleResult<string>>(resolve => {
-      const unsupportedProperties = this.checkForUnsupportedProperites(geoStylerStyle);
-      try {
-        const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
-        resolve({
-          output: sldString,
-          unsupportedProperties,
-          warnings: unsupportedProperties && ['Your style contains unsupportedProperties!']
-        });
-      } catch (error) {
-        resolve({
-          errors: [error]
-        });
-      }
     });
   }
 
@@ -442,10 +386,10 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getFilterFromRule(sldRule: any[]): Filter | undefined {
     const sldFilter = get(sldRule, 'Filter');
-    if (!sldFilter) {
+    if (!sldFilter || sldFilter.length === 0) {
       return;
     }
-    const operator = Object.keys(sldFilter?.[0])?.[0];
+    const operator = Object.keys(sldFilter[0])?.[0];
     if (!operator) {
       return;
     }
@@ -799,6 +743,8 @@ export class SldStyleParser implements StyleParser<string> {
     const label: string = sldLabel
       .map((labelEl: any) => {
         // TODO: ogc namespace should be removed on parsing. check why it is not
+        // TODO: fast-xml-parser trims everything between xml tags. whitspaces get
+        // lost. When trimValues is set to false ALL whitespaces are kept including newlines etc.
         const labelName = Object.keys(labelEl)[0];
         switch (labelName.replace('ogc:', '')) {
           case '#text':
@@ -808,7 +754,7 @@ export class SldStyleParser implements StyleParser<string> {
           case 'PropertyName':
             const propName = labelEl[labelName][0]['#text'];
             return `{{${propName}}}`;
-            // TODO handle CDATA property
+            // TODO: handle CDATA property
           default:
             return '';
         }
@@ -839,7 +785,7 @@ export class SldStyleParser implements StyleParser<string> {
     const outlineWidth = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
     const outlineOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
     const outlineDashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.sldVersion);
-    // const otulineDashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.sldVersion);
+    // const outlineDashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.sldVersion);
 
     const graphicFill = get(sldSymbolizer, 'Fill.GraphicFill');
     if (graphicFill) {
@@ -872,8 +818,8 @@ export class SldStyleParser implements StyleParser<string> {
       fillSymbolizer.outlineDasharray = outlineDashArray.split(' ').map(Number);
     }
     // TODO: seems like this is missing in the geostyer-stlye
-    // if (otulineDashOffset) {
-    //   fillSymbolizer.outlineDashOffset = Number(otulineDashOffset);
+    // if (outlineDashOffset) {
+    //   fillSymbolizer.outlineDashOffset = Number(outlineDashOffset);
     // }
     return fillSymbolizer;
   }
@@ -1151,6 +1097,1004 @@ export class SldStyleParser implements StyleParser<string> {
     return channelSelection;
   }
 
+  /**
+   * The writeStyle implementation of the GeoStyler-Style StyleParser interface.
+   * It reads a GeoStyler-Style Style and returns a Promise.
+   * The Promise itself resolves with a SLD string.
+   *
+   * @param geoStylerStyle A GeoStyler-Style Style.
+   * @return The Promise resolving with the SLD as a string.
+   */
+  writeStyle(geoStylerStyle: Style): Promise<WriteStyleResult<string>> {
+    return new Promise<WriteStyleResult<string>>(resolve => {
+      const unsupportedProperties = this.checkForUnsupportedProperites(geoStylerStyle);
+      // try {
+      const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
+      const sldString = this.builder.build(sldObject);
+      resolve({
+        output: sldString,
+        unsupportedProperties,
+        warnings: unsupportedProperties && ['Your style contains unsupportedProperties!']
+      });
+      // } catch (error) {
+      //   resolve({
+      //     errors: [error]
+      //   });
+      // }
+    });
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Style
+   *
+   * @param {Style} geoStylerStyle A GeoStyler-Style Style.
+   * @return {object} The object representation of a SLD Style (readable with xml2js)
+   */
+  geoStylerStyleToSldObject(geoStylerStyle: Style): any {
+    const rules: any[] = this.getSldRulesFromRules(geoStylerStyle.rules);
+    // add the ogc namespace to the filter element, if a filter is present
+    rules.forEach(rule => {
+      if (rule.Filter && !rule.Filter['@_xmlns']) {
+        rule.Filter['@_xmlns'] = 'http://www.opengis.net/ogc';
+      }
+    });
+
+    if (this.sldVersion !== '1.0.0') {
+      return SymbologyEncoder.getSymbologyEncoding(geoStylerStyle, rules, this.symbolizerUnits);
+    }
+    return {
+      '?xml': {
+        '@_version': '1.0',
+        '@_encoding': 'UTF-8',
+        '@_standalone': 'yes'
+      },
+      StyledLayerDescriptor: {
+        '@_version': '1.0.0',
+        '@_xsi:schemaLocation': 'http://www.opengis.net/sld StyledLayerDescriptor.xsd',
+        '@_xmlns': 'http://www.opengis.net/sld',
+        '@_xmlns:ogc': 'http://www.opengis.net/ogc',
+        '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
+        '@_xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+        'NamedLayer': [{
+          'Name': [geoStylerStyle.name || ''],
+          'UserStyle': [{
+            'Name': [geoStylerStyle.name || ''],
+            'Title': [geoStylerStyle.name || ''],
+            'FeatureTypeStyle': [{
+              'Rule': rules
+            }]
+          }]
+        }]
+      }
+    };
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Rule.
+   *
+   * @param rules An array of GeoStyler-Style Rules.
+   * @return The object representation of a SLD Rule (readable with xml2js)
+   */
+  getSldRulesFromRules(rules: Rule[]): any {
+    return rules.map((rule: Rule) => {
+      let sldRule: any = {
+        Name: [rule.name]
+      };
+      if (rule.filter) {
+        const filter = this.getSldFilterFromFilter(rule.filter);
+        sldRule.Filter = filter;
+      }
+      if (rule.scaleDenominator) {
+        const { min, max } = rule.scaleDenominator;
+        if (min && Number.isFinite(min)) {
+          sldRule.MinScaleDenominator = [min.toString()];
+        }
+        if (max && Number.isFinite(max)) {
+          sldRule.MaxScaleDenominator = [max.toString()];
+        }
+      }
+
+      // Remove empty Symbolizers and check if there is at least 1 symbolizer
+      const symbolizers = this.getSldSymbolizersFromSymbolizers(rule.symbolizers);
+      let symbolizerKeys: string[] = [];
+      if (symbolizers.length > 0) {
+        symbolizerKeys = Object.keys(symbolizers[0]);
+      }
+
+      symbolizerKeys.forEach((key: string) => {
+        if (symbolizers[0][key].length === 0) {
+          delete symbolizers[0][key];
+        }
+      });
+      if (symbolizers.length > 0 && Object.keys(symbolizers[0]).length !== 0) {
+        sldRule = Object.assign(sldRule, symbolizers[0]);
+      }
+      return sldRule;
+    });
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ComparisonFilter.
+   *
+   * @param {ComparisonFilter} comparisonFilter A GeoStyler-Style ComparisonFilter.
+   * @return {object} The object representation of a SLD Filter Expression with a
+   * comparison operator (readable with xml2js)
+   */
+  getSldComparisonFilterFromComparisonFilter(comparisonFilter: ComparisonFilter): any[] {
+    const sldComparisonFilter: any = {};
+    const operator = comparisonFilter[0];
+    const key = comparisonFilter[1];
+    const value = comparisonFilter[2];
+
+    const sldOperators: string[] = keysByValue(SldStyleParser.comparisonMap, operator);
+    const sldOperator: string = (sldOperators.length > 1 && value === null)
+      ? sldOperators[1] : sldOperators[0];
+
+    const propertyKey = 'PropertyName';
+
+    // TODO: parse GeoStylerFunction
+    // if (Array.isArray(key) && key[0].startsWith('FN_')) {
+    //   key = this.getSldFunctionFilterFromFunctionFilter(key);
+    //   propertyKey = 'Function';
+    // }
+
+    if (sldOperator === 'PropertyIsNull') {
+      // empty, selfclosing Literals are not valid in a propertyIsNull filter
+      sldComparisonFilter[sldOperator] = [{
+        [propertyKey]: [key]
+      }];
+    } else if (sldOperator === 'PropertyIsLike') {
+      sldComparisonFilter[sldOperator] = [{
+        '@_wildCard': '*',
+        '@_singleChar': '.',
+        '@_escape': '!',
+        [propertyKey]: [key],
+        'Literal': [value]
+      }];
+    } else if (sldOperator === 'PropertyIsBetween') {
+      // Currently we only support Literals as values.
+      const betweenFilter = comparisonFilter as RangeFilter;
+      sldComparisonFilter[sldOperator] = [{
+        [propertyKey]: [key],
+        'LowerBoundary': [{
+          'Literal': [betweenFilter[2]]
+        }],
+        'UpperBoundary': [{
+          'Literal': [betweenFilter[3]]
+        }]
+      }];
+    } else {
+      sldComparisonFilter[sldOperator] = [{
+        [propertyKey]: [key],
+        'Literal': [value]
+      }];
+    }
+
+    return sldComparisonFilter;
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Filter.
+   *
+   * @param filter A GeoStyler-Style Filter.
+   * @return The object representation of a SLD Filter Expression (readable with xml2js)
+   */
+  getSldFilterFromFilter(filter: Filter): any[] {
+    let sldFilter: any = {};
+
+    if (isComparisonFilter(filter)) {
+      sldFilter = this.getSldComparisonFilterFromComparisonFilter(filter);
+    } else if (isCombinationFilter(filter)) {
+      const [
+        operator,
+        ...args
+      ] = filter;
+      const sldOperators: string[] = keysByValue(SldStyleParser.combinationMap, operator);
+      // TODO: Implement logic for "PropertyIsBetween" filter
+      const combinator = sldOperators[0];
+      sldFilter[combinator] = [{}];
+      args.forEach((subFilter: Filter, subFilterIdx: number) => {
+        const sldSubFilter = this.getSldFilterFromFilter(subFilter);
+        const filterName = Object.keys(sldSubFilter)[0];
+
+        if (subFilter[0] === '||' || subFilter[0] === '&&') {
+          if (isCombinationFilter(subFilter)) {
+            if (!(sldFilter[combinator][0][filterName])) {
+              sldFilter[combinator][0][filterName] = [];
+            }
+            sldFilter[combinator][0][filterName][subFilterIdx] = {};
+          } else {
+            sldFilter[combinator][0][filterName] = {};
+          }
+          const parentFilterName = Object.keys(sldSubFilter)[0];
+
+          subFilter.forEach((el: any, index: number) => {
+            if (index > 0) {
+              const sldSubFilter2 = this.getSldFilterFromFilter(el);
+              const filterName2 = Object.keys(sldSubFilter2)[0];
+              if (!(sldFilter[combinator][0][parentFilterName][subFilterIdx])) {
+                sldFilter[combinator][0][parentFilterName][subFilterIdx] = {};
+              }
+              if (!sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]) {
+                sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2] = [];
+              }
+              sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]
+                .push(sldSubFilter2[filterName2][0]);
+            }
+          });
+        } else {
+          if (Array.isArray(sldFilter[combinator][0][filterName])) {
+            sldFilter[combinator][0][filterName].push(sldSubFilter[filterName][0]);
+          } else {
+            sldFilter[combinator][0][filterName] = sldSubFilter[filterName];
+          }
+        }
+      });
+    } else if (isNegationFilter(filter)) {
+      sldFilter.Not = this.getSldFilterFromFilter(filter[1]);
+    }
+    return sldFilter;
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from GeoStyler-Style Symbolizers.
+   *
+   * @param {Symbolizer[]} symbolizers A GeoStyler-Style Symbolizer array.
+   * @return {object} The object representation of a SLD Symbolizer (readable with xml2js)
+   */
+  getSldSymbolizersFromSymbolizers(symbolizers: Symbolizer[]): any {
+    const sldSymbolizers: any = [];
+    const sldSymbolizer: any = {};
+    symbolizers.forEach(symb => {
+      let sldSymb: any;
+      switch (symb.kind) {
+        case 'Mark':
+          if (!sldSymbolizer.PointSymbolizer) {
+            sldSymbolizer.PointSymbolizer = [];
+          }
+          sldSymb = this.getSldPointSymbolizerFromMarkSymbolizer(symb);
+          if (sldSymb?.PointSymbolizer[0]) {
+            sldSymbolizer.PointSymbolizer.push(sldSymb?.PointSymbolizer[0]);
+          }
+          break;
+        case 'Icon':
+          if (!sldSymbolizer.PointSymbolizer) {
+            sldSymbolizer.PointSymbolizer = [];
+          }
+
+          sldSymb = this.getSldPointSymbolizerFromIconSymbolizer(symb);
+          if (sldSymb?.PointSymbolizer[0]) {
+            sldSymbolizer.PointSymbolizer.push(
+              sldSymb?.PointSymbolizer[0]
+            );
+          }
+          break;
+        case 'Text':
+          if (!sldSymbolizer.TextSymbolizer) {
+            sldSymbolizer.TextSymbolizer = [];
+          }
+
+          sldSymb = this.getSldTextSymbolizerFromTextSymbolizer(symb);
+          if (sldSymb?.TextSymbolizer[0]) {
+            sldSymbolizer.TextSymbolizer.push(
+              sldSymb?.TextSymbolizer[0]
+            );
+          }
+          break;
+        case 'Line':
+          if (!sldSymbolizer.LineSymbolizer) {
+            sldSymbolizer.LineSymbolizer = [];
+          }
+
+          sldSymb = this.getSldLineSymbolizerFromLineSymbolizer(symb);
+          if (sldSymb?.LineSymbolizer[0]) {
+            sldSymbolizer.LineSymbolizer.push(
+              sldSymb?.LineSymbolizer[0]
+            );
+          }
+          break;
+        case 'Fill':
+          if (!sldSymbolizer.PolygonSymbolizer) {
+            sldSymbolizer.PolygonSymbolizer = [];
+          }
+
+          sldSymb = this.getSldPolygonSymbolizerFromFillSymbolizer(symb);
+          if (sldSymb?.PolygonSymbolizer[0]) {
+            sldSymbolizer.PolygonSymbolizer.push(
+              sldSymb?.PolygonSymbolizer[0]
+            );
+          }
+          break;
+        case 'Raster':
+          if (!sldSymbolizer.RasterSymbolizer) {
+            sldSymbolizer.RasterSymbolizer = [];
+          }
+
+          sldSymb = this.getSldRasterSymbolizerFromRasterSymbolizer(symb);
+          if (sldSymb?.RasterSymbolizer[0]) {
+            sldSymbolizer.RasterSymbolizer.push(
+              sldSymb?.RasterSymbolizer[0]
+            );
+          }
+          break;
+        default:
+          break;
+      }
+      sldSymbolizers.push(sldSymbolizer);
+    });
+    return sldSymbolizers;
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style MarkSymbolizer.
+   *
+   * @param markSymbolizer A GeoStyler-Style MarkSymbolizer.
+   * @return The object representation of a SLD PointSymbolizer with a
+   * Mark (readable with xml2js)
+   */
+  getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: MarkSymbolizer): any {
+    const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
+    const mark: any[] = [{
+      'WellKnownName': [
+        isFontSymbol ? markSymbolizer.wellKnownName : markSymbolizer.wellKnownName.toLowerCase()
+      ]
+    }];
+
+    if (markSymbolizer.color || markSymbolizer.fillOpacity) {
+      const cssParameters = [];
+      if (markSymbolizer.color) {
+        // TODO: parse GeoStylerFunctions
+        // const expr = this.getSldExpressionFromExpression(markSymbolizer.color);
+        // if (typeof expr !== 'object') {
+        //   cssParameters.push({
+        //     _: expr,
+        //     $: {
+        //       name: 'fill'
+        //     }
+        //   });
+        // } else {
+        cssParameters.push({
+          '#text': markSymbolizer.color,
+          '@_name': 'fill'
+        });
+        // }
+      }
+      if (markSymbolizer.fillOpacity) {
+        cssParameters.push({
+          '#text': markSymbolizer.fillOpacity,
+          '@_name': 'fill-opacity'
+        });
+      }
+      mark[0].Fill = [{
+        'CssParameter': cssParameters
+      }];
+    }
+
+    if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity) {
+      mark[0].Stroke = [{}];
+      const strokeCssParameters = [];
+      if (markSymbolizer.strokeColor) {
+        // TODO: pars GeoStylerFunctions
+        // if (isExpression(markSymbolizer.strokeColor)) {
+        //   strokeCssParameters.push({
+        //     ...this.getSldExpressionFromExpression(markSymbolizer.strokeColor),
+        //     '$': {
+        //       'name': 'stroke'
+        //     }
+        //   });
+        // } else {
+        strokeCssParameters.push({
+          '#text': markSymbolizer.strokeColor,
+          '@_name': 'stroke'
+        });
+        // }
+      }
+      if (markSymbolizer.strokeWidth) {
+        strokeCssParameters.push({
+          '#text': markSymbolizer.strokeWidth.toString(),
+          '@_name': 'stroke-width'
+        });
+      }
+      if (markSymbolizer.strokeOpacity) {
+        strokeCssParameters.push({
+          '#text': markSymbolizer.strokeOpacity.toString(),
+          '@_name': 'stroke-opacity'
+        });
+      }
+      mark[0].Stroke[0].CssParameter = strokeCssParameters;
+    }
+
+    const graphic: any[] = [{
+      'Mark': mark
+    }];
+
+    if (markSymbolizer.opacity) {
+      graphic[0].Opacity = [markSymbolizer.opacity.toString()];
+    }
+
+    if (typeof markSymbolizer.radius === 'number') {
+      graphic[0].Size = [(markSymbolizer.radius * 2).toString()];
+    }
+
+    if (markSymbolizer.rotate) {
+      graphic[0].Rotation = [markSymbolizer.rotate.toString()];
+    }
+
+    return {
+      'PointSymbolizer': [{
+        'Graphic': graphic
+      }]
+    };
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style IconSymbolizer.
+   *
+   * @param iconSymbolizer A GeoStyler-Style IconSymbolizer.
+   * @return The object representation of a SLD PointSymbolizer with
+   * en "ExternalGraphic" (readable with xml2js)
+   */
+  getSldPointSymbolizerFromIconSymbolizer(iconSymbolizer: IconSymbolizer): any {
+    const graphic: any[] = [{
+      'ExternalGraphic': [{
+        'OnlineResource': {
+          '@_xlink:type': 'simple',
+          '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
+          '@_xlink:href': iconSymbolizer.image
+        }
+      }]
+    }];
+
+    if (typeof iconSymbolizer.image === 'string' || iconSymbolizer.image instanceof String) {
+      const iconExt = iconSymbolizer.image.split('.').pop();
+      switch (iconExt) {
+        case 'png':
+        case 'jpeg':
+        case 'gif':
+          graphic[0].ExternalGraphic[0].Format = [`image/${iconExt}`];
+          break;
+        case 'jpg':
+          graphic[0].ExternalGraphic[0].Format = ['image/jpeg'];
+          break;
+        case 'svg':
+          graphic[0].ExternalGraphic[0].Format = ['image/svg+xml'];
+          break;
+        default:
+          break;
+      }
+    }
+
+    if (iconSymbolizer.opacity) {
+      graphic[0].Opacity = iconSymbolizer.opacity;
+    }
+    if (iconSymbolizer.size) {
+      graphic[0].Size = iconSymbolizer.size;
+    }
+    if (iconSymbolizer.rotate) {
+      graphic[0].Rotation = iconSymbolizer.rotate;
+    }
+    return {
+      'PointSymbolizer': [{
+        'Graphic': graphic
+      }]
+    };
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style TextSymbolizer.
+   *
+   * @param textSymbolizer A GeoStyler-Style TextSymbolizer.
+   * @return The object representation of a SLD TextSymbolizer (readable with xml2js)
+   */
+  getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: TextSymbolizer): any {
+    const sldTextSymbolizer: any = [{
+      'Label': textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
+    }];
+
+    const fontPropertyMap = {
+      font: 'font-family',
+      size: 'font-size',
+      fontStyle: 'font-style',
+      fontWeight: 'font-weight'
+    };
+
+    const fontCssParameters: any[] = Object.keys(textSymbolizer)
+      .filter((property: any) => property !== 'kind' && fontPropertyMap[property])
+      .map((property: any) => {
+        return {
+          '#text': property === 'font'
+            ? textSymbolizer[property][0]
+            : textSymbolizer[property],
+          '@_name': fontPropertyMap[property]
+        };
+      });
+
+    if (fontCssParameters.length > 0) {
+      sldTextSymbolizer[0].Font = [{
+        'CssParameter': fontCssParameters
+      }];
+    }
+
+    if (textSymbolizer.offset || textSymbolizer.rotate !== undefined) {
+      const pointPlacement: any = [{}];
+
+      if (textSymbolizer.offset) {
+        pointPlacement[0].Displacement = [{
+          'DisplacementX': [
+            textSymbolizer.offset[0].toString()
+          ],
+          'DisplacementY': [
+            textSymbolizer.offset[1].toString()
+          ]
+        }];
+      }
+      if (textSymbolizer.rotate !== undefined) {
+        pointPlacement[0].Rotation = [textSymbolizer.rotate.toString()];
+      }
+      sldTextSymbolizer[0].LabelPlacement = [{
+        PointPlacement: pointPlacement
+      }];
+    }
+
+    if (textSymbolizer.haloWidth || textSymbolizer.haloColor) {
+      const halo: any = {};
+      const haloCssParameter = [];
+      if (textSymbolizer.haloWidth) {
+        halo.Radius = [textSymbolizer.haloWidth.toString()];
+      }
+      if (textSymbolizer.haloColor) {
+        // TODO: parse GeoStylerFunction
+        // if (isExpression(textSymbolizer.haloColor)) {
+        //   haloCssParameter.push({
+        //     ...this.getSldExpressionFromExpression(textSymbolizer.haloColor),
+        //     '$': {
+        //       'name': 'fill'
+        //     }
+        //   });
+        // } else {
+        haloCssParameter.push({
+          '#text': textSymbolizer.haloColor,
+          '@_name': 'fill'
+        });
+        // }
+      }
+      if (haloCssParameter.length > 0) {
+        halo.Fill = [{
+          CssParameter: haloCssParameter
+        }];
+      }
+      sldTextSymbolizer[0].Halo = [halo];
+    }
+    if (textSymbolizer.color || textSymbolizer.opacity) {
+      // TODO: parse GeoStylerFunction
+      // if (isExpression(textSymbolizer.color)) {
+      //   sldTextSymbolizer[0].Fill = [{
+      //     'CssParameter': [{
+      //       ...this.getSldExpressionFromExpression(textSymbolizer.color),
+      //       '$': {
+      //         'name': 'fill'
+      //       }
+      //     }, {
+      //       '_': textSymbolizer.opacity || '1',
+      //       '$': {
+      //         'name': 'fill-opacity'
+      //       }
+      //     }]
+      //   }];
+      // } else {
+      sldTextSymbolizer[0].Fill = [{
+        'CssParameter': [{
+          '#text': textSymbolizer.color || '#000000',
+          '@_name': 'fill'
+        }, {
+          '#text': textSymbolizer.opacity || '1',
+          '@_name': 'fill-opacity'
+        }]
+      }];
+      // }
+    }
+
+    return {
+      'TextSymbolizer': sldTextSymbolizer
+    };
+  }
+
+  /**
+   * Get the Label from a TextSymbolizer
+   */
+  getSldLabelFromTextSymbolizer = (template: Expression<string>): any => {
+    // TODO: parse GeoStylerFunction
+    if (!(typeof template === 'string' || template instanceof String)) {
+      return;
+    }
+
+    // matches anything inside double curly braces (non-greedy)
+    const placeholderReg = /^{{(.*?)}}/;
+    // matches anything that does not start with curly braces
+    const literalReg = /(^.+?){{|^([^{]+)$/;
+
+    const tokens = [];
+    const placeholderType = 'placeholder';
+    const literalType = 'literal';
+    let templateReducer = template as string;
+    while (templateReducer.length) {
+      const phMatch = placeholderReg.exec(templateReducer);
+      if (phMatch) {
+        tokens.push({type: placeholderType, value: phMatch[1]});
+        // we have to strip the curly braces too
+        templateReducer = templateReducer.substring(phMatch[1].length + 4);
+      }
+
+      const litMatch = literalReg.exec(templateReducer);
+      if (litMatch) {
+        if (litMatch[1]) {
+          tokens.push({type: literalType, value: litMatch[1]});
+          templateReducer = templateReducer.substring(litMatch[1].length);
+        } else {
+          tokens.push({type: literalType, value: litMatch[2]});
+          templateReducer = templateReducer.substring(litMatch[2].length);
+        }
+      }
+    }
+
+    const sldLabel = tokens.map((token: any) => {
+      if (token.type === placeholderType) {
+        return {
+          'ogc:PropertyName': token.value
+        };
+      }
+      return {
+        'ogc:Literal': token.value
+      };
+
+    });
+    return sldLabel;
+  };
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style LineSymbolizer.
+   *
+   * @param lineSymbolizer A GeoStyler-Style LineSymbolizer.
+   * @return The object representation of a SLD LineSymbolizer (readable with xml2js)
+   */
+  getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: LineSymbolizer): any {
+    const propertyMap = {
+      color: 'stroke',
+      width: 'stroke-width',
+      opacity: 'stroke-opacity',
+      join: 'stroke-linejoin',
+      cap: 'stroke-linecap',
+      dasharray: 'stroke-dasharray',
+      dashOffset: 'stroke-dashoffset'
+    };
+
+    const result: any = {
+      'LineSymbolizer': [{
+        'Stroke': [{}]
+      }]
+    };
+
+    const cssParameters: any[] = Object.keys(lineSymbolizer)
+      .filter((property: any) => property !== 'kind' && propertyMap[property] &&
+          lineSymbolizer[property] !== undefined && lineSymbolizer[property] !== null)
+      .map((property: any) => {
+        let value = lineSymbolizer[property];
+        if (property === 'dasharray') {
+          value = lineSymbolizer.dasharray ? lineSymbolizer.dasharray.join(' ') : undefined;
+          return {
+            '#text': value,
+            '@_name': propertyMap[property]
+          };
+        }
+        // simple transformation since geostyler-style uses prop 'miter' whereas sld uses 'mitre'
+        if (property === 'join' && value === 'miter') {
+          value = 'mitre';
+        }
+
+        // TODO: parse GeoStylerFunction
+        // const expr = this.getSldExpressionFromExpression(lineSymbolizer[property]);
+        // if (typeof expr !== 'object') {
+        //   return {
+        //     _: value,
+        //     $: {
+        //       name: propertyMap[property]
+        //     }
+        //   };
+        // }
+
+        return {
+          '#text': lineSymbolizer[property],
+          '@_name': propertyMap[property]
+        };
+      });
+
+    const perpendicularOffset = lineSymbolizer.perpendicularOffset;
+
+    if (lineSymbolizer?.graphicStroke) {
+      if (lineSymbolizer?.graphicStroke?.kind === 'Mark') {
+        const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(
+            <MarkSymbolizer> lineSymbolizer.graphicStroke
+        );
+        result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+      } else if (lineSymbolizer?.graphicStroke?.kind === 'Icon') {
+        const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(
+            <IconSymbolizer> lineSymbolizer.graphicStroke
+        );
+        result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+      }
+    }
+
+    if (lineSymbolizer?.graphicFill) {
+      if (lineSymbolizer?.graphicFill?.kind === 'Mark') {
+        const graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
+            <MarkSymbolizer> lineSymbolizer.graphicFill
+        );
+        result.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+      } else if (lineSymbolizer?.graphicFill?.kind === 'Icon') {
+        const graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
+            <IconSymbolizer> lineSymbolizer.graphicFill
+        );
+        result.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+      }
+    }
+
+    if (cssParameters.length !== 0) {
+      result.LineSymbolizer[0].Stroke[0].CssParameter = cssParameters;
+    }
+    if (perpendicularOffset) {
+      result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
+    }
+
+    return result;
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style FillSymbolizer.
+   *
+   * @param fillSymbolizer A GeoStyler-Style FillSymbolizer.
+   * @return The object representation of a SLD PolygonSymbolizer (readable with xml2js)
+   */
+  getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: FillSymbolizer): any {
+    const strokePropertyMap = {
+      outlineColor: 'stroke',
+      outlineWidth: 'stroke-width',
+      outlineOpacity: 'stroke-opacity',
+      outlineDasharray: 'stroke-dasharray'
+    };
+    const fillPropertyMap = {
+      color: 'fill',
+      fillOpacity: 'fill-opacity'
+    };
+    const strokeCssParameters: any[] = [];
+    const fillCssParameters: any[] = [];
+    let graphicFill: any;
+
+    if (fillSymbolizer?.graphicFill) {
+      if (fillSymbolizer?.graphicFill.kind === 'Mark') {
+        graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
+            <MarkSymbolizer> fillSymbolizer.graphicFill
+        );
+      } else if (fillSymbolizer?.graphicFill.kind === 'Icon') {
+        graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
+            <IconSymbolizer> fillSymbolizer.graphicFill
+        );
+      }
+    }
+
+    Object.keys(fillSymbolizer)
+      .filter((property: any) => property !== 'kind')
+      .filter((property: any) => fillSymbolizer[property] !== undefined && fillSymbolizer[property] !== null)
+      .forEach((property: any) => {
+        if (Object.keys(fillPropertyMap).includes(property)) {
+          // TODO: parse GeoStylerFunction
+          // const expr = this.getSldExpressionFromExpression(fillSymbolizer[property]);
+          // if ((typeof expr !== 'object')) {
+          //   fillCssParameters.push({
+          //     _: fillSymbolizer[property],
+          //     $: {
+          //       name: fillPropertyMap[property]
+          //     }
+          //   });
+          // } else {
+          fillCssParameters.push({
+            '#text': fillSymbolizer[property],
+            '@_name': fillPropertyMap[property]
+          });
+          // }
+        } else if (Object.keys(strokePropertyMap).includes(property)) {
+
+          let transformedValue: string = '';
+
+          if (property === 'outlineDasharray') {
+            const paramValue: number[] = fillSymbolizer[property];
+            transformedValue = '';
+            paramValue.forEach((dash: number, idx) => {
+              transformedValue += dash;
+              if (idx < paramValue.length - 1) {
+                transformedValue += ' ';
+              }
+            });
+          } else if (property === 'outlineWidth') {
+            transformedValue = fillSymbolizer[property] + '';
+          }  else if (property === 'outlineOpacity') {
+            transformedValue = fillSymbolizer[property] + '';
+          } else {
+            transformedValue = fillSymbolizer[property];
+          }
+
+          strokeCssParameters.push({
+            '#text': transformedValue,
+            '@_name': strokePropertyMap[property]
+          });
+        }
+      });
+
+    const polygonSymbolizer: any = [{}];
+    if (fillCssParameters.length > 0 || graphicFill) {
+      polygonSymbolizer[0].Fill = [{}];
+      if (graphicFill) {
+        polygonSymbolizer[0].Fill[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+      }
+      if (fillCssParameters.length > 0) {
+        polygonSymbolizer[0].Fill[0].CssParameter = fillCssParameters;
+      }
+    }
+
+    if (strokeCssParameters.length > 0) {
+      polygonSymbolizer[0].Stroke = [{
+        'CssParameter': strokeCssParameters
+      }];
+    }
+
+    return {
+      'PolygonSymbolizer': polygonSymbolizer
+    };
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style RasterSymbolizer.
+   *
+   * @param rasterSymbolizer A GeoStyler-Style RasterSymbolizer.
+   * @return The object representation of a SLD RasterSymbolizer (readable with xml2js)
+   */
+  getSldRasterSymbolizerFromRasterSymbolizer(rasterSymbolizer: RasterSymbolizer): any {
+    const sldRasterSymbolizer: any = [{}];
+    let opacity: any;
+    if (typeof rasterSymbolizer.opacity !== 'undefined') {
+      opacity = [rasterSymbolizer.opacity.toString()];
+      sldRasterSymbolizer[0].Opacity = opacity;
+    }
+
+    let colorMap: any;
+    if (rasterSymbolizer.colorMap) {
+      colorMap = this.getSldColorMapFromColorMap(rasterSymbolizer.colorMap);
+      if (colorMap?.[0]) {
+        sldRasterSymbolizer[0].ColorMap = colorMap;
+      }
+    }
+
+    let channelSelection: any;
+    if (rasterSymbolizer.channelSelection) {
+      channelSelection = this.getSldChannelSelectionFromChannelSelection(rasterSymbolizer.channelSelection);
+      if (channelSelection?.[0]) {
+        sldRasterSymbolizer[0].ChannelSelection = channelSelection;
+      }
+    }
+
+    let contrastEnhancement: any;
+    if (rasterSymbolizer.contrastEnhancement) {
+      contrastEnhancement = this.getSldContrastEnhancementFromContrastEnhancement(rasterSymbolizer.contrastEnhancement);
+      if (contrastEnhancement?.[0]) {
+        sldRasterSymbolizer[0].ContrastEnhancement = contrastEnhancement;
+      }
+    }
+
+    return {
+      'RasterSymbolizer': sldRasterSymbolizer
+    };
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ColorMap.
+   *
+   * @param colorMap A GeoStyler-Style ColorMap.
+   * @return The object representation of a SLD ColorMap (readable with xml2js)
+   */
+  getSldColorMapFromColorMap(colorMap: ColorMap): any {
+    const sldColorMap: any[] = [{
+    }];
+      // parse colorMap.type
+    if (colorMap.type) {
+      const type = colorMap.type;
+      sldColorMap[0]['@_type'] = type;
+    }
+    // parse colorMap.extended
+    if (typeof colorMap.extended !== 'undefined') {
+      const extended = colorMap.extended.toString();
+      sldColorMap[0]['@_extended'] = extended;
+    }
+    // parse colorMap.colorMapEntries
+    if (colorMap.colorMapEntries && colorMap.colorMapEntries.length > 0) {
+      const colorMapEntries: any[] = colorMap.colorMapEntries.map((entry: ColorMapEntry) => {
+        const result: any = {};
+        if (entry.color) {
+          result['@_color'] = entry.color;
+        }
+        if (typeof entry.quantity !== 'undefined') {
+          result['@_quantity'] = entry.quantity.toString();
+        }
+        if (entry.label) {
+          result['@_label'] = entry.label;
+        }
+        if (typeof entry.opacity !== 'undefined') {
+          result['@_opacity'] = entry.opacity.toString();
+        }
+        return result;
+      // remove empty colorMapEntries
+      }).filter((entry: any) => Object.keys(entry).length > 0);
+      sldColorMap[0].ColorMapEntry = colorMapEntries;
+    }
+    return sldColorMap;
+  }
+
+  /**
+   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ChannelSelection.
+   *
+   * @param channelSelection A GeoStyler-Style ChannelSelection.
+   * @return The object representation of a SLD ChannelSelection (readable with xml2js)
+   */
+  getSldChannelSelectionFromChannelSelection(channelSelection: ChannelSelection): any {
+    const propertyMap = {
+      'redChannel': 'RedChannel',
+      'blueChannel': 'BlueChannel',
+      'greenChannel': 'GreenChannel',
+      'grayChannel': 'GrayChannel'
+    };
+    const keys = Object.keys(channelSelection);
+    const sldChannelSelection: any[] = [{}];
+    keys.forEach((key: string) => {
+      const channel: any = [{}];
+      // parse sourceChannelName
+      const sourceChannelName = channelSelection?.[key]?.sourceChannelName;
+      // parse contrastEnhancement
+      const contrastEnhancement = channelSelection?.[key]?.contrastEnhancement;
+      if (sourceChannelName || contrastEnhancement) {
+        if (sourceChannelName) {
+          channel[0].SourceChannelName = [sourceChannelName];
+        }
+        if (contrastEnhancement) {
+          channel[0].ContrastEnhancement = this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement);
+        }
+        sldChannelSelection[0][propertyMap[key]] = channel;
+      }
+    });
+
+    return sldChannelSelection;
+  }
+
+  /**
+     * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ContrastEnhancement.
+     *
+     * @param contrastEnhancement A GeoStyler-Style ContrastEnhancement.
+     * @return The object representation of a SLD ContrastEnhancement (readable with xml2js)
+     */
+  getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement: ContrastEnhancement): any {
+    const sldContrastEnhancement: any = [{}];
+    const enhancementType = contrastEnhancement?.enhancementType;
+    if (enhancementType === 'normalize') {
+      // parse normalize
+      sldContrastEnhancement[0].Normalize = [''];
+    } else if (enhancementType === 'histogram') {
+      // parse histogram
+      sldContrastEnhancement[0].Histogram = [''];
+    }
+    // parse gammaValue
+    if (typeof contrastEnhancement.gammaValue !== 'undefined') {
+      sldContrastEnhancement[0].GammaValue = [contrastEnhancement.gammaValue.toString()];
+    }
+    return sldContrastEnhancement;
+  }
+
   checkForUnsupportedProperites(geoStylerStyle: Style): UnsupportedProperties | undefined {
     const capitalizeFirstLetter = (a: string) => a[0].toUpperCase() + a.slice(1);
     const unsupportedProperties: UnsupportedProperties = {};
@@ -1160,7 +2104,7 @@ export class SldStyleParser implements StyleParser<string> {
         const key = capitalizeFirstLetter(`${symbolizer.kind}Symbolizer`);
         const value = this.unsupportedProperties?.Symbolizer?.[key];
         if (value) {
-          if (typeof value === 'string' || value instanceof String ) {
+          if (typeof value === 'string' || value instanceof String) {
             if (!unsupportedProperties.Symbolizer) {
               unsupportedProperties.Symbolizer = {};
             }
