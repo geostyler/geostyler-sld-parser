@@ -740,17 +740,11 @@ export class SldStyleParser implements StyleParser<string> {
       kind: 'Line'
     };
     const strokeParameters = _get(sldSymbolizer, 'Stroke[0].$$') || [];
-    if (strokeParameters.length < 1) {
-      throw new Error('LineSymbolizer cannot be parsed. No Stroke detected');
-    }
     let cssParameters: any[];
     if (this.sldVersion === '1.0.0') {
       cssParameters = strokeParameters.filter((strokeParam: any) => strokeParam['#name'] === 'CssParameter');
     } else {
       cssParameters = strokeParameters.filter((strokeParam: any) => strokeParam['#name'] === 'SvgParameter');
-    }
-    if (cssParameters.length < 1) {
-      throw new Error('LineSymbolizer can not be parsed. No CssParameters detected.');
     }
     cssParameters.forEach((cssParameter: any) => {
       const {
