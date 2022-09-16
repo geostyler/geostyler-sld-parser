@@ -1627,45 +1627,61 @@ export class SldStyleParser implements StyleParser<string> {
       .filter((property: any) => property !== 'kind' && fontPropertyMap[property])
       .map((property: any) => {
         return {
-          '#text': property === 'font'
-            ? textSymbolizer[property][0]
-            : textSymbolizer[property],
-          '@_name': fontPropertyMap[property]
+          'CssParameter': [{
+            '#text': property === 'font'
+              ? textSymbolizer[property][0]
+              : textSymbolizer[property],
+          }],
+          ':@': {
+            '@_name': fontPropertyMap[property]
+          }
         };
       });
 
     if (fontCssParameters.length > 0) {
-      sldTextSymbolizer[0].Font = [{
-        'CssParameter': fontCssParameters
-      }];
+      sldTextSymbolizer.push({
+        Font: fontCssParameters
+      });
     }
 
     if (textSymbolizer.offset || textSymbolizer.rotate !== undefined) {
-      const pointPlacement: any = [{}];
-
+      const pointPlacement: any = [];
       if (textSymbolizer.offset) {
-        pointPlacement[0].Displacement = [{
-          'DisplacementX': [
-            textSymbolizer.offset[0].toString()
-          ],
-          'DisplacementY': [
-            textSymbolizer.offset[1].toString()
-          ]
-        }];
+        pointPlacement.push({
+          Displacement: [{
+            'DisplacementX': [{
+              '#text': textSymbolizer.offset[0].toString()
+            }]
+          }, {
+            'DisplacementY': [{
+              '#text': textSymbolizer.offset[1].toString()
+            }]
+          }]
+        });
       }
       if (textSymbolizer.rotate !== undefined) {
-        pointPlacement[0].Rotation = [textSymbolizer.rotate.toString()];
+        pointPlacement.push({
+          Rotation: [{
+            '#text': textSymbolizer.rotate.toString()
+          }]
+        });
       }
-      sldTextSymbolizer[0].LabelPlacement = [{
-        PointPlacement: pointPlacement
-      }];
+      sldTextSymbolizer.push({
+        LabelPlacement: [{
+          PointPlacement: pointPlacement
+        }]
+      });
     }
 
     if (textSymbolizer.haloWidth || textSymbolizer.haloColor) {
-      const halo: any = {};
-      const haloCssParameter = [];
+      const halo: any = [];
+      const haloFillCssParameter = [];
       if (textSymbolizer.haloWidth) {
-        halo.Radius = [textSymbolizer.haloWidth.toString()];
+        halo.push({
+          Radius: [{
+            '#text': textSymbolizer.haloWidth.toString()
+          }]
+        });
       }
       if (textSymbolizer.haloColor) {
         // TODO: parse GeoStylerFunction
@@ -1677,51 +1693,49 @@ export class SldStyleParser implements StyleParser<string> {
         //     }
         //   });
         // } else {
-        haloCssParameter.push({
-          '#text': textSymbolizer.haloColor,
-          '@_name': 'fill'
+
+        haloFillCssParameter.push({
+          'CssParameter': [{
+            '#text': textSymbolizer.haloColor,
+          }],
+          ':@': {
+            '@_name': 'fill'
+          }
         });
         // }
       }
-      if (haloCssParameter.length > 0) {
-        halo.Fill = [{
-          CssParameter: haloCssParameter
-        }];
+      if (haloFillCssParameter.length > 0) {
+        halo.push({
+          Fill: haloFillCssParameter
+        });
       }
-      sldTextSymbolizer[0].Halo = [halo];
+      sldTextSymbolizer.push({
+        Halo: halo
+      });
     }
     if (textSymbolizer.color || textSymbolizer.opacity) {
-      // TODO: parse GeoStylerFunction
-      // if (isExpression(textSymbolizer.color)) {
-      //   sldTextSymbolizer[0].Fill = [{
-      //     'CssParameter': [{
-      //       ...this.getSldExpressionFromExpression(textSymbolizer.color),
-      //       '$': {
-      //         'name': 'fill'
-      //       }
-      //     }, {
-      //       '_': textSymbolizer.opacity || '1',
-      //       '$': {
-      //         'name': 'fill-opacity'
-      //       }
-      //     }]
-      //   }];
-      // } else {
-      sldTextSymbolizer[0].Fill = [{
+      const fill = [{
         'CssParameter': [{
           '#text': textSymbolizer.color || '#000000',
+        }],
+        ':@': {
           '@_name': 'fill'
-        }, {
+        }
+      },
+      {
+        'CssParameter': [{
           '#text': textSymbolizer.opacity || '1',
+        }],
+        ':@': {
           '@_name': 'fill-opacity'
-        }]
+        }
       }];
-      // }
+      sldTextSymbolizer.push({
+        Fill: fill
+      });
     }
 
-    return {
-      'TextSymbolizer': sldTextSymbolizer
-    };
+    return sldTextSymbolizer;
   }
 
   /**
@@ -1765,15 +1779,15 @@ export class SldStyleParser implements StyleParser<string> {
     const sldLabel = tokens.map((token: any) => {
       if (token.type === placeholderType) {
         return {
-          'ogc:PropertyName': {
+          'ogc:PropertyName': [{
             '#text': token.value
-          }
+          }]
         };
       }
       return {
-        'ogc:Literal': {
+        'ogc:Literal': [{
           '#text': token.value
-        }
+        }]
       };
     });
 
