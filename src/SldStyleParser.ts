@@ -1843,37 +1843,44 @@ export class SldStyleParser implements StyleParser<string> {
       });
 
     if (lineSymbolizer?.graphicStroke) {
+      if (!Array.isArray(sldLineSymbolizer?.[0]?.Stroke)) {
+        sldLineSymbolizer[0] = { Stroke: [] };
+      }
       if (lineSymbolizer?.graphicStroke?.kind === 'Mark') {
-        const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(
-            <MarkSymbolizer> lineSymbolizer.graphicStroke
-        );
-        sldLineSymbolizer.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+        const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(lineSymbolizer.graphicStroke);
+        sldLineSymbolizer[0].Stroke.push({
+          GraphicStroke: graphicStroke
+        });
       } else if (lineSymbolizer?.graphicStroke?.kind === 'Icon') {
-        const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(
-            <IconSymbolizer> lineSymbolizer.graphicStroke
-        );
-        sldLineSymbolizer.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+        const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(lineSymbolizer.graphicStroke);
+        sldLineSymbolizer[0].Stroke.push({
+          GraphicStroke: graphicStroke
+        });
       }
     }
 
     if (lineSymbolizer?.graphicFill) {
+      if (!Array.isArray(sldLineSymbolizer?.[0]?.Stroke)) {
+        sldLineSymbolizer[0] = { Stroke: [] };
+      }
       if (lineSymbolizer?.graphicFill?.kind === 'Mark') {
-        const graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
-            <MarkSymbolizer> lineSymbolizer.graphicFill
-        );
-        sldLineSymbolizer.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+        const graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(lineSymbolizer.graphicFill);
+        sldLineSymbolizer[0].Stroke.push({
+          GraphicFill: graphicFill
+        });
       } else if (lineSymbolizer?.graphicFill?.kind === 'Icon') {
-        const graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
-            <IconSymbolizer> lineSymbolizer.graphicFill
-        );
-        sldLineSymbolizer.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+        const graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(lineSymbolizer.graphicFill);
+        sldLineSymbolizer[0].Stroke.push({
+          GraphicFill: graphicFill
+        });
       }
     }
 
     if (cssParameters.length !== 0) {
-      sldLineSymbolizer.push({
-        'Stroke': cssParameters
-      });
+      if (!Array.isArray(sldLineSymbolizer?.[0]?.Stroke)) {
+        sldLineSymbolizer[0] = { Stroke: [] };
+      }
+      sldLineSymbolizer[0].Stroke.push(...cssParameters);
     }
     if (lineSymbolizer.perpendicularOffset) {
       sldLineSymbolizer.push({
