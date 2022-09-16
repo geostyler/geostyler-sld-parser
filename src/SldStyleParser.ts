@@ -1918,13 +1918,9 @@ export class SldStyleParser implements StyleParser<string> {
 
     if (fillSymbolizer?.graphicFill) {
       if (fillSymbolizer?.graphicFill.kind === 'Mark') {
-        graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
-            <MarkSymbolizer> fillSymbolizer.graphicFill
-        );
+        graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(fillSymbolizer.graphicFill);
       } else if (fillSymbolizer?.graphicFill.kind === 'Icon') {
-        graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
-            <IconSymbolizer> fillSymbolizer.graphicFill
-        );
+        graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(fillSymbolizer.graphicFill);
       }
     }
 
@@ -1944,8 +1940,12 @@ export class SldStyleParser implements StyleParser<string> {
           //   });
           // } else {
           fillCssParameters.push({
-            '#text': fillSymbolizer[property],
-            '@_name': fillPropertyMap[property]
+            'CssParameter': [{
+              '#text': fillSymbolizer[property],
+            }],
+            ':@': {
+              '@_name': fillPropertyMap[property]
+            }
           });
           // }
         } else if (Object.keys(strokePropertyMap).includes(property)) {
@@ -1970,32 +1970,38 @@ export class SldStyleParser implements StyleParser<string> {
           }
 
           strokeCssParameters.push({
-            '#text': transformedValue,
-            '@_name': strokePropertyMap[property]
+            'CssParameter': [{
+              '#text': transformedValue,
+            }],
+            ':@': {
+              '@_name': strokePropertyMap[property]
+            }
           });
         }
       });
 
-    const polygonSymbolizer: any = [{}];
+    const polygonSymbolizer: any = [];
     if (fillCssParameters.length > 0 || graphicFill) {
-      polygonSymbolizer[0].Fill = [{}];
-      if (graphicFill) {
-        polygonSymbolizer[0].Fill[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+      if (!Array.isArray(polygonSymbolizer?.[0]?.Fill)) {
+        polygonSymbolizer[0] = { Fill: [] };
       }
       if (fillCssParameters.length > 0) {
-        polygonSymbolizer[0].Fill[0].CssParameter = fillCssParameters;
+        polygonSymbolizer[0].Fill.push(...fillCssParameters);
+      }
+      if (graphicFill) {
+        polygonSymbolizer[0].Fill.push({
+          GraphicFill: graphicFill
+        });
       }
     }
 
     if (strokeCssParameters.length > 0) {
-      polygonSymbolizer[0].Stroke = [{
-        'CssParameter': strokeCssParameters
-      }];
+      polygonSymbolizer.push({
+        Stroke: strokeCssParameters
+      });
     }
 
-    return {
-      'PolygonSymbolizer': polygonSymbolizer
-    };
+    return polygonSymbolizer;
   }
 
   /**
