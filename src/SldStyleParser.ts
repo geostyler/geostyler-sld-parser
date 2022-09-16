@@ -1367,76 +1367,38 @@ export class SldStyleParser implements StyleParser<string> {
   /**
    * Get the SLD Object (readable with xml2js) from GeoStyler-Style Symbolizers.
    *
-   * @param {Symbolizer[]} symbolizers A GeoStyler-Style Symbolizer array.
-   * @return {object} The object representation of a SLD Symbolizer (readable with xml2js)
+   * @param symbolizers A GeoStyler-Style Symbolizer array.
+   * @return The object representation of a SLD Symbolizer (readable with xml2js)
    */
   getSldSymbolizersFromSymbolizers(symbolizers: Symbolizer[]): any {
     const sldSymbolizers: any = [];
     const sldSymbolizer: any = {};
     symbolizers.forEach(symb => {
-      let sldSymb: any;
+      let sldSymb: any[];
       switch (symb.kind) {
         case 'Mark':
-          if (!sldSymbolizer.PointSymbolizer) {
-            sldSymbolizer.PointSymbolizer = [];
-          }
           sldSymb = this.getSldPointSymbolizerFromMarkSymbolizer(symb);
-          sldSymbolizer.PointSymbolizer.push(sldSymb);
+          sldSymbolizer.PointSymbolizer = sldSymb;
           break;
         case 'Icon':
-          if (!sldSymbolizer.PointSymbolizer) {
-            sldSymbolizer.PointSymbolizer = [];
-          }
           sldSymb = this.getSldPointSymbolizerFromIconSymbolizer(symb);
-          sldSymbolizer.PointSymbolizer.push(sldSymb);
+          sldSymbolizer.PointSymbolizer = sldSymb;
           break;
         case 'Text':
-          if (!sldSymbolizer.TextSymbolizer) {
-            sldSymbolizer.TextSymbolizer = [];
-          }
-
           sldSymb = this.getSldTextSymbolizerFromTextSymbolizer(symb);
-          if (sldSymb?.TextSymbolizer[0]) {
-            sldSymbolizer.TextSymbolizer.push(
-              sldSymb?.TextSymbolizer[0]
-            );
-          }
+          sldSymbolizer.TextSymbolizer = sldSymb;
           break;
         case 'Line':
-          if (!sldSymbolizer.LineSymbolizer) {
-            sldSymbolizer.LineSymbolizer = [];
-          }
-
           sldSymb = this.getSldLineSymbolizerFromLineSymbolizer(symb);
-          if (sldSymb?.LineSymbolizer[0]) {
-            sldSymbolizer.LineSymbolizer.push(
-              sldSymb?.LineSymbolizer[0]
-            );
-          }
+          sldSymbolizer.LineSymbolizer = sldSymb;
           break;
         case 'Fill':
-          if (!sldSymbolizer.PolygonSymbolizer) {
-            sldSymbolizer.PolygonSymbolizer = [];
-          }
-
           sldSymb = this.getSldPolygonSymbolizerFromFillSymbolizer(symb);
-          if (sldSymb?.PolygonSymbolizer[0]) {
-            sldSymbolizer.PolygonSymbolizer.push(
-              sldSymb?.PolygonSymbolizer[0]
-            );
-          }
+          sldSymbolizer.PolygonSymbolizer = sldSymb;
           break;
         case 'Raster':
-          if (!sldSymbolizer.RasterSymbolizer) {
-            sldSymbolizer.RasterSymbolizer = [];
-          }
-
           sldSymb = this.getSldRasterSymbolizerFromRasterSymbolizer(symb);
-          if (sldSymb?.RasterSymbolizer[0]) {
-            sldSymbolizer.RasterSymbolizer.push(
-              sldSymb?.RasterSymbolizer[0]
-            );
-          }
+          sldSymbolizer.RasterSymbolizer = sldSymb;
           break;
         default:
           break;
@@ -1574,9 +1536,9 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    return {
+    return [{
       'Graphic': graphic
-    };
+    }];
   }
 
   /**
@@ -1638,9 +1600,9 @@ export class SldStyleParser implements StyleParser<string> {
         }]
       });
     }
-    return {
+    return [{
       'Graphic': graphic
-    };
+    }];
   }
 
   /**
@@ -1835,11 +1797,7 @@ export class SldStyleParser implements StyleParser<string> {
       dashOffset: 'stroke-dashoffset'
     };
 
-    const result: any = {
-      'LineSymbolizer': [{
-        'Stroke': [{}]
-      }]
-    };
+    const sldLineSymbolizer: any = [];
 
     const cssParameters: any[] = Object.keys(lineSymbolizer)
       .filter((property: any) => property !== 'kind' && propertyMap[property] &&
@@ -1848,9 +1806,14 @@ export class SldStyleParser implements StyleParser<string> {
         let value = lineSymbolizer[property];
         if (property === 'dasharray') {
           value = lineSymbolizer.dasharray ? lineSymbolizer.dasharray.join(' ') : undefined;
+
           return {
-            '#text': value,
-            '@_name': propertyMap[property]
+            'CssParameter': [{
+              '#text': value,
+            }],
+            ':@': {
+              '@_name': propertyMap[property]
+            }
           };
         }
         // simple transformation since geostyler-style uses prop 'miter' whereas sld uses 'mitre'
@@ -1870,24 +1833,26 @@ export class SldStyleParser implements StyleParser<string> {
         // }
 
         return {
-          '#text': lineSymbolizer[property],
-          '@_name': propertyMap[property]
+          'CssParameter': [{
+            '#text': lineSymbolizer[property],
+          }],
+          ':@': {
+            '@_name': propertyMap[property]
+          }
         };
       });
-
-    const perpendicularOffset = lineSymbolizer.perpendicularOffset;
 
     if (lineSymbolizer?.graphicStroke) {
       if (lineSymbolizer?.graphicStroke?.kind === 'Mark') {
         const graphicStroke = this.getSldPointSymbolizerFromMarkSymbolizer(
             <MarkSymbolizer> lineSymbolizer.graphicStroke
         );
-        result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+        sldLineSymbolizer.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
       } else if (lineSymbolizer?.graphicStroke?.kind === 'Icon') {
         const graphicStroke = this.getSldPointSymbolizerFromIconSymbolizer(
             <IconSymbolizer> lineSymbolizer.graphicStroke
         );
-        result.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
+        sldLineSymbolizer.LineSymbolizer[0].Stroke[0].GraphicStroke = [graphicStroke.PointSymbolizer[0]];
       }
     }
 
@@ -1896,23 +1861,31 @@ export class SldStyleParser implements StyleParser<string> {
         const graphicFill = this.getSldPointSymbolizerFromMarkSymbolizer(
             <MarkSymbolizer> lineSymbolizer.graphicFill
         );
-        result.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+        sldLineSymbolizer.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
       } else if (lineSymbolizer?.graphicFill?.kind === 'Icon') {
         const graphicFill = this.getSldPointSymbolizerFromIconSymbolizer(
             <IconSymbolizer> lineSymbolizer.graphicFill
         );
-        result.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
+        sldLineSymbolizer.LineSymbolizer[0].Stroke[0].GraphicFill = [graphicFill.PointSymbolizer[0]];
       }
     }
 
     if (cssParameters.length !== 0) {
-      result.LineSymbolizer[0].Stroke[0].CssParameter = cssParameters;
+      sldLineSymbolizer.push({
+        'Stroke': cssParameters
+      });
     }
-    if (perpendicularOffset) {
-      result.LineSymbolizer[0].PerpendicularOffset = [perpendicularOffset];
+    if (lineSymbolizer.perpendicularOffset) {
+      sldLineSymbolizer.push({
+        PerpendicularOffset: [
+          {
+            '#text': lineSymbolizer.perpendicularOffset
+          }
+        ]
+      });
     }
 
-    return result;
+    return sldLineSymbolizer;
   }
 
   /**
