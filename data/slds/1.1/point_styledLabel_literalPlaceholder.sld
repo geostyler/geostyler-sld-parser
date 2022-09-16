@@ -9,8 +9,11 @@
           <se:Name/>
           <se:TextSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
             <se:Label>
+              <ogc:Literal>foo </ogc:Literal>
               <ogc:PropertyName>name</ogc:PropertyName>
-              <ogc:Literal> entity</ogc:Literal>
+              <ogc:PropertyName>prop</ogc:PropertyName>
+              <ogc:Literal> entity </ogc:Literal>
+              <ogc:PropertyName>bar</ogc:PropertyName>
             </se:Label>
             <se:Font>
               <se:SvgParameter name="font-family">Arial</se:SvgParameter>

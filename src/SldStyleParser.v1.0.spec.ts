@@ -33,6 +33,7 @@ import point_simplecross from '../data/styles/point_simplecross';
 import point_simplex from '../data/styles/point_simplex';
 import point_simpleslash from '../data/styles/point_simpleslash';
 import point_fontglyph from '../data/styles/point_fontglyph';
+import point_styledLabel_literalOpenCurlyBraces from '../data/styles/point_styledLabel_literalOpenCurlyBraces';
 import point_styledLabel_literalPlaceholder from '../data/styles/point_styledLabel_literalPlaceholder';
 import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_elementOrder';
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
@@ -836,7 +837,23 @@ describe('SldStyleParser implements StyleParser', () => {
       const { output: readStyle} = await styleParser.readStyle(sldString);
       expect(readStyle).toEqual(multi_simplelineLabel);
     });
-    it('can write a SLD style with a styled label containing a placeholder and static text', async () => {
+    it('can write a SLD style with a styled label containing open curly braces as static text', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(point_styledLabel_literalOpenCurlyBraces);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle} = await styleParser.readStyle(sldString);
+      expect(readStyle).toEqual(point_styledLabel_literalOpenCurlyBraces);
+    });
+    it('can write a SLD style with a styled label containing placeholders and static text', async () => {
       const {
         output: sldString,
         errors,
