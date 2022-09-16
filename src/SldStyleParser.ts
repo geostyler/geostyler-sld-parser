@@ -173,8 +173,7 @@ export class SldStyleParser implements StyleParser<string> {
       // Fixed attributes
       ignoreAttributes : false,
       suppressEmptyNode: true,
-      // This is fixed to false to make it easier to write the xml order should be preserved anyway
-      preserveOrder: false
+      preserveOrder: true
     });
     if (opts?.sldVersion) {
       this.sldVersion = opts?.sldVersion;
@@ -1139,34 +1138,43 @@ export class SldStyleParser implements StyleParser<string> {
       }
     });
 
-    if (this.sldVersion !== '1.0.0') {
-      return SymbologyEncoder.getSymbologyEncoding(geoStylerStyle, rules, this.symbolizerUnits);
-    }
-    return {
-      '?xml': {
+    const featureTypeStyle = [
+      ...rules
+    ];
+
+    // if (this.sldVersion !== '1.0.0') {
+    //   return SymbologyEncoder.getSymbologyEncoding(geoStylerStyle, rules, this.symbolizerUnits);
+    // }
+    return [{
+      '?xml': [{ '#text': '' }],
+      ':@': {
         '@_version': '1.0',
         '@_encoding': 'UTF-8',
         '@_standalone': 'yes'
       },
-      StyledLayerDescriptor: {
+    }, {
+      StyledLayerDescriptor: [{
+        NamedLayer: [{
+          Name: [{ '#text': geoStylerStyle.name || '' }]
+        }, {
+          UserStyle: [{
+            Name: [{ '#text': geoStylerStyle.name || '' }]
+          }, {
+            Title: [{ '#text': geoStylerStyle.name || '' }]
+          }, {
+            FeatureTypeStyle: featureTypeStyle
+          }]
+        }]
+      }],
+      ':@': {
         '@_version': '1.0.0',
         '@_xsi:schemaLocation': 'http://www.opengis.net/sld StyledLayerDescriptor.xsd',
         '@_xmlns': 'http://www.opengis.net/sld',
         '@_xmlns:ogc': 'http://www.opengis.net/ogc',
         '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
         '@_xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-        'NamedLayer': [{
-          'Name': [geoStylerStyle.name || ''],
-          'UserStyle': [{
-            'Name': [geoStylerStyle.name || ''],
-            'Title': [geoStylerStyle.name || ''],
-            'FeatureTypeStyle': [{
-              'Rule': rules
-            }]
-          }]
-        }]
       }
-    };
+    }];
   }
 
   /**
@@ -1175,22 +1183,39 @@ export class SldStyleParser implements StyleParser<string> {
    * @param rules An array of GeoStyler-Style Rules.
    * @return The object representation of a SLD Rule (readable with xml2js)
    */
-  getSldRulesFromRules(rules: Rule[]): any {
+  getSldRulesFromRules(rules: Rule[]): any[] {
     return rules.map((rule: Rule) => {
-      let sldRule: any = {
-        Name: [rule.name]
+      const sldRule: any = {
+        Rule: []
       };
+      if (rule.name) {
+        sldRule.Rule.push({
+          Name: [{
+            '#text': rule.name
+          }]
+        });
+      }
       if (rule.filter) {
         const filter = this.getSldFilterFromFilter(rule.filter);
-        sldRule.Filter = filter;
+        sldRule.Rule.push({
+          Filter: [filter]
+        });
       }
       if (rule.scaleDenominator) {
         const { min, max } = rule.scaleDenominator;
         if (min && Number.isFinite(min)) {
-          sldRule.MinScaleDenominator = [min.toString()];
+          sldRule.Rule.push({
+            MinScaleDenominator: [{
+              '#text': min
+            }]
+          });
         }
         if (max && Number.isFinite(max)) {
-          sldRule.MaxScaleDenominator = [max.toString()];
+          sldRule.Rule.push({
+            MaxScaleDenominator: [{
+              '#text': max
+            }]
+          });
         }
       }
 
@@ -1200,14 +1225,17 @@ export class SldStyleParser implements StyleParser<string> {
       if (symbolizers.length > 0) {
         symbolizerKeys = Object.keys(symbolizers[0]);
       }
-
       symbolizerKeys.forEach((key: string) => {
         if (symbolizers[0][key].length === 0) {
           delete symbolizers[0][key];
         }
       });
-      if (symbolizers.length > 0 && Object.keys(symbolizers[0]).length !== 0) {
-        sldRule = Object.assign(sldRule, symbolizers[0]);
+
+      if (symbolizers.length > 0 && symbolizerKeys.length !== 0) {
+        sldRule.Rule = [
+          ...sldRule.Rule,
+          ...symbolizers
+        ];
       }
       return sldRule;
     });
@@ -1353,21 +1381,14 @@ export class SldStyleParser implements StyleParser<string> {
             sldSymbolizer.PointSymbolizer = [];
           }
           sldSymb = this.getSldPointSymbolizerFromMarkSymbolizer(symb);
-          if (sldSymb?.PointSymbolizer[0]) {
-            sldSymbolizer.PointSymbolizer.push(sldSymb?.PointSymbolizer[0]);
-          }
+          sldSymbolizer.PointSymbolizer.push(sldSymb);
           break;
         case 'Icon':
           if (!sldSymbolizer.PointSymbolizer) {
             sldSymbolizer.PointSymbolizer = [];
           }
-
           sldSymb = this.getSldPointSymbolizerFromIconSymbolizer(symb);
-          if (sldSymb?.PointSymbolizer[0]) {
-            sldSymbolizer.PointSymbolizer.push(
-              sldSymb?.PointSymbolizer[0]
-            );
-          }
+          sldSymbolizer.PointSymbolizer.push(sldSymb);
           break;
         case 'Text':
           if (!sldSymbolizer.TextSymbolizer) {
@@ -1435,13 +1456,13 @@ export class SldStyleParser implements StyleParser<string> {
   getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: MarkSymbolizer): any {
     const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
     const mark: any[] = [{
-      'WellKnownName': [
-        isFontSymbol ? markSymbolizer.wellKnownName : markSymbolizer.wellKnownName.toLowerCase()
-      ]
+      'WellKnownName': [{
+        '#text': isFontSymbol ? markSymbolizer.wellKnownName : markSymbolizer.wellKnownName.toLowerCase()
+      }]
     }];
 
     if (markSymbolizer.color || markSymbolizer.fillOpacity) {
-      const cssParameters = [];
+      const fillCssParamaters = [];
       if (markSymbolizer.color) {
         // TODO: parse GeoStylerFunctions
         // const expr = this.getSldExpressionFromExpression(markSymbolizer.color);
@@ -1453,25 +1474,32 @@ export class SldStyleParser implements StyleParser<string> {
         //     }
         //   });
         // } else {
-        cssParameters.push({
-          '#text': markSymbolizer.color,
-          '@_name': 'fill'
+        fillCssParamaters.push({
+          'CssParameter': [{
+            '#text': markSymbolizer.color,
+          }],
+          ':@': {
+            '@_name': 'fill'
+          }
         });
         // }
       }
       if (markSymbolizer.fillOpacity) {
-        cssParameters.push({
-          '#text': markSymbolizer.fillOpacity,
-          '@_name': 'fill-opacity'
+        fillCssParamaters.push({
+          'CssParameter': [{
+            '#text': markSymbolizer.fillOpacity,
+          }],
+          ':@': {
+            '@_name': 'fill-opacity'
+          }
         });
       }
-      mark[0].Fill = [{
-        'CssParameter': cssParameters
-      }];
+      mark.push({
+        Fill: fillCssParamaters
+      });
     }
 
     if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity) {
-      mark[0].Stroke = [{}];
       const strokeCssParameters = [];
       if (markSymbolizer.strokeColor) {
         // TODO: pars GeoStylerFunctions
@@ -1484,24 +1512,38 @@ export class SldStyleParser implements StyleParser<string> {
         //   });
         // } else {
         strokeCssParameters.push({
-          '#text': markSymbolizer.strokeColor,
-          '@_name': 'stroke'
+          'CssParameter': [{
+            '#text': markSymbolizer.strokeColor,
+          }],
+          ':@': {
+            '@_name': 'stroke'
+          }
         });
         // }
       }
       if (markSymbolizer.strokeWidth) {
         strokeCssParameters.push({
-          '#text': markSymbolizer.strokeWidth.toString(),
-          '@_name': 'stroke-width'
+          'CssParameter': [{
+            '#text': markSymbolizer.strokeWidth.toString(),
+          }],
+          ':@': {
+            '@_name': 'stroke-width'
+          }
         });
       }
       if (markSymbolizer.strokeOpacity) {
         strokeCssParameters.push({
-          '#text': markSymbolizer.strokeOpacity.toString(),
-          '@_name': 'stroke-opacity'
+          'CssParameter': [{
+            '#text': markSymbolizer.strokeOpacity.toString(),
+          }],
+          ':@': {
+            '@_name': 'stroke-opacity'
+          }
         });
       }
-      mark[0].Stroke[0].CssParameter = strokeCssParameters;
+      mark.push({
+        Stroke: strokeCssParameters
+      });
     }
 
     const graphic: any[] = [{
@@ -1509,21 +1551,31 @@ export class SldStyleParser implements StyleParser<string> {
     }];
 
     if (markSymbolizer.opacity) {
-      graphic[0].Opacity = [markSymbolizer.opacity.toString()];
+      graphic.push({
+        Opacity: [{
+          '#text': markSymbolizer.opacity.toString()
+        }]
+      });
     }
 
     if (typeof markSymbolizer.radius === 'number') {
-      graphic[0].Size = [(markSymbolizer.radius * 2).toString()];
+      graphic.push({
+        Size: [{
+          '#text': (markSymbolizer.radius * 2).toString()
+        }]
+      });
     }
 
     if (markSymbolizer.rotate) {
-      graphic[0].Rotation = [markSymbolizer.rotate.toString()];
+      graphic.push({
+        Rotation: [{
+          '#text': markSymbolizer.rotate.toString()
+        }]
+      });
     }
 
     return {
-      'PointSymbolizer': [{
-        'Graphic': graphic
-      }]
+      'Graphic': graphic
     };
   }
 
@@ -1537,7 +1589,8 @@ export class SldStyleParser implements StyleParser<string> {
   getSldPointSymbolizerFromIconSymbolizer(iconSymbolizer: IconSymbolizer): any {
     const graphic: any[] = [{
       'ExternalGraphic': [{
-        'OnlineResource': {
+        'OnlineResource': [],
+        ':@': {
           '@_xlink:type': 'simple',
           '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
           '@_xlink:href': iconSymbolizer.image
@@ -1565,18 +1618,28 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (iconSymbolizer.opacity) {
-      graphic[0].Opacity = iconSymbolizer.opacity;
+      graphic.push({
+        Opacity: [{
+          '#text': iconSymbolizer.opacity
+        }]
+      });
     }
     if (iconSymbolizer.size) {
-      graphic[0].Size = iconSymbolizer.size;
+      graphic.push({
+        Size: [{
+          '#text': iconSymbolizer.size
+        }]
+      });
     }
     if (iconSymbolizer.rotate) {
-      graphic[0].Rotation = iconSymbolizer.rotate;
+      graphic.push({
+        Rotation: [{
+          '#text':  iconSymbolizer.rotate
+        }]
+      });
     }
     return {
-      'PointSymbolizer': [{
-        'Graphic': graphic
-      }]
+      'Graphic': graphic
     };
   }
 
@@ -1740,14 +1803,18 @@ export class SldStyleParser implements StyleParser<string> {
     const sldLabel = tokens.map((token: any) => {
       if (token.type === placeholderType) {
         return {
-          'ogc:PropertyName': token.value
+          'ogc:PropertyName': {
+            '#text': token.value
+          }
         };
       }
       return {
-        'ogc:Literal': token.value
+        'ogc:Literal': {
+          '#text': token.value
+        }
       };
-
     });
+
     return sldLabel;
   };
 
