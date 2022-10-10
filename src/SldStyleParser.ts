@@ -1198,7 +1198,7 @@ export class SldStyleParser implements StyleParser<string> {
       if (rule.filter) {
         const filter = this.getSldFilterFromFilter(rule.filter);
         sldRule.Rule.push({
-          Filter: [filter]
+          Filter: filter
         });
       }
       if (rule.scaleDenominator) {
@@ -1249,7 +1249,7 @@ export class SldStyleParser implements StyleParser<string> {
    * comparison operator (readable with xml2js)
    */
   getSldComparisonFilterFromComparisonFilter(comparisonFilter: ComparisonFilter): any[] {
-    const sldComparisonFilter: any = {};
+    const sldComparisonFilter: any = [];
     const operator = comparisonFilter[0];
     const key = comparisonFilter[1];
     const value = comparisonFilter[2];
@@ -1268,34 +1268,64 @@ export class SldStyleParser implements StyleParser<string> {
 
     if (sldOperator === 'PropertyIsNull') {
       // empty, selfclosing Literals are not valid in a propertyIsNull filter
-      sldComparisonFilter[sldOperator] = [{
-        [propertyKey]: [key]
-      }];
+      sldComparisonFilter.push({
+        [sldOperator]: [{
+          [propertyKey]: [{
+            '#text': key
+          }]
+        }]
+      });
     } else if (sldOperator === 'PropertyIsLike') {
-      sldComparisonFilter[sldOperator] = [{
-        '@_wildCard': '*',
-        '@_singleChar': '.',
-        '@_escape': '!',
-        [propertyKey]: [key],
-        'Literal': [value]
-      }];
+      sldComparisonFilter.push({
+        [sldOperator]: [{
+          [propertyKey]: [{
+            '#text': key
+          }]
+        }, {
+          'Literal': [{
+            '#text': value
+          }]
+        }],
+        [':@']: {
+          '@_wildCard': '*',
+          '@_singleChar': '.',
+          '@_escape': '!',
+        }
+      });
     } else if (sldOperator === 'PropertyIsBetween') {
       // Currently we only support Literals as values.
       const betweenFilter = comparisonFilter as RangeFilter;
-      sldComparisonFilter[sldOperator] = [{
-        [propertyKey]: [key],
-        'LowerBoundary': [{
-          'Literal': [betweenFilter[2]]
-        }],
-        'UpperBoundary': [{
-          'Literal': [betweenFilter[3]]
+      sldComparisonFilter.push({
+        [sldOperator]: [{
+          [propertyKey]: [{
+            '#text': key
+          }]
+        }, {
+          'LowerBoundary': [{
+            'Literal': [{
+              '#text': betweenFilter[2]
+            }]
+          }]
+        }, {
+          'UpperBoundary': [{
+            'Literal': [{
+              '#text': betweenFilter[3]
+            }]
+          }]
         }]
-      }];
+      });
     } else {
-      sldComparisonFilter[sldOperator] = [{
-        [propertyKey]: [key],
-        'Literal': [value]
-      }];
+      sldComparisonFilter.push({
+        [sldOperator]: [{
+          [propertyKey]: [{
+            '#text': key
+          }]
+        }, {
+          'Literal': [{
+            '#text': value
+          }]
+        }]
+      });
     }
 
     return sldComparisonFilter;
@@ -1308,10 +1338,14 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The object representation of a SLD Filter Expression (readable with xml2js)
    */
   getSldFilterFromFilter(filter: Filter): any[] {
-    let sldFilter: any = {};
+    let sldFilter: any[] = [];
 
     if (isComparisonFilter(filter)) {
       sldFilter = this.getSldComparisonFilterFromComparisonFilter(filter);
+    } else if (isNegationFilter(filter)) {
+      sldFilter.push({
+        Not: this.getSldFilterFromFilter(filter[1])
+      });
     } else if (isCombinationFilter(filter)) {
       const [
         operator,
@@ -1320,46 +1354,10 @@ export class SldStyleParser implements StyleParser<string> {
       const sldOperators: string[] = keysByValue(SldStyleParser.combinationMap, operator);
       // TODO: Implement logic for "PropertyIsBetween" filter
       const combinator = sldOperators[0];
-      sldFilter[combinator] = [{}];
-      args.forEach((subFilter: Filter, subFilterIdx: number) => {
-        const sldSubFilter = this.getSldFilterFromFilter(subFilter);
-        const filterName = Object.keys(sldSubFilter)[0];
-
-        if (subFilter[0] === '||' || subFilter[0] === '&&') {
-          if (isCombinationFilter(subFilter)) {
-            if (!(sldFilter[combinator][0][filterName])) {
-              sldFilter[combinator][0][filterName] = [];
-            }
-            sldFilter[combinator][0][filterName][subFilterIdx] = {};
-          } else {
-            sldFilter[combinator][0][filterName] = {};
-          }
-          const parentFilterName = Object.keys(sldSubFilter)[0];
-
-          subFilter.forEach((el: any, index: number) => {
-            if (index > 0) {
-              const sldSubFilter2 = this.getSldFilterFromFilter(el);
-              const filterName2 = Object.keys(sldSubFilter2)[0];
-              if (!(sldFilter[combinator][0][parentFilterName][subFilterIdx])) {
-                sldFilter[combinator][0][parentFilterName][subFilterIdx] = {};
-              }
-              if (!sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]) {
-                sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2] = [];
-              }
-              sldFilter[combinator][0][parentFilterName][subFilterIdx][filterName2]
-                .push(sldSubFilter2[filterName2][0]);
-            }
-          });
-        } else {
-          if (Array.isArray(sldFilter[combinator][0][filterName])) {
-            sldFilter[combinator][0][filterName].push(sldSubFilter[filterName][0]);
-          } else {
-            sldFilter[combinator][0][filterName] = sldSubFilter[filterName];
-          }
-        }
+      const sldSubFilters = args.map(subFilter => this.getSldFilterFromFilter(subFilter)[0]);
+      sldFilter.push({
+        [combinator]: sldSubFilters
       });
-    } else if (isNegationFilter(filter)) {
-      sldFilter.Not = this.getSldFilterFromFilter(filter[1]);
     }
     return sldFilter;
   }
