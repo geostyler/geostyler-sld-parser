@@ -2026,17 +2026,19 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getSldRasterSymbolizerFromRasterSymbolizer(rasterSymbolizer: RasterSymbolizer): any {
     const sldRasterSymbolizer: any = [{}];
-    let opacity: any;
-    if (typeof rasterSymbolizer.opacity !== 'undefined') {
-      opacity = [rasterSymbolizer.opacity.toString()];
-      sldRasterSymbolizer[0].Opacity = opacity;
+    if (rasterSymbolizer.opacity !== undefined) {
+      sldRasterSymbolizer[0].Opacity = [{
+        '#text': rasterSymbolizer.opacity
+      }];
     }
 
     let colorMap: any;
     if (rasterSymbolizer.colorMap) {
       colorMap = this.getSldColorMapFromColorMap(rasterSymbolizer.colorMap);
       if (colorMap?.[0]) {
-        sldRasterSymbolizer[0].ColorMap = colorMap;
+        sldRasterSymbolizer.push({
+          ColorMap: colorMap
+        });
       }
     }
 
@@ -2044,7 +2046,9 @@ export class SldStyleParser implements StyleParser<string> {
     if (rasterSymbolizer.channelSelection) {
       channelSelection = this.getSldChannelSelectionFromChannelSelection(rasterSymbolizer.channelSelection);
       if (channelSelection?.[0]) {
-        sldRasterSymbolizer[0].ChannelSelection = channelSelection;
+        sldRasterSymbolizer.push({
+          ChannelSelection: channelSelection
+        });
       }
     }
 
@@ -2052,13 +2056,13 @@ export class SldStyleParser implements StyleParser<string> {
     if (rasterSymbolizer.contrastEnhancement) {
       contrastEnhancement = this.getSldContrastEnhancementFromContrastEnhancement(rasterSymbolizer.contrastEnhancement);
       if (contrastEnhancement?.[0]) {
-        sldRasterSymbolizer[0].ContrastEnhancement = contrastEnhancement;
+        sldRasterSymbolizer.push({
+          ContrastEnhancement: contrastEnhancement
+        });
       }
     }
 
-    return {
-      'RasterSymbolizer': sldRasterSymbolizer
-    };
+    return sldRasterSymbolizer;
   }
 
   /**
@@ -2068,38 +2072,45 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The object representation of a SLD ColorMap (readable with xml2js)
    */
   getSldColorMapFromColorMap(colorMap: ColorMap): any {
-    const sldColorMap: any[] = [{
-    }];
-      // parse colorMap.type
+    const sldColorMap: any[] = [];
+    // parse colorMap.type
     if (colorMap.type) {
       const type = colorMap.type;
-      sldColorMap[0]['@_type'] = type;
+      sldColorMap[':@'] = {
+        '@_type': type
+      };
     }
     // parse colorMap.extended
-    if (typeof colorMap.extended !== 'undefined') {
+    if (colorMap.extended !== undefined) {
       const extended = colorMap.extended.toString();
-      sldColorMap[0]['@_extended'] = extended;
+      if (!sldColorMap[':@']) {
+        sldColorMap[':@'] = {};
+      }
+      sldColorMap[':@']['@_extended'] = extended;
     }
     // parse colorMap.colorMapEntries
     if (colorMap.colorMapEntries && colorMap.colorMapEntries.length > 0) {
       const colorMapEntries: any[] = colorMap.colorMapEntries.map((entry: ColorMapEntry) => {
-        const result: any = {};
+        const result: any = {
+          ColorMapEntry: [],
+          ':@': {}
+        };
         if (entry.color) {
-          result['@_color'] = entry.color;
+          result[':@']['@_color'] = entry.color;
         }
         if (typeof entry.quantity !== 'undefined') {
-          result['@_quantity'] = entry.quantity.toString();
+          result[':@']['@_quantity'] = entry.quantity.toString();
         }
         if (entry.label) {
-          result['@_label'] = entry.label;
+          result[':@']['@_label'] = entry.label;
         }
         if (typeof entry.opacity !== 'undefined') {
-          result['@_opacity'] = entry.opacity.toString();
+          result[':@']['@_opacity'] = entry.opacity.toString();
         }
         return result;
       // remove empty colorMapEntries
       }).filter((entry: any) => Object.keys(entry).length > 0);
-      sldColorMap[0].ColorMapEntry = colorMapEntries;
+      sldColorMap.push(...colorMapEntries);
     }
     return sldColorMap;
   }
@@ -2118,21 +2129,30 @@ export class SldStyleParser implements StyleParser<string> {
       'grayChannel': 'GrayChannel'
     };
     const keys = Object.keys(channelSelection);
-    const sldChannelSelection: any[] = [{}];
+    const sldChannelSelection: any[] = [];
     keys.forEach((key: string) => {
-      const channel: any = [{}];
+      const channel: any = [];
       // parse sourceChannelName
       const sourceChannelName = channelSelection?.[key]?.sourceChannelName;
+      const channelName = propertyMap[key];
       // parse contrastEnhancement
       const contrastEnhancement = channelSelection?.[key]?.contrastEnhancement;
       if (sourceChannelName || contrastEnhancement) {
         if (sourceChannelName) {
-          channel[0].SourceChannelName = [sourceChannelName];
+          channel.push({
+            'SourceChannelName': [{
+              '#text' :sourceChannelName
+            }]
+          });
         }
         if (contrastEnhancement) {
-          channel[0].ContrastEnhancement = this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement);
+          channel.push({
+            'ContrastEnhancement': this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement)
+          });
         }
-        sldChannelSelection[0][propertyMap[key]] = channel;
+        sldChannelSelection.push({
+          [channelName]: channel
+        });
       }
     });
 
@@ -2146,18 +2166,26 @@ export class SldStyleParser implements StyleParser<string> {
      * @return The object representation of a SLD ContrastEnhancement (readable with xml2js)
      */
   getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement: ContrastEnhancement): any {
-    const sldContrastEnhancement: any = [{}];
+    const sldContrastEnhancement: any = [];
     const enhancementType = contrastEnhancement?.enhancementType;
     if (enhancementType === 'normalize') {
       // parse normalize
-      sldContrastEnhancement[0].Normalize = [''];
+      sldContrastEnhancement.push({
+        'Normalize': []
+      });
     } else if (enhancementType === 'histogram') {
       // parse histogram
-      sldContrastEnhancement[0].Histogram = [''];
+      sldContrastEnhancement.push({
+        'Histogram': []
+      });
     }
     // parse gammaValue
-    if (typeof contrastEnhancement.gammaValue !== 'undefined') {
-      sldContrastEnhancement[0].GammaValue = [contrastEnhancement.gammaValue.toString()];
+    if (contrastEnhancement.gammaValue !== undefined) {
+      sldContrastEnhancement.push({
+        'GammaValue': [{
+          '#text': contrastEnhancement.gammaValue
+        }]
+      });
     }
     return sldContrastEnhancement;
   }
