@@ -1370,8 +1370,8 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getSldSymbolizersFromSymbolizers(symbolizers: Symbolizer[]): any {
     const sldSymbolizers: any = [];
-    const sldSymbolizer: any = {};
     symbolizers.forEach(symb => {
+      const sldSymbolizer: any = {};
       let sldSymb: any[];
       switch (symb.kind) {
         case 'Mark':
