@@ -164,7 +164,9 @@ export class SldStyleParser implements StyleParser<string> {
     this.parser = new XMLParser({
       ...opts?.parserOptions,
       // Fixed attributes
+      // trimValues: false,
       ignoreDeclaration: true,
+      removeNSPrefix: true,
       ignoreAttributes: false,
       preserveOrder: true
     });
@@ -948,7 +950,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The GeoStyler-Style IconSymbolizer
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
-    const image = get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@xlink:href');
+    const image = get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
     const iconSymbolizer: IconSymbolizer = <IconSymbolizer> {
       kind: 'Icon',
       image
