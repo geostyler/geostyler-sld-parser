@@ -751,7 +751,7 @@ export class SldStyleParser implements StyleParser<string> {
           case '#text':
             return labelEl['#text'];
           case 'Literal':
-            return labelEl[labelName][0]['#text'];
+            return labelEl?.[labelName]?.[0]?.['#text'] || labelEl?.[labelName]?.[0]?.['#cdata']?.[0]?.['#text'];
           case 'PropertyName':
             const propName = labelEl[labelName][0]['#text'];
             return `{{${propName}}}`;
@@ -1798,73 +1798,165 @@ export class SldStyleParser implements StyleParser<string> {
     return sldTextSymbolizer;
   }
 
+  // /**
+  //  * Get the Label from a TextSymbolizer
+  //  */
+  // getSldLabelFromTextSymbolizer = (template: Expression<string>): any => {
+  //   // TODO: parse GeoStylerFunction
+  //   if (!(typeof template === 'string' || template instanceof String)) {
+  //     return;
+  //   }
+
+  //   // matches anything inside double curly braces (non-greedy)
+  //   const placeholderReg = /^{{(.*?)}}/;
+  //   // matches anything that does not start with curly braces
+  //   const literalReg = /(^.+?){{|^([^{]+)$/;
+
+  //   const tokens = [];
+  //   const placeholderType = 'placeholder';
+  //   const literalType = 'literal';
+  //   let templateReducer = template as string;
+  //   while (templateReducer.length) {
+  //     const phMatch = placeholderReg.exec(templateReducer);
+  //     if (phMatch) {
+  //       tokens.push({type: placeholderType, value: phMatch[1]});
+  //       // we have to strip the curly braces too
+  //       templateReducer = templateReducer.substring(phMatch[1].length + 4);
+  //     }
+
+  //     const litMatch = literalReg.exec(templateReducer);
+  //     if (litMatch) {
+  //       if (litMatch[1]) {
+  //         tokens.push({type: literalType, value: litMatch[1]});
+  //         templateReducer = templateReducer.substring(litMatch[1].length);
+  //       } else {
+  //         tokens.push({type: literalType, value: litMatch[2]});
+  //         templateReducer = templateReducer.substring(litMatch[2].length);
+  //       }
+  //     }
+  //   }
+
+  //   const sldLabel = [];
+
+  //   for (const token of tokens) {
+  //     if (token.type === placeholderType) {
+  //       sldLabel.push({
+  //         'ogc:PropertyName': [{
+  //           '#text': token.value
+  //         }]
+  //       });
+  //     } else {
+  //       if (token.value.includes(' ')) {
+  //         sldLabel.push({
+  //           'ogc:Literal': [{
+  //             '#cdata': [{
+  //               '#text': token.value
+  //             }]
+  //           }]
+  //         });
+  //       } else {
+  //         sldLabel.push({
+  //           'ogc:Literal': [{
+  //             '#text': token.value
+  //           }]
+  //         });
+  //       }
+  //     }
+  //   }
+
+  //   return sldLabel;
+  // };
+
   /**
    * Get the Label from a TextSymbolizer
    */
   getSldLabelFromTextSymbolizer = (template: Expression<string>): any => {
     // TODO: parse GeoStylerFunction
     if (!(typeof template === 'string' || template instanceof String)) {
-      return;
+      return undefined;
     }
 
-    // matches anything inside double curly braces (non-greedy)
-    const placeholderReg = /^{{(.*?)}}/;
-    // matches anything that does not start with curly braces
-    const literalReg = /(^.+?){{|^([^{]+)$/;
+    const openingBraces = '{{';
+    const closingBraces = '}}';
 
     const tokens = [];
-    const placeholderType = 'placeholder';
-    const literalType = 'literal';
-    let templateReducer = template as string;
-    while (templateReducer.length) {
-      const phMatch = placeholderReg.exec(templateReducer);
-      if (phMatch) {
-        tokens.push({type: placeholderType, value: phMatch[1]});
-        // we have to strip the curly braces too
-        templateReducer = templateReducer.substring(phMatch[1].length + 4);
-      }
+    let templateReducer = template;
 
-      const litMatch = literalReg.exec(templateReducer);
-      if (litMatch) {
-        if (litMatch[1]) {
-          tokens.push({type: literalType, value: litMatch[1]});
-          templateReducer = templateReducer.substring(litMatch[1].length);
-        } else {
-          tokens.push({type: literalType, value: litMatch[2]});
-          templateReducer = templateReducer.substring(litMatch[2].length);
-        }
-      }
-    }
-
-    const sldLabel = [];
-
-    for (const token of tokens) {
-      if (token.type === placeholderType) {
-        sldLabel.push({
-          'ogc:PropertyName': [{
-            '#text': token.value
-          }]
-        });
-      } else {
-        if (token.value.includes(' ')) {
-          sldLabel.push({
+    while(templateReducer.length) {
+      let tmpTemplateReducer = templateReducer;
+      let tmpPreTemplateLiteral;
+      const openingBracesIdx = tmpTemplateReducer.indexOf(openingBraces);
+      if (openingBracesIdx === -1) {
+        if (templateReducer.includes(' ')) {
+          tokens.push({
             'ogc:Literal': [{
               '#cdata': [{
-                '#text': token.value
+                '#text': templateReducer
               }]
             }]
           });
         } else {
-          sldLabel.push({
+          tokens.push({
             'ogc:Literal': [{
-              '#text': token.value
+              '#text': templateReducer
+            }]
+          });
+        }
+        break;
+      }
+
+      if (openingBracesIdx > 0) {
+        tmpPreTemplateLiteral = tmpTemplateReducer.slice(0, openingBracesIdx);
+      }
+      tmpTemplateReducer = tmpTemplateReducer.slice(openingBracesIdx + openingBraces.length);
+
+      const closingBracesIdx = tmpTemplateReducer.indexOf(closingBraces);
+      if (closingBracesIdx === -1) {
+        if (templateReducer.includes(' ')) {
+          tokens.push({
+            'ogc:Literal': [{
+              '#cdata': [{
+                '#text': templateReducer
+              }]
+            }]
+          });
+        } else {
+          tokens.push({
+            'ogc:Literal': [{
+              '#text': templateReducer
+            }]
+          });
+        }
+        break;
+      }
+      const propertyName = tmpTemplateReducer.slice(0, closingBracesIdx);
+      tmpTemplateReducer = tmpTemplateReducer.slice(closingBracesIdx + closingBraces.length);
+      if (tmpPreTemplateLiteral) {
+        if (tmpPreTemplateLiteral.includes(' ')) {
+          tokens.push({
+            'ogc:Literal': [{
+              '#cdata': [{
+                '#text': tmpPreTemplateLiteral
+              }]
+            }]
+          });
+        } else {
+          tokens.push({
+            'ogc:Literal': [{
+              '#text': tmpPreTemplateLiteral
             }]
           });
         }
       }
+      tokens.push({
+        'ogc:PropertyName': [{
+          '#text': propertyName
+        }]
+      });
+      templateReducer = tmpTemplateReducer;
     }
 
-    return sldLabel;
+    return tokens;
   };
 
   /**

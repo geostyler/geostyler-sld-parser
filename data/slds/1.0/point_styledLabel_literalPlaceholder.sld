@@ -8,10 +8,9 @@
         <Rule>
           <TextSymbolizer>
             <Label>
-              <ogc:Literal>foo </ogc:Literal>
+              <ogc:Literal><![CDATA[foo ]]></ogc:Literal>
               <ogc:PropertyName>name</ogc:PropertyName>
-              <ogc:Literal><![CDATA[ ]]></ogc:Literal>
-              <ogc:Literal>entity</ogc:Literal>
+              <ogc:Literal><![CDATA[ entity]]></ogc:Literal>
             </Label>
             <Font>
               <CssParameter name="font-family">Arial</CssParameter>
