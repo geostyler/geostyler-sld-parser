@@ -5,19 +5,19 @@ const pointSimplePoint: Style = {
   rules: [{
     filter: [
       '&&',
-        ['==', 'NAME', 'New York'],
-        ['==', 'TEST_BOOL', true],
-        ['==', 'TEST', null],
-        ['*=', 'TEST2', '*York*'],
-        ['*=', 'TEST1', '*New*'],
-        ['!',
-          ['>', 'POPULATION', 100000]
-        ],
-        ['||',
-          ['==', 'TEST2', 1],
-          ['==', 'TEST2', 2]
-        ],
-        ['<=x<=', 'TEST3', 1, 5]
+      ['==', 'NAME', 'New York'],
+      ['==', 'TEST_BOOL', true],
+      ['==', 'TEST', null],
+      ['*=', 'TEST2', '*York*'],
+      ['*=', 'TEST1', '*New*'],
+      ['!',
+        ['>', 'POPULATION', 100000]
+      ],
+      ['||',
+        ['==', 'TEST2', 1],
+        ['==', 'TEST2', 2]
+      ],
+      ['<=x<=', 'TEST3', 1, 5]
     ],
     name: 'Small populated New Yorks',
     scaleDenominator: {
