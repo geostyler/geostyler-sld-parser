@@ -1,6 +1,6 @@
 {
   "name": "geostyler-sld-parser",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "GeoStyler Style Parser implementation for SLD",
   "main": "build/dist/SldStyleParser.js",
   "types": "build/dist/SldStyleParser.d.ts",
@@ -32,7 +32,7 @@
     "lint:test": "npm run lint && npm run test",
     "lint": "eslint -c .eslintrc.js --ext .ts . && tsc --noEmit --project tsconfig.json",
     "prepublishOnly": "npm run lint:test:build",
-    "release": "np --no-yarn --any-branch && git push https://github.com/geostyler/geostyler-sld-parser.git master",
+    "release": "np --no-yarn --any-branch && git push git@github.com:geostyler/geostyler-sld-parser.git master",
     "start-dev": "webpack --config dev-build.config.js --watch",
     "test-watch": "jest --watchAll",
     "test": "jest --coverage"
@@ -75,6 +75,6 @@
     ">1%",
     "last 4 versions",
     "Firefox ESR",
-    "not ie < 9"
+    "not dead"
   ]
 }

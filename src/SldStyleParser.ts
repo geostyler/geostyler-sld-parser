@@ -740,17 +740,11 @@ export class SldStyleParser implements StyleParser<string> {
       kind: 'Line'
     };
     const strokeParameters = _get(sldSymbolizer, 'Stroke[0].$$') || [];
-    if (strokeParameters.length < 1) {
-      throw new Error('LineSymbolizer cannot be parsed. No Stroke detected');
-    }
     let cssParameters: any[];
     if (this.sldVersion === '1.0.0') {
       cssParameters = strokeParameters.filter((strokeParam: any) => strokeParam['#name'] === 'CssParameter');
     } else {
       cssParameters = strokeParameters.filter((strokeParam: any) => strokeParam['#name'] === 'SvgParameter');
-    }
-    if (cssParameters.length < 1) {
-      throw new Error('LineSymbolizer can not be parsed. No CssParameters detected.');
     }
     cssParameters.forEach((cssParameter: any) => {
       const {
@@ -1069,7 +1063,7 @@ export class SldStyleParser implements StyleParser<string> {
 
   /**
    * Create a template string from a TextSymbolizer Label element.
-   * The ordering of the elemments inside the Label element is preserved.
+   * The ordering of the elements inside the Label element is preserved.
    *
    * Examples:
    * <Label>
@@ -1624,47 +1618,48 @@ export class SldStyleParser implements StyleParser<string> {
    * Get the Label from a TextSymbolizer
    */
   getSldLabelFromTextSymbolizer = (template: string): [any] => {
-    // matches anything inside double curly braces (non-greedy)
-    const placeholderReg = /^{{(.*?)}}/;
-    // matches anything that does not start with curly braces
-    const literalReg = /(^.+?){{|^([^{]+)$/;
+    const openingBraces = '{{';
+    const closingBraces = '}}';
 
     const tokens = [];
-    const placeholderType = 'placeholder';
-    const literalType = 'literal';
     let templateReducer = template;
-    while (templateReducer.length) {
-      const phMatch = placeholderReg.exec(templateReducer);
-      if (phMatch) {
-        tokens.push({type: placeholderType, value: phMatch[1]});
-        // we have to strip the curly braces too
-        templateReducer = templateReducer.substr(phMatch[1].length + 4);
+
+    while(templateReducer.length) {
+      let tmpTemplateReducer = templateReducer;
+      let tmpPreTemplateLiteral;
+      const openingBracesIdx = tmpTemplateReducer.indexOf(openingBraces);
+      if (openingBracesIdx === -1) {
+        tokens.push({
+          'ogc:Literal': templateReducer
+        });
+        break;
       }
 
-      const litMatch = literalReg.exec(templateReducer);
-      if (litMatch) {
-        if (litMatch[1]) {
-          tokens.push({type: literalType, value: litMatch[1]});
-          templateReducer = templateReducer.substr(litMatch[1].length);
-        } else {
-          tokens.push({type: literalType, value: litMatch[2]});
-          templateReducer = templateReducer.substr(litMatch[2].length);
-        }
+      if (openingBracesIdx > 0) {
+        tmpPreTemplateLiteral = tmpTemplateReducer.slice(0, openingBracesIdx);
       }
+      tmpTemplateReducer = tmpTemplateReducer.slice(openingBracesIdx + openingBraces.length);
+
+      const closingBracesIdx = tmpTemplateReducer.indexOf(closingBraces);
+      if (closingBracesIdx === -1) {
+        tokens.push({
+          'ogc:Literal': templateReducer
+        });
+        break;
+      }
+      const propertyName = tmpTemplateReducer.slice(0, closingBracesIdx);
+      tmpTemplateReducer = tmpTemplateReducer.slice(closingBracesIdx + closingBraces.length);
+      if (tmpPreTemplateLiteral) {
+        tokens.push({
+          'ogc:Literal': tmpPreTemplateLiteral
+        });
+      }
+      tokens.push({
+        'ogc:PropertyName': propertyName
+      });
+      templateReducer = tmpTemplateReducer;
     }
-
-    const sldLabel = tokens.map((token: any) => {
-      if (token.type === placeholderType) {
-        return {
-          'ogc:PropertyName': token.value
-        };
-      }
-      return {
-        'ogc:Literal': token.value
-      };
-
-    });
-    return [sldLabel];
+    return [tokens];
   };
 
   /**

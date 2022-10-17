@@ -8,8 +8,11 @@
         <Rule>
           <TextSymbolizer>
             <Label>
+              <ogc:Literal>foo </ogc:Literal>
               <ogc:PropertyName>name</ogc:PropertyName>
-              <ogc:Literal> entity</ogc:Literal>
+              <ogc:PropertyName>prop</ogc:PropertyName>
+              <ogc:Literal> entity </ogc:Literal>
+              <ogc:PropertyName>bar</ogc:PropertyName>
             </Label>
             <Font>
               <CssParameter name="font-family">Arial</CssParameter>
