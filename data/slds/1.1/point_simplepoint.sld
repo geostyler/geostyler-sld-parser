@@ -11,6 +11,7 @@
     <se:Name>Simple Point</se:Name>
     <UserStyle>
       <se:Name>Simple Point</se:Name>
+      <se:Title>Simple Point</se:Title>
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name />

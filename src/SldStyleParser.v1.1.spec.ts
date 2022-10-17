@@ -606,7 +606,7 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       const styleParserPrettyFalse = new SldStyleParser({
         sldVersion: '1.1.0',
         builderOptions: {
-          format: true
+          format: false
         }
       });
       const { output: sldString } = await styleParserPrettyFalse.writeStyle(point_simplepoint);
