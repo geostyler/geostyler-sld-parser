@@ -163,7 +163,7 @@ export class SldStyleParser implements StyleParser<string> {
     this.parser = new XMLParser({
       ...opts?.parserOptions,
       // Fixed attributes
-      // trimValues: false,
+      cdataPropName: '#cdata',
       ignoreDeclaration: true,
       removeNSPrefix: true,
       ignoreAttributes: false,
@@ -172,6 +172,7 @@ export class SldStyleParser implements StyleParser<string> {
     this.builder = new XMLBuilder({
       ...opts?.builderOptions,
       // Fixed attributes
+      cdataPropName: '#cdata',
       ignoreAttributes : false,
       suppressEmptyNode: true,
       preserveOrder: true
@@ -1669,9 +1670,10 @@ export class SldStyleParser implements StyleParser<string> {
     const PointPlacement = this.getTagName('PointPlacement');
     const Rotation = this.getTagName('Rotation');
     const Radius = this.getTagName('Radius');
+    const Label = this.getTagName('Label');
 
     const sldTextSymbolizer: any = [{
-      'Label': textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
+      [Label]: textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
     }];
 
     const fontPropertyMap = {
@@ -1834,20 +1836,33 @@ export class SldStyleParser implements StyleParser<string> {
       }
     }
 
-    const sldLabel = tokens.map((token: any) => {
+    const sldLabel = [];
+
+    for (const token of tokens) {
       if (token.type === placeholderType) {
-        return {
+        sldLabel.push({
           'ogc:PropertyName': [{
             '#text': token.value
           }]
-        };
+        });
+      } else {
+        if (token.value.includes(' ')) {
+          sldLabel.push({
+            'ogc:Literal': [{
+              '#cdata': [{
+                '#text': token.value
+              }]
+            }]
+          });
+        } else {
+          sldLabel.push({
+            'ogc:Literal': [{
+              '#text': token.value
+            }]
+          });
+        }
       }
-      return {
-        'ogc:Literal': [{
-          '#text': token.value
-        }]
-      };
-    });
+    }
 
     return sldLabel;
   };

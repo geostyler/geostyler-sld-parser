@@ -21,7 +21,7 @@ import point_simpleLabel2 from '../data/styles/point_simpleLabel2';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
-import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
+// import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_floatingPoint from '../data/styles/point_externalgraphic_floatingPoint';
@@ -856,7 +856,7 @@ describe('SldStyleParser implements StyleParser', () => {
       const { output: sldString} = await styleParserOrder.writeStyle(point_styledLabel_elementOrder);
       expect(sldString).toBeDefined();
       const sld = fs.readFileSync('./data/slds/1.0/point_styledLabel_elementOrder.sld', 'utf8');
-      expect(sldString).toEqual(sld);
+      expect(sldString).toEqual(sld.trim());
     });
     it('adds unsupportedProperties to the write output', async () => {
       const styleParserOrder = new SldStyleParser({

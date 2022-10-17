@@ -21,8 +21,8 @@ import point_simpleLabel2 from '../data/styles/point_simpleLabel2';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
-import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
-import point_simplepoint_categorizefunctionfilter from '../data/styles/point_simplepoint_categorizefunctionfilter';
+// import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
+// import point_simplepoint_categorizefunctionfilter from '../data/styles/point_simplepoint_categorizefunctionfilter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_floatingPoint from '../data/styles/point_externalgraphic_floatingPoint';
@@ -41,7 +41,7 @@ import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_ele
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
 import unsupported_properties from '../data/styles/unsupported_properties';
-import { WriteStyleResult } from 'geostyler-style';
+// import { WriteStyleResult } from 'geostyler-style';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -616,7 +616,12 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
     });
 
     it('creates the correct order in a text symbolizer', async () => {
-      const styleParserOrder = new SldStyleParser({ sldVersion: '1.1.0' });
+      const styleParserOrder = new SldStyleParser({
+        sldVersion: '1.1.0',
+        builderOptions: {
+          format: true
+        }
+      });
       const { output: sldString } = await styleParserOrder.writeStyle(point_styledLabel_elementOrder);
       expect(sldString).toBeDefined();
       const sld = fs.readFileSync('./data/slds/1.1/point_styledLabel_elementOrder.sld', 'utf8');
