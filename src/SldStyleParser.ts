@@ -41,7 +41,6 @@ import {
   XmlBuilderOptionsOptional
 } from 'fast-xml-parser';
 
-import SymbologyEncoder from './SymbologyEncoder';
 import {
   get,
   getAttribute,
@@ -1922,7 +1921,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
 
     if (lineSymbolizer?.graphicStroke) {
-      if (!Array.isArray(sldLineSymbolizer?.[0]?.Stroke)) {
+      if (!Array.isArray(sldLineSymbolizer?.[0]?.[Stroke])) {
         sldLineSymbolizer[0] = { [Stroke]: [] };
       }
       if (lineSymbolizer?.graphicStroke?.kind === 'Mark') {
@@ -1939,7 +1938,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (lineSymbolizer?.graphicFill) {
-      if (!Array.isArray(sldLineSymbolizer?.[0]?.Stroke)) {
+      if (!Array.isArray(sldLineSymbolizer?.[0]?.[Stroke])) {
         sldLineSymbolizer[0] = { [Stroke]: [] };
       }
       if (lineSymbolizer?.graphicFill?.kind === 'Mark') {
@@ -1956,10 +1955,10 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (cssParameters.length !== 0) {
-      if (!Array.isArray(sldLineSymbolizer?.[0]?.Stroke)) {
-        sldLineSymbolizer[0] = { Stroke: [] };
+      if (!Array.isArray(sldLineSymbolizer?.[0]?.[Stroke])) {
+        sldLineSymbolizer[0] = { [Stroke]: [] };
       }
-      sldLineSymbolizer[0].Stroke.push(...cssParameters);
+      sldLineSymbolizer[0][Stroke].push(...cssParameters);
     }
     if (lineSymbolizer.perpendicularOffset) {
       sldLineSymbolizer.push({
@@ -1981,6 +1980,9 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The object representation of a SLD PolygonSymbolizer (readable with xml2js)
    */
   getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: GsFillSymbolizer): any {
+    const CssParameter = this.getTagName('CssParameter');
+    const Stroke = this.getTagName('Stroke');
+    const Fill = this.getTagName('Fill');
     const strokePropertyMap = {
       outlineColor: 'stroke',
       outlineWidth: 'stroke-width',
@@ -2019,7 +2021,7 @@ export class SldStyleParser implements StyleParser<string> {
           //   });
           // } else {
           fillCssParameters.push({
-            'CssParameter': [{
+            [CssParameter]: [{
               '#text': fillSymbolizer[property],
             }],
             ':@': {
@@ -2049,7 +2051,7 @@ export class SldStyleParser implements StyleParser<string> {
           }
 
           strokeCssParameters.push({
-            'CssParameter': [{
+            [CssParameter]: [{
               '#text': transformedValue,
             }],
             ':@': {
@@ -2061,14 +2063,14 @@ export class SldStyleParser implements StyleParser<string> {
 
     const polygonSymbolizer: any = [];
     if (fillCssParameters.length > 0 || graphicFill) {
-      if (!Array.isArray(polygonSymbolizer?.[0]?.Fill)) {
-        polygonSymbolizer[0] = { Fill: [] };
+      if (!Array.isArray(polygonSymbolizer?.[0]?.[Fill])) {
+        polygonSymbolizer[0] = { [Fill]: [] };
       }
       if (fillCssParameters.length > 0) {
-        polygonSymbolizer[0].Fill.push(...fillCssParameters);
+        polygonSymbolizer[0][Fill].push(...fillCssParameters);
       }
       if (graphicFill) {
-        polygonSymbolizer[0].Fill.push({
+        polygonSymbolizer[0][Fill].push({
           GraphicFill: graphicFill
         });
       }
@@ -2076,7 +2078,7 @@ export class SldStyleParser implements StyleParser<string> {
 
     if (strokeCssParameters.length > 0) {
       polygonSymbolizer.push({
-        Stroke: strokeCssParameters
+        [Stroke]: strokeCssParameters
       });
     }
 
