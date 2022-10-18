@@ -293,17 +293,17 @@ export class SldStyleParser implements StyleParser<string> {
    */
   readStyle(sldString: string): Promise<ReadStyleResult> {
     return new Promise<ReadStyleResult>((resolve) => {
-      // try {
-      const output = this.parser.parse(sldString);
-      const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(output);
-      resolve({
-        output: geoStylerStyle
-      });
-      // } catch (error) {
-      //   resolve({
-      //     errors: [error]
-      //   });
-      // }
+      try {
+        const output = this.parser.parse(sldString);
+        const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(output);
+        resolve({
+          output: geoStylerStyle
+        });
+      } catch (error) {
+        resolve({
+          errors: [error]
+        });
+      }
     });
   }
 
@@ -1109,19 +1109,19 @@ export class SldStyleParser implements StyleParser<string> {
   writeStyle(geoStylerStyle: Style): Promise<WriteStyleResult<string>> {
     return new Promise<WriteStyleResult<string>>(resolve => {
       const unsupportedProperties = this.checkForUnsupportedProperites(geoStylerStyle);
-      // try {
-      const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
-      const sldString = this.builder.build(sldObject);
-      resolve({
-        output: sldString,
-        unsupportedProperties,
-        warnings: unsupportedProperties && ['Your style contains unsupportedProperties!']
-      });
-      // } catch (error) {
-      //   resolve({
-      //     errors: [error]
-      //   });
-      // }
+      try {
+        const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
+        const sldString = this.builder.build(sldObject);
+        resolve({
+          output: sldString,
+          unsupportedProperties,
+          warnings: unsupportedProperties && ['Your style contains unsupportedProperties!']
+        });
+      } catch (error) {
+        resolve({
+          errors: [error]
+        });
+      }
     });
   }
 
