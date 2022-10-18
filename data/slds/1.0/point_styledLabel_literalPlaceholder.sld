@@ -10,7 +10,9 @@
             <Label>
               <ogc:Literal><![CDATA[foo ]]></ogc:Literal>
               <ogc:PropertyName>name</ogc:PropertyName>
-              <ogc:Literal><![CDATA[ entity]]></ogc:Literal>
+              <ogc:PropertyName>prop</ogc:PropertyName>
+              <ogc:Literal><![CDATA[ entity ]]></ogc:Literal>
+              <ogc:PropertyName>bar</ogc:PropertyName>
             </Label>
             <Font>
               <CssParameter name="font-family">Arial</CssParameter>
