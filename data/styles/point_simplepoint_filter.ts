@@ -1,27 +1,30 @@
 import { Style } from 'geostyler-style';
 
 const pointSimplePoint: Style = {
-  'name': 'Simple Point Filter',
-  'rules': [{
-    'filter': ['&&',
+  name: 'Simple Point Filter',
+  rules: [{
+    filter: [
+      '&&',
       ['==', 'NAME', 'New York'],
-      ['==', 'TEST_BOOL', 'true'],
+      ['==', 'TEST_BOOL', true],
       ['==', 'TEST', null],
       ['*=', 'TEST2', '*York*'],
       ['*=', 'TEST1', '*New*'],
-      ['!', ['>', 'POPULATION', '100000']],
+      ['!',
+        ['>', 'POPULATION', 100000]
+      ],
       ['||',
-        ['==', 'TEST2', '1'],
-        ['==', 'TEST2', '2']
+        ['==', 'TEST2', 1],
+        ['==', 'TEST2', 2]
       ],
       ['<=x<=', 'TEST3', 1, 5]
     ],
-    'name': 'Small populated New Yorks',
-    'scaleDenominator': {
+    name: 'Small populated New Yorks',
+    scaleDenominator: {
       'max': 20000,
       'min': 10000
     },
-    'symbolizers': [{
+    symbolizers: [{
       'kind': 'Mark',
       'wellKnownName': 'circle',
       'color': '#FF0000',
