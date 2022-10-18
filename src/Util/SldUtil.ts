@@ -65,7 +65,7 @@ export function isSymbolizer(obj: any): boolean {
 /**
  * Generic get function which tries to get the nested value of given object or array.
  * It contains some SLD specific handling and tries to be smart but keep the syntax easy.
- * It allways takes the first child of an array if no index was specified in the path argument.
+ * It always takes the first child of an array if no index was specified in the path argument.
  * e.g.
  *   Get text value: get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text')
  *   Get an attribute value: get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@xlink:href')

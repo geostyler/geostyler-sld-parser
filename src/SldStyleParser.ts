@@ -65,7 +65,7 @@ const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
 
 /**
  * This parser can be used with the GeoStyler.
- * It implements the GeoStyler-Style StyleParser interface.
+ * It implements the geostyler-style StyleParser interface.
  *
  * @class SldStyleParser
  * @implements StyleParser
@@ -201,7 +201,7 @@ export class SldStyleParser implements StyleParser<string> {
 
   /**
    * Array of field / property names in a filter, which are casted to numerics
-   * while parsing an SLD.
+   * while parsing a SLD.
    */
   private _numericFilterFields: string[] = [];
   /**
@@ -221,7 +221,7 @@ export class SldStyleParser implements StyleParser<string> {
 
   /**
    * Array of field / property names in a filter, which are casted to boolean
-   * while parsing an SLD.
+   * while parsing a SLD.
    */
   private _boolFilterFields: string[] = [];
   /**
@@ -284,12 +284,12 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * The readStyle implementation of the GeoStyler-Style StyleParser interface.
+   * The readStyle implementation of the geostyler-style StyleParser interface.
    * It reads a SLD as a string and returns a Promise.
-   * The Promise itself resolves with a GeoStyler-Style Style.
+   * The Promise itself resolves with a geostyler-style.
    *
-   * @param {string} sldString A SLD as a string.
-   * @return {Promise} The Promise resolving with the GeoStyler-Style Style
+   * @param sldString A SLD as a string.
+   * @return The Promise resolving with the geostyler-style
    */
   readStyle(sldString: string): Promise<ReadStyleResult> {
     return new Promise<ReadStyleResult>((resolve) => {
@@ -308,10 +308,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style Style from an SLD Object (created with xml2js).
+   * Get the geostyler-style from a SLD Object (created with fast-xml-parser).
    *
-   * @param sldObject The SLD object representation (created with xml2js)
-   * @return The GeoStyler-Style Style
+   * @param sldObject The SLD object representation (created with fast-xml-parser)
+   * @return The geostyler-style
    */
   sldObjectToGeoStylerStyle(sldObject: any): Style {
     const rules = this.getRulesFromSldObject(sldObject);
@@ -323,10 +323,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style Rule from an SLD Object (created with xml2js).
+   * Get the geostyler-style rules from a SLD Object (created with fast-xml-parser).
    *
-   * @param sldObject The SLD object representation (created with xml2js)
-   * @return The GeoStyler-Style Rule
+   * @param sldObject The SLD object representation (created with fast-xml-parser)
+   * @return The geostyler-style rules
    */
   getRulesFromSldObject(sldObject: any): GsRule[] {
     const layers = getChildren(sldObject[0].StyledLayerDescriptor, 'NamedLayer');
@@ -367,8 +367,8 @@ export class SldStyleParser implements StyleParser<string> {
    * Get the name for the Style from the SLD Object. Returns the Title of the UserStyle
    * if defined or the Name of the NamedLayer if defined or an empty string.
    *
-   * @param {object} sldObject The SLD object representation (created with xml2js)
-   * @return {string} The name to be used for the GeoStyler Style Style
+   * @param sldObject The SLD object representation (created with fast-xml-parser)
+   * @return The name to be used for the GeoStyler Style Style
    */
   getStyleNameFromSldObject(sldObject: any): string {
     const userStyleTitle = get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle.Title.#text');
@@ -378,12 +378,12 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style Filter from an SLD Rule.
+   * Get the geostyler-style Filter from a SLD Rule.
    *
    * Currently only supports one Filter per Rule.
    *
    * @param sldRule The SLD Rule
-   * @return The GeoStyler-Style Filter
+   * @return The geostyler-style Filter
    */
   getFilterFromRule(sldRule: any[]): GsFilter | undefined {
     const sldFilter = get(sldRule, 'Filter');
@@ -399,10 +399,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style ScaleDenominator from an SLD Rule.
+   * Get the geostyler-style ScaleDenominator from a SLD Rule.
    *
    * @param sldRule The SLD Rule
-   * @return The GeoStyler-Style ScaleDenominator
+   * @return The geostyler-style ScaleDenominator
    */
   getScaleDenominatorFromRule(sldRule: any[]): ScaleDenominator | undefined {
     const scaleDenominator: ScaleDenominator = <ScaleDenominator> {};
@@ -421,10 +421,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style Symbolizers from an SLD Rule.
+   * Get the geostyler-style Symbolizers from a SLD Rule.
    *
    * @param sldRule The SLD Rule
-   * @return The GeoStyler-Style Symbolizer Array
+   * @return The geostyler-style Symbolizer array
    */
   getSymbolizersFromRule(sldRule: any[]): Symbolizer[] {
     const symbolizers: Symbolizer[] = sldRule
@@ -451,12 +451,12 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Creates a GeoStyler-Style Filter from a given operator name and the js
-   * SLD object representation (created with xml2js) of the SLD Filter.
+   * Creates a geostyler-style Filter from a given operator name and the js
+   * SLD object representation (created with fast-xml-parser) of the SLD Filter.
    *
-   * @param {string} sldOperatorName The Name of the SLD Filter Operator
-   * @param {object} sldFilter The SLD Filter
-   * @return {GsFilter} The GeoStyler-Style Filter
+   * @param sldOperatorName The Name of the SLD Filter Operator
+   * @param sldFilter The SLD Filter
+   * @return The geostyler-style Filter
    */
   getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): GsFilter {
     let filter: GsFilter;
@@ -465,8 +465,7 @@ export class SldStyleParser implements StyleParser<string> {
     // since it is also a comparisonOperator. But it
     // needs to be treated differently.
     if (sldOperatorName === 'PropertyIsBetween') {
-      // TODO PropertyIsBetween spec allows more than just a
-      //      PropertyName as its first argument.
+      // TODO: PropertyIsBetween spec allows more than just a PropertyName as its first argument.
       const propertyName = get(sldFilter, 'PropertyIsBetween.PropertyName.#text');
       const lower = Number(get(sldFilter, 'PropertyIsBetween.LowerBoundary.Literal.#text'));
       const upper = Number(get(sldFilter, 'PropertyIsBetween.UpperBoundary.Literal.#text'));
@@ -519,29 +518,27 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Creates a GeoStyler-Style FunctionFilter from a SLD Function.
+   * Creates a geostyler-style FunctionFilter from a SLD Function.
    *
    * @param sldFilter The SLD Filter
-   * @return The GeoStyler-Style FunctionFilter
+   * @return The geostyler-style FunctionFilter
    */
   getFunctionFilterFromSldFilter(sldFilter: any): GeoStylerFunction | undefined {
+    // TODO:
     const functionName = get(sldFilter, 'Function[0].$.name');
     switch (functionName) {
-      // case 'strMatches':
-      //   return this.getStrMatchesFunctionFilterFromSldFilter(sldFilter);
-      //   break;
       default:
         return undefined;
     }
   }
 
   /**
-   * Get the GeoStyler-Style PointSymbolizer from an SLD Symbolizer.
+   * Get the geostyler-style PointSymbolizer from a SLD Symbolizer.
    *
    * The opacity of the Symbolizer is taken from the <Graphic>.
    *
    * @param sldSymbolizer The SLD Symbolizer
-   * @return The GeoStyler-Style PointSymbolizer
+   * @return The geostyler-style PointSymbolizer
    */
   getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsPointSymbolizer {
     let pointSymbolizer: GsPointSymbolizer;
@@ -562,12 +559,12 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style LineSymbolizer from an SLD Symbolizer.
+   * Get the geostyler-style LineSymbolizer from a SLD Symbolizer.
    *
    * Currently only the CssParameters are available.
    *
    * @param sldSymbolizer The SLD Symbolizer
-   * @return The GeoStyler-Style LineSymbolizer
+   * @return The geostyler-style LineSymbolizer
    */
   getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsLineSymbolizer {
     const lineSymbolizer: GsLineSymbolizer = {
@@ -633,10 +630,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style TextSymbolizer from an SLD Symbolizer.
+   * Get the geostyler-style TextSymbolizer from a SLD Symbolizer.
    *
    * @param sldSymbolizer The SLD Symbolizer
-   * @return The GeoStyler-Style TextSymbolizer
+   * @return The geostyler-style TextSymbolizer
    */
   getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsTextSymbolizer {
     const textSymbolizer: GsTextSymbolizer = {
@@ -739,23 +736,21 @@ export class SldStyleParser implements StyleParser<string> {
    * </Label>
    * --> "{{bar}}{{john}}foo{{doe}}"
    *
+   * @param sldLabel
    */
   getTextSymbolizerLabelFromSldSymbolizer = (sldLabel: any): string => {
     const label: string = sldLabel
       .map((labelEl: any) => {
         // TODO: ogc namespace should be removed on parsing. check why it is not
-        // TODO: fast-xml-parser trims everything between xml tags. whitspaces get
-        // lost. When trimValues is set to false ALL whitespaces are kept including newlines etc.
         const labelName = Object.keys(labelEl)[0];
         switch (labelName.replace('ogc:', '')) {
           case '#text':
             return labelEl['#text'];
           case 'Literal':
-            return labelEl?.[labelName]?.[0]?.['#text'] || labelEl?.[labelName]?.[0]?.['#cdata']?.[0]?.['#text'];
+            return labelEl?.[labelName]?.[0 ]?.['#text'] || labelEl?.[labelName]?.[0]?.['#cdata']?.[0]?.['#text'];
           case 'PropertyName':
             const propName = labelEl[labelName][0]['#text'];
             return `{{${propName}}}`;
-            // TODO: handle CDATA property
           default:
             return '';
         }
@@ -765,12 +760,12 @@ export class SldStyleParser implements StyleParser<string> {
   };
 
   /**
-   * Get the GeoStyler-Style FillSymbolizer from an SLD Symbolizer.
+   * Get the geostyler-style FillSymbolizer from a SLD Symbolizer.
    *
    * PolygonSymbolizer Stroke is just partially supported.
    *
    * @param sldSymbolizer The SLD Symbolizer
-   * @return The GeoStyler-Style FillSymbolizer
+   * @return The geostyler-style FillSymbolizer
    */
   getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsFillSymbolizer {
     const fillSymbolizer: GsFillSymbolizer = {
@@ -826,9 +821,9 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style RasterSymbolizer from a SLD Symbolizer.
+   * Get the geostyler-style RasterSymbolizer from a SLD Symbolizer.
    *
-   * @param {object} sldSymbolizer The SLD Symbolizer
+   * @param sldSymbolizer The SLD Symbolizer
    */
   getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsRasterSymbolizer {
     const rasterSymbolizer: GsRasterSymbolizer = {
@@ -864,10 +859,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style MarkSymbolizer from an SLD Symbolizer
+   * Get the geostyler-style MarkSymbolizer from a SLD Symbolizer
    *
    * @param sldSymbolizer The SLD Symbolizer
-   * @return The GeoStyler-Style MarkSymbolizer
+   * @return The geostyler-style MarkSymbolizer
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsMarkSymbolizer {
     const wellKnownName: GsWellKnownName = get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text');
@@ -944,10 +939,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style IconSymbolizer from an SLD Symbolizer
+   * Get the geostyler-style IconSymbolizer from a SLD Symbolizer
    *
    * @param sldSymbolizer The SLD Symbolizer
-   * @return The GeoStyler-Style IconSymbolizer
+   * @return The geostyler-style IconSymbolizer
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsIconSymbolizer {
     const image = get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
@@ -971,9 +966,9 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the GeoStyler-Style ColorMap from a SLD ColorMap.
+   * Get the geostyler-style ColorMap from a SLD ColorMap.
    *
-   * @param {object} sldColorMap The SLD ColorMap
+   * @param sldColorMap The SLD ColorMap
    */
   getColorMapFromSldColorMap(sldColorMap: any, type: ColorMapType = 'ramp', extended?: string): ColorMap {
     const colorMap: ColorMap = {
@@ -1018,10 +1013,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-     * Get the GeoStyler-Style ContrastEnhancement from a SLD ContrastEnhancement.
-     *
-     * @param {object} sldContrastEnhancement The SLD ContrastEnhancement
-     */
+   * Get the geostyler-style ContrastEnhancement from a SLD ContrastEnhancement.
+   *
+   * @param sldContrastEnhancement The SLD ContrastEnhancement
+   */
   getContrastEnhancementFromSldContrastEnhancement(sldContrastEnhancement: any): ContrastEnhancement {
     const contrastEnhancement: ContrastEnhancement = {};
 
@@ -1047,10 +1042,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-     * Get the GeoStyler-Style Channel from a SLD Channel.
-     *
-     * @param {object} sldChannel The SLD Channel
-     */
+   * Get the geostyler-style Channel from a SLD Channel.
+   *
+   * @param sldChannel The SLD Channel
+   */
   getChannelFromSldChannel(sldChannel: any): Channel {
     const sourceChannelName = get(sldChannel, 'SourceChannelName.#text')?.toString();
     const channel: Channel = {
@@ -1064,10 +1059,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-     * Get the GeoStyler-Style ChannelSelection from a SLD ChannelSelection.
-     *
-     * @param {object} sldChannelSelection The SLD ChannelSelection
-     */
+   * Get the geostyler-style ChannelSelection from a SLD ChannelSelection.
+   *
+   * @param sldChannelSelection The SLD ChannelSelection
+   */
   getChannelSelectionFromSldChannelSelection(sldChannelSelection: any): ChannelSelection {
     let channelSelection: ChannelSelection;
     const red = get(sldChannelSelection, 'RedChannel');
@@ -1099,11 +1094,11 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * The writeStyle implementation of the GeoStyler-Style StyleParser interface.
-   * It reads a GeoStyler-Style Style and returns a Promise.
+   * The writeStyle implementation of the geostyler-style StyleParser interface.
+   * It reads a geostyler-style and returns a Promise.
    * The Promise itself resolves with a SLD string.
    *
-   * @param geoStylerStyle A GeoStyler-Style Style.
+   * @param geoStylerStyle A geostyler-style.
    * @return The Promise resolving with the SLD as a string.
    */
   writeStyle(geoStylerStyle: Style): Promise<WriteStyleResult<string>> {
@@ -1125,6 +1120,12 @@ export class SldStyleParser implements StyleParser<string> {
     });
   }
 
+  /**
+   * Get the correct tagName in dependency to the configured sldVersion.
+   *
+   * @param tagName
+   * @returns The tagName as used by the configured sldVersion
+   */
   getTagName(tagName: string): string {
     const ogcList = ['Filter'];
     if (ogcList.includes(tagName)) {
@@ -1137,10 +1138,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Style
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style
    *
-   * @param {Style} geoStylerStyle A GeoStyler-Style Style.
-   * @return {object} The object representation of a SLD Style (readable with xml2js)
+   * @param geoStylerStyle A geostyler-style.
+   * @return The object representation of a SLD Style (readable with fast-xml-parser)
    */
   geoStylerStyleToSldObject(geoStylerStyle: Style): any {
     const rules: any[] = this.getSldRulesFromRules(geoStylerStyle.rules);
@@ -1197,10 +1198,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Rule.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style Rule.
    *
-   * @param rules An array of GeoStyler-Style Rules.
-   * @return The object representation of a SLD Rule (readable with xml2js)
+   * @param rules An array of geostyler-style Rules.
+   * @return The object representation of a SLD Rule (readable with fast-xml-parser)
    */
   getSldRulesFromRules(rules: GsRule[]): any[] {
     const Name = this.getTagName('Name');
@@ -1267,11 +1268,11 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ComparisonFilter.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style ComparisonFilter.
    *
-   * @param {ComparisonFilter} comparisonFilter A GeoStyler-Style ComparisonFilter.
-   * @return {object} The object representation of a SLD Filter Expression with a
-   * comparison operator (readable with xml2js)
+   * @param comparisonFilter A geostyler-style ComparisonFilter.
+   * @return The object representation of a SLD Filter Expression with a
+   * comparison operator (readable with fast-xml-parser)
    */
   getSldComparisonFilterFromComparisonFilter(comparisonFilter: ComparisonFilter): any[] {
     const sldComparisonFilter: any = [];
@@ -1357,10 +1358,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style Filter.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style Filter.
    *
-   * @param filter A GeoStyler-Style Filter.
-   * @return The object representation of a SLD Filter Expression (readable with xml2js)
+   * @param filter A geostyler-style Filter.
+   * @return The object representation of a SLD Filter Expression (readable with fast-xml-parser)
    */
   getSldFilterFromFilter(filter: GsFilter): any[] {
     let sldFilter: any[] = [];
@@ -1388,10 +1389,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from GeoStyler-Style Symbolizers.
+   * Get the SLD Object (readable with fast-xml-parser) from geostyler-style Symbolizers.
    *
-   * @param symbolizers A GeoStyler-Style Symbolizer array.
-   * @return The object representation of a SLD Symbolizer (readable with xml2js)
+   * @param symbolizers A geostyler-style Symbolizer array.
+   * @return The object representation of a SLD Symbolizer (readable with fast-xml-parser)
    */
   getSldSymbolizersFromSymbolizers(symbolizers: Symbolizer[]): any {
     const sldSymbolizers: any = [];
@@ -1438,11 +1439,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style MarkSymbolizer.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style MarkSymbolizer.
    *
-   * @param markSymbolizer A GeoStyler-Style MarkSymbolizer.
-   * @return The object representation of a SLD PointSymbolizer with a
-   * Mark (readable with xml2js)
+   * @param markSymbolizer A geostyler-style MarkSymbolizer.
+   * @return The object representation of a SLD PointSymbolizer with a Mark
    */
   getSldPointSymbolizerFromMarkSymbolizer(markSymbolizer: GsMarkSymbolizer): any {
     const WellKnownName = this.getTagName('WellKnownName');
@@ -1581,11 +1581,11 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style IconSymbolizer.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style IconSymbolizer.
    *
-   * @param iconSymbolizer A GeoStyler-Style IconSymbolizer.
+   * @param iconSymbolizer A geostyler-style IconSymbolizer.
    * @return The object representation of a SLD PointSymbolizer with
-   * en "ExternalGraphic" (readable with xml2js)
+   * en "ExternalGraphic" (readable with fast-xml-parser)
    */
   getSldPointSymbolizerFromIconSymbolizer(iconSymbolizer: GsIconSymbolizer): any {
     const ExternalGraphic = this.getTagName('ExternalGraphic');
@@ -1653,10 +1653,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style TextSymbolizer.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style TextSymbolizer.
    *
-   * @param textSymbolizer A GeoStyler-Style TextSymbolizer.
-   * @return The object representation of a SLD TextSymbolizer (readable with xml2js)
+   * @param textSymbolizer A geostyler-style TextSymbolizer.
+   * @return The object representation of a SLD TextSymbolizer (readable with fast-xml-parser)
    */
   getSldTextSymbolizerFromTextSymbolizer(textSymbolizer: GsTextSymbolizer): any {
     const CssParameter = this.getTagName('CssParameter');
@@ -1798,77 +1798,10 @@ export class SldStyleParser implements StyleParser<string> {
     return sldTextSymbolizer;
   }
 
-  // /**
-  //  * Get the Label from a TextSymbolizer
-  //  */
-  // getSldLabelFromTextSymbolizer = (template: Expression<string>): any => {
-  //   // TODO: parse GeoStylerFunction
-  //   if (!(typeof template === 'string' || template instanceof String)) {
-  //     return;
-  //   }
-
-  //   // matches anything inside double curly braces (non-greedy)
-  //   const placeholderReg = /^{{(.*?)}}/;
-  //   // matches anything that does not start with curly braces
-  //   const literalReg = /(^.+?){{|^([^{]+)$/;
-
-  //   const tokens = [];
-  //   const placeholderType = 'placeholder';
-  //   const literalType = 'literal';
-  //   let templateReducer = template as string;
-  //   while (templateReducer.length) {
-  //     const phMatch = placeholderReg.exec(templateReducer);
-  //     if (phMatch) {
-  //       tokens.push({type: placeholderType, value: phMatch[1]});
-  //       // we have to strip the curly braces too
-  //       templateReducer = templateReducer.substring(phMatch[1].length + 4);
-  //     }
-
-  //     const litMatch = literalReg.exec(templateReducer);
-  //     if (litMatch) {
-  //       if (litMatch[1]) {
-  //         tokens.push({type: literalType, value: litMatch[1]});
-  //         templateReducer = templateReducer.substring(litMatch[1].length);
-  //       } else {
-  //         tokens.push({type: literalType, value: litMatch[2]});
-  //         templateReducer = templateReducer.substring(litMatch[2].length);
-  //       }
-  //     }
-  //   }
-
-  //   const sldLabel = [];
-
-  //   for (const token of tokens) {
-  //     if (token.type === placeholderType) {
-  //       sldLabel.push({
-  //         'ogc:PropertyName': [{
-  //           '#text': token.value
-  //         }]
-  //       });
-  //     } else {
-  //       if (token.value.includes(' ')) {
-  //         sldLabel.push({
-  //           'ogc:Literal': [{
-  //             '#cdata': [{
-  //               '#text': token.value
-  //             }]
-  //           }]
-  //         });
-  //       } else {
-  //         sldLabel.push({
-  //           'ogc:Literal': [{
-  //             '#text': token.value
-  //           }]
-  //         });
-  //       }
-  //     }
-  //   }
-
-  //   return sldLabel;
-  // };
-
   /**
    * Get the Label from a TextSymbolizer
+   *
+   * @param template The Expression<string> representing the label
    */
   getSldLabelFromTextSymbolizer = (template: Expression<string>): any => {
     // TODO: parse GeoStylerFunction
@@ -1960,10 +1893,10 @@ export class SldStyleParser implements StyleParser<string> {
   };
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style LineSymbolizer.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style LineSymbolizer.
    *
-   * @param lineSymbolizer A GeoStyler-Style LineSymbolizer.
-   * @return The object representation of a SLD LineSymbolizer (readable with xml2js)
+   * @param lineSymbolizer A geostyler-style LineSymbolizer.
+   * @return The object representation of a SLD LineSymbolizer (readable with fast-xml-parser)
    */
   getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: GsLineSymbolizer): any {
     const CssParameter = this.getTagName('CssParameter');
@@ -2081,10 +2014,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style FillSymbolizer.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style FillSymbolizer.
    *
-   * @param fillSymbolizer A GeoStyler-Style FillSymbolizer.
-   * @return The object representation of a SLD PolygonSymbolizer (readable with xml2js)
+   * @param fillSymbolizer A geostyler-style FillSymbolizer.
+   * @return The object representation of a SLD PolygonSymbolizer (readable with fast-xml-parser)
    */
   getSldPolygonSymbolizerFromFillSymbolizer(fillSymbolizer: GsFillSymbolizer): any {
     const CssParameter = this.getTagName('CssParameter');
@@ -2193,10 +2126,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style RasterSymbolizer.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style RasterSymbolizer.
    *
-   * @param rasterSymbolizer A GeoStyler-Style RasterSymbolizer.
-   * @return The object representation of a SLD RasterSymbolizer (readable with xml2js)
+   * @param rasterSymbolizer A geostyler-style RasterSymbolizer.
+   * @return The object representation of a SLD RasterSymbolizer (readable with fast-xml-parser)
    */
   getSldRasterSymbolizerFromRasterSymbolizer(rasterSymbolizer: GsRasterSymbolizer): any {
     const sldRasterSymbolizer: any = [{}];
@@ -2240,10 +2173,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ColorMap.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style ColorMap.
    *
-   * @param colorMap A GeoStyler-Style ColorMap.
-   * @return The object representation of a SLD ColorMap (readable with xml2js)
+   * @param colorMap A geostyler-style ColorMap.
+   * @return The object representation of a SLD ColorMap (readable with fast-xml-parser)
    */
   getSldColorMapFromColorMap(colorMap: ColorMap): any {
     const sldColorMap: any[] = [];
@@ -2290,10 +2223,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ChannelSelection.
+   * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style ChannelSelection.
    *
-   * @param channelSelection A GeoStyler-Style ChannelSelection.
-   * @return The object representation of a SLD ChannelSelection (readable with xml2js)
+   * @param channelSelection A geostyler-style ChannelSelection.
+   * @return The object representation of a SLD ChannelSelection (readable with fast-xml-parser)
    */
   getSldChannelSelectionFromChannelSelection(channelSelection: ChannelSelection): any {
     const propertyMap = {
@@ -2334,10 +2267,10 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-     * Get the SLD Object (readable with xml2js) from an GeoStyler-Style ContrastEnhancement.
+     * Get the SLD Object (readable with fast-xml-parser) from an geostyler-style ContrastEnhancement.
      *
-     * @param contrastEnhancement A GeoStyler-Style ContrastEnhancement.
-     * @return The object representation of a SLD ContrastEnhancement (readable with xml2js)
+     * @param contrastEnhancement A geostyler-style ContrastEnhancement.
+     * @return The object representation of a SLD ContrastEnhancement (readable with fast-xml-parser)
      */
   getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement: ContrastEnhancement): any {
     const sldContrastEnhancement: any = [];
