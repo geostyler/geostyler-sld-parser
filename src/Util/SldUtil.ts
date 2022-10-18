@@ -93,7 +93,7 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
     if (key.startsWith('$') && sldVersion) {
       return getParameterValue(target, key.substring(1), sldVersion);
     }
-    // handle queries with specfied indexes
+    // handle queries with specified indexes
     if(key.endsWith(']')) {
       index = Number(key.split('[')[1].split(']')[0]);
       key = key.split('[')[0];
