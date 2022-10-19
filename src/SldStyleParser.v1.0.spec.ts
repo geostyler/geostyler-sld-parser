@@ -40,6 +40,8 @@ import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_ele
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
 import unsupported_properties from '../data/styles/unsupported_properties';
+import function_markSymbolizer from '../data/styles/function_markSymbolizer';
+import function_filter from '../data/styles/function_filter';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -248,6 +250,20 @@ describe('SldStyleParser implements StyleParser', () => {
       const readResult = await styleParser.readStyle(sld);
       expect(readResult.output).toBeDefined();
       expect(readResult.output).toEqual(empty_filter);
+    });
+
+    it('can read a SLD with a simple function', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/function_markSymbolizer.sld', 'utf8');
+      const readResult = await styleParser.readStyle(sld);
+      expect(readResult.output).toBeDefined();
+      expect(readResult.output).toEqual(function_markSymbolizer);
+    });
+
+    it('can read a SLD with a function filter using property', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/function_filter.sld', 'utf8');
+      const readResult = await styleParser.readStyle(sld);
+      expect(readResult.output).toBeDefined();
+      expect(readResult.output).toEqual(function_filter);
     });
 
     describe('#getFilterFromOperatorAndComparison', () => {
@@ -847,6 +863,41 @@ describe('SldStyleParser implements StyleParser', () => {
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_styledLabel_literalPlaceholder);
     });
+
+    it('can write a SLD with a simple function', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(function_markSymbolizer);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(function_markSymbolizer);
+    });
+
+    it('can write a SLD with a function filter using property', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(function_filter);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(function_filter);
+    });
+
     it('creates the correct order in a text symbolizer', async () => {
       const styleParserOrder = new SldStyleParser({
         builderOptions: {

@@ -15,6 +15,8 @@ import {
   IconSymbolizer as GsIconSymbolizer,
   isCombinationFilter,
   isComparisonFilter,
+  isGeoStylerFunction,
+  isGeoStylerNumberFunction,
   isNegationFilter,
   LineSymbolizer as GsLineSymbolizer,
   MarkSymbolizer as GsMarkSymbolizer,
@@ -42,12 +44,14 @@ import {
 } from 'fast-xml-parser';
 
 import {
+  geoStylerFunctionToSldFunction,
   get,
   getAttribute,
   getChildren,
   getParameterValue,
   isSymbolizer,
-  keysByValue
+  keysByValue,
+  sldFunctionToGeoStylerFunction
 } from './Util/SldUtil';
 
 export type SldVersion = '1.0.0' | '1.1.0';
@@ -458,6 +462,12 @@ export class SldStyleParser implements StyleParser<string> {
   getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): GsFilter {
     let filter: GsFilter;
 
+    if (sldOperatorName === 'Function') {
+      const functionName = sldFilter[0][':@']['@_name'];
+      const tempFunctionName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
+      sldOperatorName = `PropertyIs${tempFunctionName}`;
+    }
+
     // we have to first check for PropertyIsBetween,
     // since it is also a comparisonOperator. But it
     // needs to be treated differently.
@@ -470,14 +480,15 @@ export class SldStyleParser implements StyleParser<string> {
       filter = ['<=x<=', propertyName, lower, upper];
     } else if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
       const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
-      const propertyIsFilter = !!sldFilter.Function;
+      const propertyIsFilter = !!sldFilter?.[0]?.Function;
       const propertyOrFilter = propertyIsFilter
-        ? this.getFunctionFilterFromSldFilter(sldFilter.Function)
+        ? sldFunctionToGeoStylerFunction([sldFilter?.[0].Function[0]])
         : get(sldFilter[sldOperatorName], 'PropertyName.#text');
 
       let value = null;
       if (sldOperatorName !== 'PropertyIsNull') {
-        value = get(sldFilter[sldOperatorName], 'Literal.#text');
+        const obj = propertyIsFilter ? sldFilter?.[0].Function : sldFilter[sldOperatorName];
+        value = get(obj, 'Literal.#text');
       }
 
       filter = [
@@ -865,9 +876,9 @@ export class SldStyleParser implements StyleParser<string> {
     const strokeEl = get(sldSymbolizer, 'Graphic.Mark.Stroke');
     const fillEl = get(sldSymbolizer, 'Graphic.Mark.Fill');
 
-    const opacity: string = get(sldSymbolizer, 'Graphic.Opacity.#text');
-    const size: string = get(sldSymbolizer, 'Graphic.Size.#text');
-    const rotation: string = get(sldSymbolizer, 'Graphic.Rotation.#text');
+    const opacity = get(sldSymbolizer, 'Graphic.Opacity.#text');
+    const size = get(sldSymbolizer, 'Graphic.Size.#text');
+    const rotation = get(sldSymbolizer, 'Graphic.Rotation.#text');
     const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
     const color = getParameterValue(fillEl, 'fill', this.sldVersion);
 
@@ -889,7 +900,8 @@ export class SldStyleParser implements StyleParser<string> {
       markSymbolizer.rotate = Number(rotation);
     }
     if (size) {
-      markSymbolizer.radius = Number(size) / 2;
+      // TODO: maybe add evaluate function util method
+      markSymbolizer.radius = isGeoStylerNumberFunction(size) ? size : Number(size) / 2;
     }
 
     switch (wellKnownName) {
@@ -1283,10 +1295,41 @@ export class SldStyleParser implements StyleParser<string> {
     const propertyKey = 'PropertyName';
 
     // TODO: parse GeoStylerFunction
-    // if (Array.isArray(key) && key[0].startsWith('FN_')) {
-    //   key = this.getSldFunctionFilterFromFunctionFilter(key);
-    //   propertyKey = 'Function';
-    // }
+    if (isGeoStylerFunction(key) || isGeoStylerFunction(value)) {
+      const tempOperator = sldOperator.replace('PropertyIs', '');
+      const sldFunctionOperator = tempOperator.charAt(0).toLowerCase() + tempOperator.slice(1);
+      const keyResult = isGeoStylerFunction(key) ? geoStylerFunctionToSldFunction(key) : key;
+      const valueResult = isGeoStylerFunction(value) ? geoStylerFunctionToSldFunction(value) : value;
+
+      const functionChildren: any = [];
+
+      if (isGeoStylerFunction(key)) {
+        functionChildren.unshift(keyResult?.[0]);
+      } else {
+        functionChildren.unshift({
+          Literal: [{
+            '#text': keyResult
+          }]
+        });
+      }
+
+      if (isGeoStylerFunction(value)) {
+        functionChildren.push(valueResult?.[0]);
+      } else {
+        functionChildren.push({
+          Literal: [{
+            '#text': valueResult
+          }]
+        });
+      }
+
+      return [{
+        'Function': functionChildren,
+        ':@': {
+          '@_name': sldFunctionOperator
+        }
+      }];
+    }
 
     if (sldOperator === 'PropertyIsNull') {
       // empty, selfclosing Literals are not valid in a propertyIsNull filter
@@ -1349,6 +1392,7 @@ export class SldStyleParser implements StyleParser<string> {
         }]
       });
     }
+
 
     return sldComparisonFilter;
   }
@@ -1554,12 +1598,19 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (typeof markSymbolizer.radius === 'number') {
-      graphic.push({
-        [Size]: [{
-          '#text': (markSymbolizer.radius * 2).toString()
-        }]
-      });
+    if (markSymbolizer.radius !== undefined) {
+      if (isGeoStylerFunction(markSymbolizer.radius)) {
+        graphic.push({
+          // TODO: Double check if we have to multiply this by 2
+          [Size]: geoStylerFunctionToSldFunction(markSymbolizer.radius)
+        });
+      } else {
+        graphic.push({
+          [Size]: [{
+            '#text': (markSymbolizer.radius * 2).toString()
+          }]
+        });
+      }
     }
 
     if (markSymbolizer.rotate) {
