@@ -297,17 +297,17 @@ export class SldStyleParser implements StyleParser<string> {
    */
   readStyle(sldString: string): Promise<ReadStyleResult> {
     return new Promise<ReadStyleResult>((resolve) => {
-      try {
+      // try {
         const sldObject = this.parser.parse(sldString);
         const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(sldObject);
         resolve({
           output: geoStylerStyle
         });
-      } catch (error) {
-        resolve({
-          errors: [error]
-        });
-      }
+      // } catch (error) {
+      //   resolve({
+      //     errors: [error]
+      //   });
+      // }
     });
   }
 
@@ -572,9 +572,6 @@ export class SldStyleParser implements StyleParser<string> {
       kind: 'Line'
     };
     const strokeEl = get(sldSymbolizer, 'Stroke');
-    if (strokeEl.length < 1) {
-      throw new Error('LineSymbolizer cannot be parsed. No Stroke detected');
-    }
     const color = getParameterValue(strokeEl, 'stroke', this.sldVersion);
     const width = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
     const opacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
@@ -687,10 +684,10 @@ export class SldStyleParser implements StyleParser<string> {
       textSymbolizer.font = [fontFamily];
     }
     if (fontStyle) {
-      textSymbolizer.fontStyle = fontStyle as 'normal' | 'italic' | 'oblique' | undefined;
+      textSymbolizer.fontStyle = fontStyle.toLowerCase() as 'normal' | 'italic' | 'oblique' | undefined;
     }
     if (fontWeight) {
-      textSymbolizer.fontWeight = fontWeight as 'normal' | 'bold' | undefined;
+      textSymbolizer.fontWeight = fontWeight.toLowerCase() as 'normal' | 'bold' | undefined;
     }
     if (fontSize) {
       textSymbolizer.size = numberExpression(fontSize);
@@ -794,11 +791,6 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (fillOpacity) {
       fillSymbolizer.fillOpacity = numberExpression(fillOpacity);
-
-    } else {
-      if (!fillSymbolizer.color) {
-        fillSymbolizer.opacity = 0;
-      }
     }
 
     if (outlineColor) {

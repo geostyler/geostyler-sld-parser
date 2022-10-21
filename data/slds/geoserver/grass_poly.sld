@@ -28,13 +28,11 @@
                 </Graphic>
               </GraphicFill>
             </Fill>
-
             <Stroke>
               <CssParameter name="stroke">#FF0000</CssParameter>
               <CssParameter name="stroke-width">1</CssParameter>
             </Stroke>
           </PolygonSymbolizer>
-
         </Rule>
       </FeatureTypeStyle>
     </UserStyle>

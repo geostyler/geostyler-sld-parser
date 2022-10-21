@@ -13,12 +13,8 @@ const style: Style = {
       symbolizers: [
         {
           kind: 'Fill',
-          graphicFill: {
-            kind: 'Mark',
-            wellKnownName: 'shape://slash',
-            radius: 8,
-            strokeColor: '0xAAAAAA'
-          }
+          color: '#4DFF4D',
+          fillOpacity: 0.7
         }
       ]
     },
@@ -33,12 +29,8 @@ const style: Style = {
       symbolizers: [
         {
           kind: 'Fill',
-          graphicFill: {
-            kind: 'Mark',
-            wellKnownName: 'shape://slash',
-            radius: 4,
-            strokeColor: '0xAAAAAA'
-          }
+          color: '#FF4D4D',
+          fillOpacity: 0.7
         }
       ]
     },
@@ -52,12 +44,8 @@ const style: Style = {
       symbolizers: [
         {
           kind: 'Fill',
-          graphicFill: {
-            kind: 'Mark',
-            wellKnownName: 'shape://slash',
-            radius: 2,
-            strokeColor: '0xAAAAAA'
-          }
+          color: '#4D4DFF',
+          fillOpacity: 0.7
         }
       ]
     },
@@ -65,15 +53,14 @@ const style: Style = {
       name: 'Boundary',
       symbolizers: [
         {
-          kind: 'Line'
+          kind: 'Line',
+          width: 0.2
         },
         {
           kind: 'Text',
           label: '{{STATE_ABBR}}',
           color: '#000000',
           opacity: 1,
-          haloWidth: 2,
-          haloColor: '0xFFFFFF',
           font: [
             'Times New Roman'
           ],
