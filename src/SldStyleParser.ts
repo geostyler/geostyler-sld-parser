@@ -342,8 +342,11 @@ export class SldStyleParser implements StyleParser<string> {
             const filter: GsFilter | undefined = this.getFilterFromRule(sldRule);
             const scaleDenominator: ScaleDenominator | undefined = this.getScaleDenominatorFromRule(sldRule);
             const symbolizers: Symbolizer[] = this.getSymbolizersFromRule(sldRule);
+            const ruleTitle = get(sldRule, 'Title.#text');
             const ruleName = get(sldRule, 'Name.#text');
-            const name = ruleName !== undefined ? ruleName : '';
+            const name = ruleTitle !== undefined
+              ? ruleTitle
+              : (ruleName !== undefined ? ruleName : '');
             const rule: GsRule = <GsRule> {
               name
             };
