@@ -11,10 +11,11 @@ import {
   Expression,
   FillSymbolizer as GsFillSymbolizer,
   Filter as GsFilter,
-  GeoStylerFunction,
   IconSymbolizer as GsIconSymbolizer,
   isCombinationFilter,
   isComparisonFilter,
+  isGeoStylerFunction,
+  isGeoStylerNumberFunction,
   isNegationFilter,
   LineSymbolizer as GsLineSymbolizer,
   MarkSymbolizer as GsMarkSymbolizer,
@@ -42,12 +43,15 @@ import {
 } from 'fast-xml-parser';
 
 import {
+  geoStylerFunctionToSldFunction,
   get,
   getAttribute,
   getChildren,
   getParameterValue,
   isSymbolizer,
-  keysByValue
+  keysByValue,
+  numberExpression,
+  sldFunctionToGeoStylerFunction
 } from './Util/SldUtil';
 
 export type SldVersion = '1.0.0' | '1.1.0';
@@ -458,6 +462,12 @@ export class SldStyleParser implements StyleParser<string> {
   getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): GsFilter {
     let filter: GsFilter;
 
+    if (sldOperatorName === 'Function') {
+      const functionName = sldFilter[0][':@']['@_name'];
+      const tempFunctionName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
+      sldOperatorName = `PropertyIs${tempFunctionName}`;
+    }
+
     // we have to first check for PropertyIsBetween,
     // since it is also a comparisonOperator. But it
     // needs to be treated differently.
@@ -470,14 +480,15 @@ export class SldStyleParser implements StyleParser<string> {
       filter = ['<=x<=', propertyName, lower, upper];
     } else if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
       const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
-      const propertyIsFilter = !!sldFilter.Function;
+      const propertyIsFilter = !!sldFilter?.[0]?.Function;
       const propertyOrFilter = propertyIsFilter
-        ? this.getFunctionFilterFromSldFilter(sldFilter.Function)
+        ? sldFunctionToGeoStylerFunction([sldFilter?.[0].Function[0]])
         : get(sldFilter[sldOperatorName], 'PropertyName.#text');
 
       let value = null;
       if (sldOperatorName !== 'PropertyIsNull') {
-        value = get(sldFilter[sldOperatorName], 'Literal.#text');
+        const obj = propertyIsFilter ? sldFilter?.[0].Function : sldFilter[sldOperatorName];
+        value = get(obj, 'Literal.#text');
       }
 
       filter = [
@@ -512,21 +523,6 @@ export class SldStyleParser implements StyleParser<string> {
       throw new Error('No Filter detected');
     }
     return filter;
-  }
-
-  /**
-   * Creates a geostyler-style FunctionFilter from a SLD Function.
-   *
-   * @param sldFilter The SLD Filter
-   * @return The geostyler-style FunctionFilter
-   */
-  getFunctionFilterFromSldFilter(sldFilter: any): GeoStylerFunction | undefined {
-    // TODO: Implement handling of GeoStylerFunction
-    const functionName = get(sldFilter, 'Function[0].$.name');
-    switch (functionName) {
-      default:
-        return undefined;
-    }
   }
 
   /**
@@ -583,10 +579,10 @@ export class SldStyleParser implements StyleParser<string> {
       lineSymbolizer.color = color;
     }
     if (width !== undefined) {
-      lineSymbolizer.width = parseFloat(width);
+      lineSymbolizer.width = numberExpression(width);
     }
     if (opacity !== undefined) {
-      lineSymbolizer.opacity = parseFloat(opacity);
+      lineSymbolizer.opacity = numberExpression(opacity);
     }
     if (lineJoin) {
       // geostyler-style and ol use 'miter' whereas sld uses 'mitre'
@@ -601,11 +597,11 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (dashArray) {
-      const dashStringAsArray = dashArray.split(' ').map(Number);
+      const dashStringAsArray = dashArray.split(' ').map(numberExpression);
       lineSymbolizer.dasharray = dashStringAsArray;
     }
     if (dashOffset) {
-      lineSymbolizer.dashOffset = Number(dashOffset);
+      lineSymbolizer.dashOffset = numberExpression(dashOffset);
     }
 
     const graphicStroke = get(strokeEl, 'GraphicStroke');
@@ -620,7 +616,7 @@ export class SldStyleParser implements StyleParser<string> {
 
     const perpendicularOffset = get(sldSymbolizer, 'PerpendicularOffset.#text');
     if (perpendicularOffset !== undefined) {
-      lineSymbolizer.perpendicularOffset = Number(perpendicularOffset);
+      lineSymbolizer.perpendicularOffset = numberExpression(perpendicularOffset);
     }
 
     return lineSymbolizer;
@@ -657,11 +653,11 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     textSymbolizer.color = color ? color : '#000000';
-    textSymbolizer.opacity = opacity ? Number(opacity) : 1;
+    textSymbolizer.opacity = opacity ? numberExpression(opacity) : 1;
 
     const haloRadius = get(sldSymbolizer, 'Halo.Radius.#text');
     if (haloRadius) {
-      textSymbolizer.haloWidth = Number(haloRadius);
+      textSymbolizer.haloWidth = numberExpression(haloRadius);
     }
     if (haloColor) {
       textSymbolizer.haloColor = haloColor;
@@ -677,7 +673,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
     const rotation = get(sldSymbolizer, 'LabelPlacement.PointPlacement.Rotation.#text');
     if (rotation) {
-      textSymbolizer.rotate = Number(rotation);
+      textSymbolizer.rotate = numberExpression(rotation);
     }
     if (fontFamily) {
       textSymbolizer.font = [fontFamily];
@@ -689,7 +685,7 @@ export class SldStyleParser implements StyleParser<string> {
       textSymbolizer.fontWeight = fontWeight as 'normal' | 'bold' | undefined;
     }
     if (fontSize) {
-      textSymbolizer.size = Number(fontSize);
+      textSymbolizer.size = numberExpression(fontSize);
     }
     return textSymbolizer;
   }
@@ -789,7 +785,7 @@ export class SldStyleParser implements StyleParser<string> {
       fillSymbolizer.color = color;
     }
     if (fillOpacity) {
-      fillSymbolizer.fillOpacity = Number(fillOpacity);
+      fillSymbolizer.fillOpacity = numberExpression(fillOpacity);
 
     } else {
       if (!fillSymbolizer.color) {
@@ -801,13 +797,13 @@ export class SldStyleParser implements StyleParser<string> {
       fillSymbolizer.outlineColor = outlineColor;
     }
     if (outlineWidth) {
-      fillSymbolizer.outlineWidth = Number(outlineWidth);
+      fillSymbolizer.outlineWidth = numberExpression(outlineWidth);
     }
     if (outlineOpacity) {
-      fillSymbolizer.outlineOpacity = Number(outlineOpacity);
+      fillSymbolizer.outlineOpacity = numberExpression(outlineOpacity);
     }
     if (outlineDashArray) {
-      fillSymbolizer.outlineDasharray = outlineDashArray.split(' ').map(Number);
+      fillSymbolizer.outlineDasharray = outlineDashArray.split(' ').map(numberExpression);
     }
     // TODO: seems like this is missing in the geostyer-stlye
     // if (outlineDashOffset) {
@@ -828,7 +824,7 @@ export class SldStyleParser implements StyleParser<string> {
       // parse Opacity
     let opacity = get(sldSymbolizer, 'Opacity.#text');
     if (opacity) {
-      opacity = parseFloat(opacity);
+      opacity = numberExpression(opacity);
       rasterSymbolizer.opacity = opacity;
     }
     // parse ColorMap
@@ -865,9 +861,9 @@ export class SldStyleParser implements StyleParser<string> {
     const strokeEl = get(sldSymbolizer, 'Graphic.Mark.Stroke');
     const fillEl = get(sldSymbolizer, 'Graphic.Mark.Fill');
 
-    const opacity: string = get(sldSymbolizer, 'Graphic.Opacity.#text');
-    const size: string = get(sldSymbolizer, 'Graphic.Size.#text');
-    const rotation: string = get(sldSymbolizer, 'Graphic.Rotation.#text');
+    const opacity = get(sldSymbolizer, 'Graphic.Opacity.#text');
+    const size = get(sldSymbolizer, 'Graphic.Size.#text');
+    const rotation = get(sldSymbolizer, 'Graphic.Rotation.#text');
     const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
     const color = getParameterValue(fillEl, 'fill', this.sldVersion);
 
@@ -877,19 +873,20 @@ export class SldStyleParser implements StyleParser<string> {
     };
 
     if (opacity) {
-      markSymbolizer.opacity = Number(opacity);
+      markSymbolizer.opacity = numberExpression(opacity);
     }
     if (fillOpacity) {
-      markSymbolizer.fillOpacity = Number(fillOpacity);
+      markSymbolizer.fillOpacity = numberExpression(fillOpacity);
     }
     if (color) {
       markSymbolizer.color = color;
     }
     if (rotation) {
-      markSymbolizer.rotate = Number(rotation);
+      markSymbolizer.rotate = numberExpression(rotation) ;
     }
     if (size) {
-      markSymbolizer.radius = Number(size) / 2;
+      // edge case where the value has to be divided by 2 which has to be considered in the function
+      markSymbolizer.radius = isGeoStylerNumberFunction(size) ? size : Number(size) / 2;
     }
 
     switch (wellKnownName) {
@@ -924,11 +921,11 @@ export class SldStyleParser implements StyleParser<string> {
     }
     const strokeWidth = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
     if (strokeWidth) {
-      markSymbolizer.strokeWidth = Number(strokeWidth);
+      markSymbolizer.strokeWidth = numberExpression(strokeWidth);
     }
     const strokeOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
     if (strokeOpacity) {
-      markSymbolizer.strokeOpacity = Number(strokeOpacity);
+      markSymbolizer.strokeOpacity = numberExpression(strokeOpacity);
     }
 
     return markSymbolizer;
@@ -950,13 +947,13 @@ export class SldStyleParser implements StyleParser<string> {
     const size: string = get(sldSymbolizer, 'Graphic.Size.#text');
     const rotation: string = get(sldSymbolizer, 'Graphic.Rotation.#text');
     if (opacity) {
-      iconSymbolizer.opacity = Number(opacity);
+      iconSymbolizer.opacity = numberExpression(opacity);
     }
     if (size) {
-      iconSymbolizer.size = Number(size);
+      iconSymbolizer.size = numberExpression(size);
     }
     if (rotation) {
-      iconSymbolizer.rotate = Number(rotation);
+      iconSymbolizer.rotate = numberExpression(rotation);
     }
     return iconSymbolizer;
   }
@@ -988,12 +985,12 @@ export class SldStyleParser implements StyleParser<string> {
         }
         let quantity = getAttribute(cm, 'quantity');
         if (quantity) {
-          quantity = parseFloat(quantity);
+          quantity = numberExpression(quantity);
         }
         const label = getAttribute(cm, 'label');
         let opacity = getAttribute(cm, 'opacity');
         if (opacity) {
-          opacity = parseFloat(opacity);
+          opacity = numberExpression(opacity);
         }
         return {
           color,
@@ -1030,7 +1027,7 @@ export class SldStyleParser implements StyleParser<string> {
     // parse gammavalue
     let gammaValue = get(sldContrastEnhancement, 'GammaValue.#text');
     if (gammaValue) {
-      gammaValue = Number(gammaValue);
+      gammaValue = numberExpression(gammaValue);
     }
     contrastEnhancement.gammaValue = gammaValue;
 
@@ -1282,11 +1279,41 @@ export class SldStyleParser implements StyleParser<string> {
 
     const propertyKey = 'PropertyName';
 
-    // TODO: parse GeoStylerFunction
-    // if (Array.isArray(key) && key[0].startsWith('FN_')) {
-    //   key = this.getSldFunctionFilterFromFunctionFilter(key);
-    //   propertyKey = 'Function';
-    // }
+    if (isGeoStylerFunction(key) || isGeoStylerFunction(value)) {
+      const tempOperator = sldOperator.replace('PropertyIs', '');
+      const sldFunctionOperator = tempOperator.charAt(0).toLowerCase() + tempOperator.slice(1);
+      const keyResult = isGeoStylerFunction(key) ? geoStylerFunctionToSldFunction(key) : key;
+      const valueResult = isGeoStylerFunction(value) ? geoStylerFunctionToSldFunction(value) : value;
+
+      const functionChildren: any = [];
+
+      if (isGeoStylerFunction(key)) {
+        functionChildren.unshift(keyResult?.[0]);
+      } else {
+        functionChildren.unshift({
+          Literal: [{
+            '#text': keyResult
+          }]
+        });
+      }
+
+      if (isGeoStylerFunction(value)) {
+        functionChildren.push(valueResult?.[0]);
+      } else {
+        functionChildren.push({
+          Literal: [{
+            '#text': valueResult
+          }]
+        });
+      }
+
+      return [{
+        'Function': functionChildren,
+        ':@': {
+          '@_name': sldFunctionOperator
+        }
+      }];
+    }
 
     if (sldOperator === 'PropertyIsNull') {
       // empty, selfclosing Literals are not valid in a propertyIsNull filter
@@ -1349,6 +1376,7 @@ export class SldStyleParser implements StyleParser<string> {
         }]
       });
     }
+
 
     return sldComparisonFilter;
   }
@@ -1460,35 +1488,44 @@ export class SldStyleParser implements StyleParser<string> {
     if (markSymbolizer.color || markSymbolizer.fillOpacity) {
       const fillCssParamaters = [];
       if (markSymbolizer.color) {
-        // TODO: parse GeoStylerFunctions
-        // const expr = this.getSldExpressionFromExpression(markSymbolizer.color);
-        // if (typeof expr !== 'object') {
-        //   cssParameters.push({
-        //     _: expr,
-        //     $: {
-        //       name: 'fill'
-        //     }
-        //   });
-        // } else {
-        fillCssParamaters.push({
-          [CssParameter]: [{
-            '#text': markSymbolizer.color,
-          }],
-          ':@': {
-            '@_name': 'fill'
-          }
-        });
-        // }
+        if (isGeoStylerFunction(markSymbolizer.color)) {
+          const children = geoStylerFunctionToSldFunction(markSymbolizer.color);
+          fillCssParamaters.push({
+            [CssParameter]: children,
+            ':@': {
+              '@_name': 'fill'
+            }
+          });
+        } else {
+          fillCssParamaters.push({
+            [CssParameter]: [{
+              '#text': markSymbolizer.color,
+            }],
+            ':@': {
+              '@_name': 'fill'
+            }
+          });
+        }
       }
       if (markSymbolizer.fillOpacity) {
-        fillCssParamaters.push({
-          [CssParameter]: [{
-            '#text': markSymbolizer.fillOpacity,
-          }],
-          ':@': {
-            '@_name': 'fill-opacity'
-          }
-        });
+        if (isGeoStylerFunction(markSymbolizer.fillOpacity)) {
+          const children = geoStylerFunctionToSldFunction(markSymbolizer.fillOpacity);
+          fillCssParamaters.push({
+            [CssParameter]: children,
+            ':@': {
+              '@_name': 'fill-opacity'
+            }
+          });
+        } else {
+          fillCssParamaters.push({
+            [CssParameter]: [{
+              '#text': markSymbolizer.fillOpacity,
+            }],
+            ':@': {
+              '@_name': 'fill-opacity'
+            }
+          });
+        }
       }
       mark.push({
         [Fill]: fillCssParamaters
@@ -1498,44 +1535,64 @@ export class SldStyleParser implements StyleParser<string> {
     if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity) {
       const strokeCssParameters = [];
       if (markSymbolizer.strokeColor) {
-        // TODO: pars GeoStylerFunctions
-        // if (isExpression(markSymbolizer.strokeColor)) {
-        //   strokeCssParameters.push({
-        //     ...this.getSldExpressionFromExpression(markSymbolizer.strokeColor),
-        //     '$': {
-        //       'name': 'stroke'
-        //     }
-        //   });
-        // } else {
-        strokeCssParameters.push({
-          [CssParameter]: [{
-            '#text': markSymbolizer.strokeColor,
-          }],
-          ':@': {
-            '@_name': 'stroke'
-          }
-        });
-        // }
+        if (isGeoStylerFunction(markSymbolizer.strokeColor)) {
+          const children = geoStylerFunctionToSldFunction(markSymbolizer.strokeColor);
+          strokeCssParameters.push({
+            [CssParameter]: children,
+            ':@': {
+              '@_name': 'stroke'
+            }
+          });
+        } else {
+          strokeCssParameters.push({
+            [CssParameter]: [{
+              '#text': markSymbolizer.strokeColor,
+            }],
+            ':@': {
+              '@_name': 'stroke'
+            }
+          });
+        }
       }
       if (markSymbolizer.strokeWidth) {
-        strokeCssParameters.push({
-          [CssParameter]: [{
-            '#text': markSymbolizer.strokeWidth.toString(),
-          }],
-          ':@': {
-            '@_name': 'stroke-width'
-          }
-        });
+        if (isGeoStylerFunction(markSymbolizer.strokeWidth)) {
+          const children = geoStylerFunctionToSldFunction(markSymbolizer.strokeWidth);
+          strokeCssParameters.push({
+            [CssParameter]: children,
+            ':@': {
+              '@_name': 'stroke-width'
+            }
+          });
+        } else {
+          strokeCssParameters.push({
+            [CssParameter]: [{
+              '#text': markSymbolizer.strokeWidth,
+            }],
+            ':@': {
+              '@_name': 'stroke-width'
+            }
+          });
+        }
       }
       if (markSymbolizer.strokeOpacity) {
-        strokeCssParameters.push({
-          [CssParameter]: [{
-            '#text': markSymbolizer.strokeOpacity.toString(),
-          }],
-          ':@': {
-            '@_name': 'stroke-opacity'
-          }
-        });
+        if (isGeoStylerFunction(markSymbolizer.strokeOpacity)) {
+          const children = geoStylerFunctionToSldFunction(markSymbolizer.strokeOpacity);
+          strokeCssParameters.push({
+            [CssParameter]: children,
+            ':@': {
+              '@_name': 'stroke-opacity'
+            }
+          });
+        } else {
+          strokeCssParameters.push({
+            [CssParameter]: [{
+              '#text': markSymbolizer.strokeOpacity,
+            }],
+            ':@': {
+              '@_name': 'stroke-opacity'
+            }
+          });
+        }
       }
       mark.push({
         [Stroke]: strokeCssParameters
@@ -1554,12 +1611,19 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (typeof markSymbolizer.radius === 'number') {
-      graphic.push({
-        [Size]: [{
-          '#text': (markSymbolizer.radius * 2).toString()
-        }]
-      });
+    if (markSymbolizer.radius !== undefined) {
+      if (isGeoStylerFunction(markSymbolizer.radius)) {
+        graphic.push({
+          // TODO: Double check if we have to multiply this by 2
+          [Size]: geoStylerFunctionToSldFunction(markSymbolizer.radius)
+        });
+      } else {
+        graphic.push({
+          [Size]: [{
+            '#text': (markSymbolizer.radius * 2).toString()
+          }]
+        });
+      }
     }
 
     if (markSymbolizer.rotate) {
@@ -1681,16 +1745,26 @@ export class SldStyleParser implements StyleParser<string> {
     const fontCssParameters: any[] = Object.keys(textSymbolizer)
       .filter((property: any) => property !== 'kind' && fontPropertyMap[property])
       .map((property: any) => {
-        return {
-          [CssParameter]: [{
-            '#text': property === 'font'
-              ? textSymbolizer[property][0]
-              : textSymbolizer[property],
-          }],
-          ':@': {
-            '@_name': fontPropertyMap[property]
-          }
-        };
+        if (isGeoStylerFunction(textSymbolizer[property])) {
+          const children = geoStylerFunctionToSldFunction(textSymbolizer[property]);
+          return {
+            [CssParameter]: children,
+            ':@': {
+              '@_name': fontPropertyMap[property]
+            }
+          };
+        } else {
+          return {
+            [CssParameter]: [{
+              '#text': property === 'font'
+                ? textSymbolizer[property][0]
+                : textSymbolizer[property],
+            }],
+            ':@': {
+              '@_name': fontPropertyMap[property]
+            }
+          };
+        }
       });
 
     if (fontCssParameters.length > 0) {
@@ -1934,25 +2008,25 @@ export class SldStyleParser implements StyleParser<string> {
           value = 'mitre';
         }
 
-        // TODO: parse GeoStylerFunction
-        // const expr = this.getSldExpressionFromExpression(lineSymbolizer[property]);
-        // if (typeof expr !== 'object') {
-        //   return {
-        //     _: value,
-        //     $: {
-        //       name: propertyMap[property]
-        //     }
-        //   };
-        // }
+        if (isGeoStylerFunction(lineSymbolizer[property])) {
+          const children = geoStylerFunctionToSldFunction(lineSymbolizer[property]);
+          return {
+            [CssParameter]: children,
+            ':@': {
+              '@_name': propertyMap[property]
+            }
+          };
+        } else {
+          return {
+            [CssParameter]: [{
+              '#text': lineSymbolizer[property],
+            }],
+            ':@': {
+              '@_name': propertyMap[property]
+            }
+          };
+        }
 
-        return {
-          [CssParameter]: [{
-            '#text': lineSymbolizer[property],
-          }],
-          ':@': {
-            '@_name': propertyMap[property]
-          }
-        };
       });
 
     if (lineSymbolizer?.graphicStroke) {
@@ -2045,25 +2119,24 @@ export class SldStyleParser implements StyleParser<string> {
       .filter((property: any) => fillSymbolizer[property] !== undefined && fillSymbolizer[property] !== null)
       .forEach((property: any) => {
         if (Object.keys(fillPropertyMap).includes(property)) {
-          // TODO: parse GeoStylerFunction
-          // const expr = this.getSldExpressionFromExpression(fillSymbolizer[property]);
-          // if ((typeof expr !== 'object')) {
-          //   fillCssParameters.push({
-          //     _: fillSymbolizer[property],
-          //     $: {
-          //       name: fillPropertyMap[property]
-          //     }
-          //   });
-          // } else {
-          fillCssParameters.push({
-            [CssParameter]: [{
-              '#text': fillSymbolizer[property],
-            }],
-            ':@': {
-              '@_name': fillPropertyMap[property]
-            }
-          });
-          // }
+          if (isGeoStylerFunction(fillSymbolizer[property])) {
+            const children = geoStylerFunctionToSldFunction(fillSymbolizer[property]);
+            fillCssParameters.push({
+              [CssParameter]: children,
+              ':@': {
+                '@_name': fillPropertyMap[property]
+              }
+            });
+          } else {
+            fillCssParameters.push({
+              [CssParameter]: [{
+                '#text': fillSymbolizer[property],
+              }],
+              ':@': {
+                '@_name': fillPropertyMap[property]
+              }
+            });
+          }
         } else if (Object.keys(strokePropertyMap).includes(property)) {
 
           let transformedValue: string = '';
@@ -2085,14 +2158,25 @@ export class SldStyleParser implements StyleParser<string> {
             transformedValue = fillSymbolizer[property];
           }
 
-          strokeCssParameters.push({
-            [CssParameter]: [{
-              '#text': transformedValue,
-            }],
-            ':@': {
-              '@_name': strokePropertyMap[property]
-            }
-          });
+          if (isGeoStylerFunction(fillSymbolizer[property])) {
+            const children = geoStylerFunctionToSldFunction(fillSymbolizer[property]);
+            strokeCssParameters.push({
+              [CssParameter]: children,
+              ':@': {
+                '@_name': strokePropertyMap[property]
+              }
+            });
+          } else {
+            strokeCssParameters.push({
+              [CssParameter]: [{
+                '#text': transformedValue,
+              }],
+              ':@': {
+                '@_name': strokePropertyMap[property]
+              }
+            });
+          }
+
         }
       });
 

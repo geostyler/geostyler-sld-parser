@@ -21,8 +21,6 @@ import point_simpleLabel2 from '../data/styles/point_simpleLabel2';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
-// import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
-// import point_simplepoint_categorizefunctionfilter from '../data/styles/point_simplepoint_categorizefunctionfilter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_floatingPoint from '../data/styles/point_externalgraphic_floatingPoint';
@@ -41,7 +39,9 @@ import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_ele
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
 import unsupported_properties from '../data/styles/unsupported_properties';
-// import { WriteStyleResult } from 'geostyler-style';
+import function_markSymbolizer from '../data/styles/function_markSymbolizer';
+import function_filter from '../data/styles/function_filter';
+import function_nested from '../data/styles/function_nested';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -222,12 +222,6 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_simplepoint_nestedLogicalFilters);
     });
-    // it('can read a SLD 1.1 style with functionfilters', async () => {
-    //   const sld = fs.readFileSync('./data/slds/1.1/point_simplepoint_functionfilter.sld', 'utf8');
-    //   const { output: geoStylerStyle} = await styleParser.readStyle(sld);
-    //   expect(geoStylerStyle).toBeDefined();
-    //   expect(geoStylerStyle).toEqual(point_simplepoint_functionfilter);
-    // });
     it('can read a SLD 1.1 style with multiple symbolizers in one Rule', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/multi_simplelineLabel.sld', 'utf8');
       const { output: geoStylerStyle} = await styleParser.readStyle(sld);
@@ -246,21 +240,33 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_styledLabel_elementOrder);
     });
-    // it('can read a SLD style with a categorize function', () => {
-    //   expect.assertions(2);
-    //   const sld = fs.readFileSync('./data/slds/1.1/point_simplepoint_categorizefunctionfilter.sld', 'utf8');
-    //   return styleParser.readStyle(sld)
-    //     .then((geoStylerStyle: WriteStyleResult) => {
-    //       expect(geoStylerStyle).toBeDefined();
-    //       expect(geoStylerStyle.output).toEqual(point_simplepoint_categorizefunctionfilter);
-    //     });
-    // });
 
     it('can read a SLD with an empty filter', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/empty_filter.sld', 'utf8');
       const readResult = await styleParser.readStyle(sld);
       expect(readResult.output).toBeDefined();
       expect(readResult.output).toEqual(empty_filter);
+    });
+
+    it('can read a SLD with a simple function', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/function_markSymbolizer.sld', 'utf8');
+      const readResult = await styleParser.readStyle(sld);
+      expect(readResult.output).toBeDefined();
+      expect(readResult.output).toEqual(function_markSymbolizer);
+    });
+
+    it('can read a SLD with a function filter using property', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/function_filter.sld', 'utf8');
+      const readResult = await styleParser.readStyle(sld);
+      expect(readResult.output).toBeDefined();
+      expect(readResult.output).toEqual(function_filter);
+    });
+
+    it('can read a SLD with a nested function', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/function_nested.sld', 'utf8');
+      const readResult = await styleParser.readStyle(sld);
+      expect(readResult.output).toBeDefined();
+      expect(readResult.output).toEqual(function_nested);
     });
 
     describe('#getFilterFromOperatorAndComparison', () => {
@@ -590,7 +596,7 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       expect(sldString).toBeDefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString);
+      const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_styledLabel_literalOpenCurlyBraces);
     });
     it('can write a SLD 1.1 style with a styled label containing placeholders and static text', async () => {
@@ -600,6 +606,57 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_styledLabel_literalPlaceholder);
+    });
+
+    it('can write a SLD 1.1 with a simple function filter', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(function_markSymbolizer);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(function_markSymbolizer);
+    });
+
+    it('can write a SLD with a function filter using property', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(function_filter);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(function_filter);
+    });
+
+    it('can write a SLD with a nested function', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(function_nested);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(function_nested);
     });
 
     it('can write a non-prettified SLD 1.1 by setting flag "prettyOutput" to false', async () => {
@@ -656,17 +713,6 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       const sld = fs.readFileSync('./data/slds/1.1/unsupported_properties.sld', 'utf8');
       expect(sldString).toEqual(sld.trimEnd());
     });
-
-    // it('can write a SLD 1.1 style with a categorize function', () => {
-    //   expect.assertions(2);
-    //   const styleParserOrder = new SldStyleParser({ sldVersion: '1.1.0' });
-    //   return styleParserOrder.writeStyle(point_simplepoint_categorizefunctionfilter)
-    //     .then((sldString: WriteStyleResult) => {
-    //       expect(sldString).toBeDefined();
-    //       const sld = fs.readFileSync('./data/slds/1.1/point_simplepoint_categorizefunctionfilter.sld', 'utf8');
-    //       expect(sldString.output).toEqual(sld.trim());
-    //     });
-    // });
 
     describe('#geoStylerStyleToSldObject', () => {
       it('is defined', () => {

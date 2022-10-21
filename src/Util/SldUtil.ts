@@ -1,4 +1,103 @@
+import {
+  Expression,
+  GeoStylerFunction,
+  GeoStylerNumberFunction,
+  isGeoStylerFunction,
+  isGeoStylerNumberFunction,
+  PropertyType
+} from 'geostyler-style';
 import { SldVersion } from '../SldStyleParser';
+
+/**
+ * Cast to Number if it is not a GeoStylerFunction
+ *
+ * @param exp The GeoStylerExpression
+ * @returns The value casted to a number or the GeoStylerNumberFunction
+ */
+export function numberExpression(exp: Expression<PropertyType>): GeoStylerNumberFunction | number {
+  return isGeoStylerNumberFunction(exp) ? exp : Number(exp);
+}
+
+/**
+ * This converts a GeoStylerFunction into a fast-xml-parser representation
+ * of a sld function.
+ *
+ * @param geostylerFunction A GeoStylerFunction
+ * @returns
+ */
+export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunction): any {
+  const {
+    name
+  } = geostylerFunction;
+
+  // TODO: Typing of functions without args should be refactored in geostyler-style
+  if (name === 'pi' || name === 'random') {
+    return [{
+      'Function': [],
+      ':@': {
+        '@_name': name
+      }
+    }];
+  }
+
+  if (name === 'property') {
+    return {
+      'PropertyName': [{
+        '#text': geostylerFunction.args[0]
+      }]
+    };
+  }
+
+  const sldFunctionArgs = geostylerFunction.args.map(arg => {
+    if (isGeoStylerFunction(arg)) {
+      const argAsFunction = geoStylerFunctionToSldFunction(arg);
+      return Array.isArray(argAsFunction) ? argAsFunction[0] : argAsFunction;
+    } else {
+      return {
+        'Literal': [{
+          '#text': arg
+        }]
+      };
+    }
+  });
+
+  const sldFunctionObj = [{
+    'Function': sldFunctionArgs,
+    ':@': {
+      '@_name': name
+    }
+  }];
+
+  return sldFunctionObj;
+}
+
+/**
+ * This converts the fast-xml-parser representation of a sld function into
+ * a GeoStylerFunction.
+ *
+ * @param sldFunction An array of objects as created by the fast-xml-parser
+ * @returns The GeoStylerFunction
+ */
+export function sldFunctionToGeoStylerFunction(sldFunction: any[]): GeoStylerFunction {
+  const name = sldFunction?.[0]?.[':@']?.['@_name'];
+  const args = sldFunction?.[0].Function.map((sldArg: any) => {
+    if (sldArg.Function) {
+      return sldFunctionToGeoStylerFunction([sldArg]);
+    } else if (sldArg.PropertyName) {
+      return {
+        name: 'property',
+        args: [sldArg?.PropertyName?.[0]?.['#text']]
+      };
+    } else {
+      return sldArg?.Literal?.[0]?.['#text'];
+    }
+  });
+
+  return {
+    name,
+    args: args?.length > 0 ? args : undefined
+  };
+}
 
 /**
  * Get all child objects with a given tag name.
@@ -30,7 +129,7 @@ export function getChild(elements: any[], tagName: string): any {
  * @param sldVersion The sldVersion to distinguish if CssParameter or SvgParameter is used.
  * @returns The string value of the searched parameter.
  */
-export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): string | undefined {
+export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): any {
   if (!elements) {
     return undefined;
   }
@@ -38,6 +137,12 @@ export function getParameterValue(elements: any[], parameter: string, sldVersion
   const element = elements
     .filter(obj => Object.keys(obj)?.includes(paramKey))
     .find(obj => obj?.[':@']?.['@_name'] === parameter);
+
+  // we expected a value but received an array so we check if we have a function
+  if (element?.[paramKey]?.[0]?.Function) {
+    return sldFunctionToGeoStylerFunction(element?.[paramKey]);
+  }
+
   return element?.[paramKey]?.[0]?.['#text'];
 }
 
@@ -89,6 +194,10 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
     return getAttribute(target, rest.substring(1));
   }
   if (Array.isArray(obj)) {
+    // we expected a value but received an array so we check if we have a function
+    if (key === '#text' && target[0]?.Function) {
+      return sldFunctionToGeoStylerFunction(target);
+    }
     // handle queries for CssParameter/SvgParameter
     if (key.startsWith('$') && sldVersion) {
       return getParameterValue(target, key.substring(1), sldVersion);
