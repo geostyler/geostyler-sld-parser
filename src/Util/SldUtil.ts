@@ -33,7 +33,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   // TODO: Typing of functions without args should be refactored in geostyler-style
   if (name === 'pi' || name === 'random') {
     return [{
-      'Function': [],
+      Function: [],
       ':@': {
         '@_name': name
       }
@@ -42,7 +42,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
 
   if (name === 'property') {
     return {
-      'PropertyName': [{
+      PropertyName: [{
         '#text': geostylerFunction.args[0]
       }]
     };
@@ -54,7 +54,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
       return Array.isArray(argAsFunction) ? argAsFunction[0] : argAsFunction;
     } else {
       return {
-        'Literal': [{
+        Literal: [{
           '#text': arg
         }]
       };
@@ -62,7 +62,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   });
 
   const sldFunctionObj = [{
-    'Function': sldFunctionArgs,
+    Function: sldFunctionArgs,
     ':@': {
       '@_name': name
     }

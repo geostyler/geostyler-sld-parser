@@ -50,8 +50,7 @@ import {
   getParameterValue,
   isSymbolizer,
   keysByValue,
-  numberExpression,
-  sldFunctionToGeoStylerFunction
+  numberExpression
 } from './Util/SldUtil';
 
 export type SldVersion = '1.0.0' | '1.1.0';
@@ -297,17 +296,17 @@ export class SldStyleParser implements StyleParser<string> {
    */
   readStyle(sldString: string): Promise<ReadStyleResult> {
     return new Promise<ReadStyleResult>((resolve) => {
-      // try {
+      try {
         const sldObject = this.parser.parse(sldString);
         const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(sldObject);
         resolve({
           output: geoStylerStyle
         });
-      // } catch (error) {
-      //   resolve({
-      //     errors: [error]
-      //   });
-      // }
+      } catch (error) {
+        resolve({
+          errors: [error]
+        });
+      }
     });
   }
 
@@ -1308,7 +1307,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
 
       return [{
-        'Function': functionChildren,
+        Function: functionChildren,
         ':@': {
           '@_name': sldFunctionOperator
         }
@@ -1331,7 +1330,7 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': key
           }]
         }, {
-          'Literal': [{
+          Literal: [{
             '#text': value
           }]
         }],
@@ -1350,14 +1349,14 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': key
           }]
         }, {
-          'LowerBoundary': [{
-            'Literal': [{
+          LowerBoundary: [{
+            Literal: [{
               '#text': betweenFilter[2]
             }]
           }]
         }, {
-          'UpperBoundary': [{
-            'Literal': [{
+          UpperBoundary: [{
+            Literal: [{
               '#text': betweenFilter[3]
             }]
           }]
@@ -1370,7 +1369,7 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': key
           }]
         }, {
-          'Literal': [{
+          Literal: [{
             '#text': value
           }]
         }]
@@ -2309,10 +2308,10 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getSldChannelSelectionFromChannelSelection(channelSelection: ChannelSelection): any {
     const propertyMap = {
-      'redChannel': 'RedChannel',
-      'blueChannel': 'BlueChannel',
-      'greenChannel': 'GreenChannel',
-      'grayChannel': 'GrayChannel'
+      redChannel: 'RedChannel',
+      blueChannel: 'BlueChannel',
+      greenChannel: 'GreenChannel',
+      grayChannel: 'GrayChannel'
     };
     const keys = Object.keys(channelSelection);
     const sldChannelSelection: any[] = [];
@@ -2326,14 +2325,14 @@ export class SldStyleParser implements StyleParser<string> {
       if (sourceChannelName || contrastEnhancement) {
         if (sourceChannelName) {
           channel.push({
-            'SourceChannelName': [{
+            SourceChannelName: [{
               '#text' :sourceChannelName
             }]
           });
         }
         if (contrastEnhancement) {
           channel.push({
-            'ContrastEnhancement': this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement)
+            ContrastEnhancement: this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement)
           });
         }
         sldChannelSelection.push({
@@ -2357,18 +2356,18 @@ export class SldStyleParser implements StyleParser<string> {
     if (enhancementType === 'normalize') {
       // parse normalize
       sldContrastEnhancement.push({
-        'Normalize': []
+        Normalize: []
       });
     } else if (enhancementType === 'histogram') {
       // parse histogram
       sldContrastEnhancement.push({
-        'Histogram': []
+        Histogram: []
       });
     }
     // parse gammaValue
     if (contrastEnhancement.gammaValue !== undefined) {
       sldContrastEnhancement.push({
-        'GammaValue': [{
+        GammaValue: [{
           '#text': contrastEnhancement.gammaValue
         }]
       });
