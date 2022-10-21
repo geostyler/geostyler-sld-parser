@@ -1,17 +1,19 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  'name': 'Capital cities',
-  'rules': [
+  name: 'Capital cities',
+  rules: [
     {
-      'name': 'Capitals',
-      'symbolizers': [
+      name: 'Capitals',
+      symbolizers: [
         {
-          'kind': 'Mark',
-          'wellKnownName': 'circle',
-          'color': '#FFFFFF',
-          'strokeColor':'#000000',
-          'strokeWidth': 2
+          kind: 'Mark',
+          wellKnownName: 'circle',
+          color: '#FFFFFF',
+          strokeColor:'#000000',
+          strokeWidth: 2,
+          opacity: 1,
+          radius: 3
         }
       ]
     }

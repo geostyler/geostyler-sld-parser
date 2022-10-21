@@ -142,6 +142,10 @@ export function getParameterValue(elements: any[], parameter: string, sldVersion
   if (element?.[paramKey]?.[0]?.Function) {
     return sldFunctionToGeoStylerFunction(element?.[paramKey]);
   }
+  // … or a Literal
+  if (element?.[paramKey]?.[0]?.Literal) {
+    return element?.[paramKey]?.[0]?.Literal?.[0]?.['#text'];
+  }
 
   return element?.[paramKey]?.[0]?.['#text'];
 }
@@ -194,6 +198,17 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
     return getAttribute(target, rest.substring(1));
   }
   if (Array.isArray(obj)) {
+    // we expected a value
+    if (key === '#text') {
+      // … so we check if we have a function
+      if (target[0].Function) {
+        return sldFunctionToGeoStylerFunction(target);
+      }
+      // … or a Literal
+      if (target[0].Literal) {
+        return target[0]?.Literal?.[0]?.['#text'];
+      }
+    }
     // we expected a value but received an array so we check if we have a function
     if (key === '#text' && target[0]?.Function) {
       return sldFunctionToGeoStylerFunction(target);
