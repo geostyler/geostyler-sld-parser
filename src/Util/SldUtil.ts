@@ -1,5 +1,22 @@
-import { GeoStylerFunction, isGeoStylerFunction } from 'geostyler-style';
+import {
+  Expression,
+  GeoStylerFunction,
+  GeoStylerNumberFunction,
+  isGeoStylerFunction,
+  isGeoStylerNumberFunction,
+  PropertyType
+} from 'geostyler-style';
 import { SldVersion } from '../SldStyleParser';
+
+/**
+ * Cast to Number if it is not a GeoStylerFunction
+ *
+ * @param exp The GeoStylerExpression
+ * @returns The value casted to a number or the GeoStylerNumberFunction
+ */
+export function numberExpression(exp: Expression<PropertyType>): GeoStylerNumberFunction | number {
+  return isGeoStylerNumberFunction(exp) ? exp : Number(exp);
+}
 
 /**
  * This converts a GeoStylerFunction into a fast-xml-parser representation
