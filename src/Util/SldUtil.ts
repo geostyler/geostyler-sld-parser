@@ -93,10 +93,11 @@ export function sldFunctionToGeoStylerFunction(sldFunction: any[]): GeoStylerFun
     }
   });
 
-  return {
-    name,
-    args: args?.length > 0 ? args : undefined
-  };
+  const geoStylerFunction: any = { name  };
+  if (args.length > 0) {
+    geoStylerFunction.args = args;
+  }
+  return geoStylerFunction;
 }
 
 /**
@@ -201,11 +202,11 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
     // we expected a value
     if (key === '#text') {
       // … so we check if we have a function
-      if (target[0].Function) {
+      if (target[0]?.Function) {
         return sldFunctionToGeoStylerFunction(target);
       }
       // … or a Literal
-      if (target[0].Literal) {
+      if (target[0]?.Literal) {
         return target[0]?.Literal?.[0]?.['#text'];
       }
     }

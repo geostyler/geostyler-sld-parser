@@ -483,22 +483,27 @@ export class SldStyleParser implements StyleParser<string> {
       filter = ['<=x<=', propertyName, lower, upper];
     } else if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
       const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
-      const propertyIsFilter = !!sldFilter?.[0]?.Function;
-      const propertyOrFilter = propertyIsFilter
-        ? sldFunctionToGeoStylerFunction([sldFilter?.[0].Function[0]])
-        : get(sldFilter[sldOperatorName], 'PropertyName.#text');
+      const filterIsFunction = !!get(sldFilter, 'Function');
+      let args: any[] = [];
+      const childrenToArgs = (child: any) => {
+        if (get([child], '#text') !== undefined) {
+          return get([child], '#text');
+        } else {
+          return get([child], 'PropertyName.#text');
+        }
+      };
 
-      let value = null;
-      if (sldOperatorName !== 'PropertyIsNull') {
-        const obj = propertyIsFilter ? sldFilter?.[0].Function : sldFilter[sldOperatorName];
-        value = get(obj, 'Literal.#text');
+      const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
+      args = children.map(childrenToArgs);
+
+      if (sldOperatorName === 'PropertyIsNull') {
+        args[1] = null;
       }
 
       filter = [
         comparisonOperator,
-        propertyOrFilter,
-        value
-      ];
+        ...args
+      ] as ComparisonFilter;
 
     } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
