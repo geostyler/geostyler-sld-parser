@@ -50,7 +50,8 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
 
   const sldFunctionArgs = geostylerFunction.args.map(arg => {
     if (isGeoStylerFunction(arg)) {
-      return geoStylerFunctionToSldFunction(arg);
+      const argAsFunction = geoStylerFunctionToSldFunction(arg);
+      return Array.isArray(argAsFunction) ? argAsFunction[0] : argAsFunction;
     } else {
       return {
         'Literal': [{
@@ -128,7 +129,7 @@ export function getChild(elements: any[], tagName: string): any {
  * @param sldVersion The sldVersion to distinguish if CssParameter or SvgParameter is used.
  * @returns The string value of the searched parameter.
  */
-export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): string | undefined {
+export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): any {
   if (!elements) {
     return undefined;
   }
@@ -136,6 +137,12 @@ export function getParameterValue(elements: any[], parameter: string, sldVersion
   const element = elements
     .filter(obj => Object.keys(obj)?.includes(paramKey))
     .find(obj => obj?.[':@']?.['@_name'] === parameter);
+
+  // we expected a value but received an array so we check if we have a function
+  if (element?.[paramKey]?.[0]?.Function) {
+    return sldFunctionToGeoStylerFunction(element?.[paramKey]);
+  }
+
   return element?.[paramKey]?.[0]?.['#text'];
 }
 

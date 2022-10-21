@@ -42,6 +42,7 @@ import raster_complexraster from '../data/styles/raster_complexRaster';
 import unsupported_properties from '../data/styles/unsupported_properties';
 import function_markSymbolizer from '../data/styles/function_markSymbolizer';
 import function_filter from '../data/styles/function_filter';
+import function_nested from '../data/styles/function_nested';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -264,6 +265,13 @@ describe('SldStyleParser implements StyleParser', () => {
       const readResult = await styleParser.readStyle(sld);
       expect(readResult.output).toBeDefined();
       expect(readResult.output).toEqual(function_filter);
+    });
+
+    it('can read a SLD with a nested function', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/function_nested.sld', 'utf8');
+      const readResult = await styleParser.readStyle(sld);
+      expect(readResult.output).toBeDefined();
+      expect(readResult.output).toEqual(function_nested);
     });
 
     describe('#getFilterFromOperatorAndComparison', () => {
@@ -896,6 +904,23 @@ describe('SldStyleParser implements StyleParser', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(function_filter);
+    });
+
+    it('can write a SLD with a nested function', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(function_nested);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(function_nested);
     });
 
     it('creates the correct order in a text symbolizer', async () => {
