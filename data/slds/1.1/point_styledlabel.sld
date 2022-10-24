@@ -30,6 +30,7 @@
               <se:Radius>5</se:Radius>
               <se:Fill>
                 <se:SvgParameter name="fill">#000000</se:SvgParameter>
+                <se:SvgParameter name="fill-opacity">1</se:SvgParameter>
               </se:Fill>
             </se:Halo>
             <se:Fill>

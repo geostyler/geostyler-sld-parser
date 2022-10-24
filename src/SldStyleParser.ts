@@ -108,6 +108,7 @@ export class SldStyleParser implements StyleParser<string> {
         color: 'none',
         haloBlur: 'none',
         haloColor: 'none',
+        haloOpacity: 'none',
         haloWidth: 'none',
         keepUpright: 'none',
         offset: 'none',
@@ -663,6 +664,10 @@ export class SldStyleParser implements StyleParser<string> {
     if (haloRadius) {
       textSymbolizer.haloWidth = numberExpression(haloRadius);
     }
+    const haloOpacity = getParameterValue(haloFillEl, 'fill-opacity', this.sldVersion);
+    if (haloOpacity) {
+      textSymbolizer.haloOpacity = numberExpression(haloOpacity);
+    }
     if (haloColor) {
       textSymbolizer.haloColor = haloColor;
     }
@@ -777,6 +782,8 @@ export class SldStyleParser implements StyleParser<string> {
     const outlineWidth = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
     const outlineOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
     const outlineDashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.sldVersion);
+    const outlineCap = getParameterValue(strokeEl, 'stroke-linecap', this.sldVersion);
+    const outlineJoin = getParameterValue(strokeEl, 'stroke-linejoin', this.sldVersion);
     // const outlineDashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.sldVersion);
 
     const graphicFill = get(sldSymbolizer, 'Fill.GraphicFill');
@@ -803,6 +810,12 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (outlineDashArray) {
       fillSymbolizer.outlineDasharray = outlineDashArray.split(' ').map(numberExpression);
+    }
+    if (outlineCap) {
+      fillSymbolizer.outlineCap = outlineCap;
+    }
+    if (outlineJoin) {
+      fillSymbolizer.outlineJoin = outlineJoin;
     }
     // TODO: seems like this is missing in the geostyer-stlye
     // if (outlineDashOffset) {
@@ -1812,16 +1825,6 @@ export class SldStyleParser implements StyleParser<string> {
         });
       }
       if (textSymbolizer.haloColor) {
-        // TODO: parse GeoStylerFunction
-        // if (isExpression(textSymbolizer.haloColor)) {
-        //   haloCssParameter.push({
-        //     ...this.getSldExpressionFromExpression(textSymbolizer.haloColor),
-        //     '$': {
-        //       'name': 'fill'
-        //     }
-        //   });
-        // } else {
-
         haloFillCssParameter.push({
           [CssParameter]: [{
             '#text': textSymbolizer.haloColor,
@@ -1830,7 +1833,16 @@ export class SldStyleParser implements StyleParser<string> {
             '@_name': 'fill'
           }
         });
-        // }
+      }
+      if (textSymbolizer.haloOpacity) {
+        haloFillCssParameter.push({
+          [CssParameter]: [{
+            '#text': textSymbolizer.haloOpacity,
+          }],
+          ':@': {
+            '@_name': 'fill-opacity'
+          }
+        });
       }
       if (haloFillCssParameter.length > 0) {
         halo.push({

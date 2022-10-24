@@ -149,6 +149,7 @@ const style: Style = {
           opacity: 1,
           haloWidth: 2,
           haloColor: '#FDE5A5',
+          haloOpacity: 0.75,
           font: [
             'Times New Roman'
           ],

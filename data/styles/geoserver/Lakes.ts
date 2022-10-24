@@ -10,8 +10,8 @@ const style: Style = {
           kind: 'Fill',
           color: '#4040C0',
           fillOpacity: 1,
-          outlineLineCap: 'butt',
-          outlineLineJoin: 'miter',
+          outlineCap: 'butt',
+          outlineJoin: 'miter',
           outlineColor: '#000000',
           outlineWidth: 1,
           outlineOpacity: 1

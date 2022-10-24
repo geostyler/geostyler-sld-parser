@@ -40,7 +40,7 @@
   "dependencies": {
     "core-js": "^3.25.0",
     "fast-xml-parser": "^4.0.9",
-    "geostyler-style": "^7.1.1"
+    "geostyler-style": "^7.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.19.0",
