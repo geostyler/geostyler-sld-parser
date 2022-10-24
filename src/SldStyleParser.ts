@@ -1978,7 +1978,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @param lineSymbolizer A geostyler-style LineSymbolizer.
    * @return The object representation of a SLD LineSymbolizer (readable with fast-xml-parser)
    */
-  getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: GsLineSymbolizer): any {
+  getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: GsLineSymbolizer): any[] {
     const CssParameter = this.getTagName('CssParameter');
     const Stroke = this.getTagName('Stroke');
     const GraphicStroke = this.getTagName('GraphicStroke');
@@ -2090,6 +2090,12 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    if (sldLineSymbolizer.length === 0) {
+      sldLineSymbolizer.push({
+        [Stroke]: {}
+      });
+    }
+
     return sldLineSymbolizer;
   }
 
@@ -2107,7 +2113,9 @@ export class SldStyleParser implements StyleParser<string> {
       outlineColor: 'stroke',
       outlineWidth: 'stroke-width',
       outlineOpacity: 'stroke-opacity',
-      outlineDasharray: 'stroke-dasharray'
+      outlineDasharray: 'stroke-dasharray',
+      outlineCap: 'stroke-linecap',
+      outlineJoin: 'stroke-linejoin'
     };
     const fillPropertyMap = {
       color: 'fill',
