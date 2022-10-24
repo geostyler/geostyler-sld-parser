@@ -17,7 +17,7 @@ const style: Style = {
             kind: 'Mark',
             wellKnownName: 'shape://slash',
             radius: 8,
-            strokeColor: '0xAAAAAA'
+            strokeColor: '#AAAAAA'
           }
         }
       ]
@@ -37,7 +37,7 @@ const style: Style = {
             kind: 'Mark',
             wellKnownName: 'shape://slash',
             radius: 4,
-            strokeColor: '0xAAAAAA'
+            strokeColor: '#AAAAAA'
           }
         }
       ]
@@ -56,7 +56,7 @@ const style: Style = {
             kind: 'Mark',
             wellKnownName: 'shape://slash',
             radius: 2,
-            strokeColor: '0xAAAAAA'
+            strokeColor: '#AAAAAA'
           }
         }
       ]
@@ -73,7 +73,7 @@ const style: Style = {
           color: '#000000',
           opacity: 1,
           haloWidth: 2,
-          haloColor: '0xFFFFFF',
+          haloColor: '#FFFFFF',
           font: [
             'Times New Roman'
           ],
