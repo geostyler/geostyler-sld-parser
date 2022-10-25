@@ -33,7 +33,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   // TODO: Typing of functions without args should be refactored in geostyler-style
   if (name === 'pi' || name === 'random') {
     return [{
-      'Function': [],
+      Function: [],
       ':@': {
         '@_name': name
       }
@@ -42,7 +42,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
 
   if (name === 'property') {
     return {
-      'PropertyName': [{
+      PropertyName: [{
         '#text': geostylerFunction.args[0]
       }]
     };
@@ -54,7 +54,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
       return Array.isArray(argAsFunction) ? argAsFunction[0] : argAsFunction;
     } else {
       return {
-        'Literal': [{
+        Literal: [{
           '#text': arg
         }]
       };
@@ -62,7 +62,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   });
 
   const sldFunctionObj = [{
-    'Function': sldFunctionArgs,
+    Function: sldFunctionArgs,
     ':@': {
       '@_name': name
     }
@@ -93,10 +93,11 @@ export function sldFunctionToGeoStylerFunction(sldFunction: any[]): GeoStylerFun
     }
   });
 
-  return {
-    name,
-    args: args?.length > 0 ? args : undefined
-  };
+  const geoStylerFunction: any = { name  };
+  if (args.length > 0) {
+    geoStylerFunction.args = args;
+  }
+  return geoStylerFunction;
 }
 
 /**
@@ -141,6 +142,10 @@ export function getParameterValue(elements: any[], parameter: string, sldVersion
   // we expected a value but received an array so we check if we have a function
   if (element?.[paramKey]?.[0]?.Function) {
     return sldFunctionToGeoStylerFunction(element?.[paramKey]);
+  }
+  // … or a Literal
+  if (element?.[paramKey]?.[0]?.Literal) {
+    return element?.[paramKey]?.[0]?.Literal?.[0]?.['#text'];
   }
 
   return element?.[paramKey]?.[0]?.['#text'];
@@ -194,6 +199,17 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
     return getAttribute(target, rest.substring(1));
   }
   if (Array.isArray(obj)) {
+    // we expected a value
+    if (key === '#text') {
+      // … so we check if we have a function
+      if (target[0]?.Function) {
+        return sldFunctionToGeoStylerFunction(target);
+      }
+      // … or a Literal
+      if (target[0]?.Literal) {
+        return target[0]?.Literal?.[0]?.['#text'];
+      }
+    }
     // we expected a value but received an array so we check if we have a function
     if (key === '#text' && target[0]?.Function) {
       return sldFunctionToGeoStylerFunction(target);

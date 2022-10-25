@@ -15,6 +15,10 @@ module.exports = {
       'plugin:@typescript-eslint/recommended',
   ],
   "rules": {
+    "quote-props": [
+      1,
+      "as-needed"
+    ],
     "@typescript-eslint/indent": [
       "error",
       2

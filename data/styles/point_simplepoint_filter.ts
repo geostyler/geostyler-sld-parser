@@ -21,16 +21,16 @@ const pointSimplePoint: Style = {
     ],
     name: 'Small populated New Yorks',
     scaleDenominator: {
-      'max': 20000,
-      'min': 10000
+      max: 20000,
+      min: 10000
     },
     symbolizers: [{
-      'kind': 'Mark',
-      'wellKnownName': 'circle',
-      'color': '#FF0000',
-      'radius': 3,
-      'strokeColor': '#000000',
-      'strokeWidth': 2
+      kind: 'Mark',
+      wellKnownName: 'circle',
+      color: '#FF0000',
+      radius: 3,
+      strokeColor: '#000000',
+      strokeWidth: 2
     }]
   }]
 };

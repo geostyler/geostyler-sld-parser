@@ -21,7 +21,6 @@ import point_simpleLabel2 from '../data/styles/point_simpleLabel2';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
-// import point_simplepoint_functionfilter from '../data/styles/point_simplepoint_functionfilter';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_floatingPoint from '../data/styles/point_externalgraphic_floatingPoint';
@@ -221,12 +220,6 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_simplepoint_nestedLogicalFilters);
     });
-    // it('can read a SLD style with functionfilters', async () => {
-    //   const sld = fs.readFileSync('./data/slds/1.0/point_simplepoint_functionfilter.sld', 'utf8');
-    //   const { output: geoStylerStyle} = await styleParser.readStyle(sld);
-    //   expect(geoStylerStyle).toBeDefined();
-    //   expect(geoStylerStyle).toEqual(point_simplepoint_functionfilter);
-    // });
     it('can read a SLD style with multiple symbolizers in one Rule', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/multi_simplelineLabel.sld', 'utf8');
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);

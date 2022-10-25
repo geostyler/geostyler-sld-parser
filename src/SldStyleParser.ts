@@ -50,8 +50,7 @@ import {
   getParameterValue,
   isSymbolizer,
   keysByValue,
-  numberExpression,
-  sldFunctionToGeoStylerFunction
+  numberExpression
 } from './Util/SldUtil';
 
 export type SldVersion = '1.0.0' | '1.1.0';
@@ -109,6 +108,7 @@ export class SldStyleParser implements StyleParser<string> {
         color: 'none',
         haloBlur: 'none',
         haloColor: 'none',
+        haloOpacity: 'none',
         haloWidth: 'none',
         keepUpright: 'none',
         offset: 'none',
@@ -483,22 +483,27 @@ export class SldStyleParser implements StyleParser<string> {
       filter = ['<=x<=', propertyName, lower, upper];
     } else if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
       const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
-      const propertyIsFilter = !!sldFilter?.[0]?.Function;
-      const propertyOrFilter = propertyIsFilter
-        ? sldFunctionToGeoStylerFunction([sldFilter?.[0].Function[0]])
-        : get(sldFilter[sldOperatorName], 'PropertyName.#text');
+      const filterIsFunction = !!get(sldFilter, 'Function');
+      let args: any[] = [];
+      const childrenToArgs = (child: any) => {
+        if (get([child], '#text') !== undefined) {
+          return get([child], '#text');
+        } else {
+          return get([child], 'PropertyName.#text');
+        }
+      };
 
-      let value = null;
-      if (sldOperatorName !== 'PropertyIsNull') {
-        const obj = propertyIsFilter ? sldFilter?.[0].Function : sldFilter[sldOperatorName];
-        value = get(obj, 'Literal.#text');
+      const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
+      args = children.map(childrenToArgs);
+
+      if (sldOperatorName === 'PropertyIsNull') {
+        args[1] = null;
       }
 
       filter = [
         comparisonOperator,
-        propertyOrFilter,
-        value
-      ];
+        ...args
+      ] as ComparisonFilter;
 
     } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
@@ -567,9 +572,6 @@ export class SldStyleParser implements StyleParser<string> {
       kind: 'Line'
     };
     const strokeEl = get(sldSymbolizer, 'Stroke');
-    if (strokeEl.length < 1) {
-      throw new Error('LineSymbolizer cannot be parsed. No Stroke detected');
-    }
     const color = getParameterValue(strokeEl, 'stroke', this.sldVersion);
     const width = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
     const opacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
@@ -662,6 +664,10 @@ export class SldStyleParser implements StyleParser<string> {
     if (haloRadius) {
       textSymbolizer.haloWidth = numberExpression(haloRadius);
     }
+    const haloOpacity = getParameterValue(haloFillEl, 'fill-opacity', this.sldVersion);
+    if (haloOpacity) {
+      textSymbolizer.haloOpacity = numberExpression(haloOpacity);
+    }
     if (haloColor) {
       textSymbolizer.haloColor = haloColor;
     }
@@ -682,10 +688,10 @@ export class SldStyleParser implements StyleParser<string> {
       textSymbolizer.font = [fontFamily];
     }
     if (fontStyle) {
-      textSymbolizer.fontStyle = fontStyle as 'normal' | 'italic' | 'oblique' | undefined;
+      textSymbolizer.fontStyle = fontStyle.toLowerCase() as 'normal' | 'italic' | 'oblique' | undefined;
     }
     if (fontWeight) {
-      textSymbolizer.fontWeight = fontWeight as 'normal' | 'bold' | undefined;
+      textSymbolizer.fontWeight = fontWeight.toLowerCase() as 'normal' | 'bold' | undefined;
     }
     if (fontSize) {
       textSymbolizer.size = numberExpression(fontSize);
@@ -776,6 +782,8 @@ export class SldStyleParser implements StyleParser<string> {
     const outlineWidth = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
     const outlineOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
     const outlineDashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.sldVersion);
+    const outlineCap = getParameterValue(strokeEl, 'stroke-linecap', this.sldVersion);
+    const outlineJoin = getParameterValue(strokeEl, 'stroke-linejoin', this.sldVersion);
     // const outlineDashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.sldVersion);
 
     const graphicFill = get(sldSymbolizer, 'Fill.GraphicFill');
@@ -789,11 +797,6 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (fillOpacity) {
       fillSymbolizer.fillOpacity = numberExpression(fillOpacity);
-
-    } else {
-      if (!fillSymbolizer.color) {
-        fillSymbolizer.opacity = 0;
-      }
     }
 
     if (outlineColor) {
@@ -807,6 +810,12 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (outlineDashArray) {
       fillSymbolizer.outlineDasharray = outlineDashArray.split(' ').map(numberExpression);
+    }
+    if (outlineCap) {
+      fillSymbolizer.outlineCap = outlineCap;
+    }
+    if (outlineJoin) {
+      fillSymbolizer.outlineJoin = outlineJoin;
     }
     // TODO: seems like this is missing in the geostyer-stlye
     // if (outlineDashOffset) {
@@ -1311,7 +1320,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
 
       return [{
-        'Function': functionChildren,
+        Function: functionChildren,
         ':@': {
           '@_name': sldFunctionOperator
         }
@@ -1334,7 +1343,7 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': key
           }]
         }, {
-          'Literal': [{
+          Literal: [{
             '#text': value
           }]
         }],
@@ -1353,14 +1362,14 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': key
           }]
         }, {
-          'LowerBoundary': [{
-            'Literal': [{
+          LowerBoundary: [{
+            Literal: [{
               '#text': betweenFilter[2]
             }]
           }]
         }, {
-          'UpperBoundary': [{
-            'Literal': [{
+          UpperBoundary: [{
+            Literal: [{
               '#text': betweenFilter[3]
             }]
           }]
@@ -1373,7 +1382,7 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': key
           }]
         }, {
-          'Literal': [{
+          Literal: [{
             '#text': value
           }]
         }]
@@ -1816,16 +1825,6 @@ export class SldStyleParser implements StyleParser<string> {
         });
       }
       if (textSymbolizer.haloColor) {
-        // TODO: parse GeoStylerFunction
-        // if (isExpression(textSymbolizer.haloColor)) {
-        //   haloCssParameter.push({
-        //     ...this.getSldExpressionFromExpression(textSymbolizer.haloColor),
-        //     '$': {
-        //       'name': 'fill'
-        //     }
-        //   });
-        // } else {
-
         haloFillCssParameter.push({
           [CssParameter]: [{
             '#text': textSymbolizer.haloColor,
@@ -1834,7 +1833,16 @@ export class SldStyleParser implements StyleParser<string> {
             '@_name': 'fill'
           }
         });
-        // }
+      }
+      if (textSymbolizer.haloOpacity) {
+        haloFillCssParameter.push({
+          [CssParameter]: [{
+            '#text': textSymbolizer.haloOpacity,
+          }],
+          ':@': {
+            '@_name': 'fill-opacity'
+          }
+        });
       }
       if (haloFillCssParameter.length > 0) {
         halo.push({
@@ -1970,7 +1978,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @param lineSymbolizer A geostyler-style LineSymbolizer.
    * @return The object representation of a SLD LineSymbolizer (readable with fast-xml-parser)
    */
-  getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: GsLineSymbolizer): any {
+  getSldLineSymbolizerFromLineSymbolizer(lineSymbolizer: GsLineSymbolizer): any[] {
     const CssParameter = this.getTagName('CssParameter');
     const Stroke = this.getTagName('Stroke');
     const GraphicStroke = this.getTagName('GraphicStroke');
@@ -2082,6 +2090,12 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    if (sldLineSymbolizer.length === 0) {
+      sldLineSymbolizer.push({
+        [Stroke]: {}
+      });
+    }
+
     return sldLineSymbolizer;
   }
 
@@ -2099,7 +2113,9 @@ export class SldStyleParser implements StyleParser<string> {
       outlineColor: 'stroke',
       outlineWidth: 'stroke-width',
       outlineOpacity: 'stroke-opacity',
-      outlineDasharray: 'stroke-dasharray'
+      outlineDasharray: 'stroke-dasharray',
+      outlineCap: 'stroke-linecap',
+      outlineJoin: 'stroke-linejoin'
     };
     const fillPropertyMap = {
       color: 'fill',
@@ -2312,10 +2328,10 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getSldChannelSelectionFromChannelSelection(channelSelection: ChannelSelection): any {
     const propertyMap = {
-      'redChannel': 'RedChannel',
-      'blueChannel': 'BlueChannel',
-      'greenChannel': 'GreenChannel',
-      'grayChannel': 'GrayChannel'
+      redChannel: 'RedChannel',
+      blueChannel: 'BlueChannel',
+      greenChannel: 'GreenChannel',
+      grayChannel: 'GrayChannel'
     };
     const keys = Object.keys(channelSelection);
     const sldChannelSelection: any[] = [];
@@ -2329,14 +2345,14 @@ export class SldStyleParser implements StyleParser<string> {
       if (sourceChannelName || contrastEnhancement) {
         if (sourceChannelName) {
           channel.push({
-            'SourceChannelName': [{
+            SourceChannelName: [{
               '#text' :sourceChannelName
             }]
           });
         }
         if (contrastEnhancement) {
           channel.push({
-            'ContrastEnhancement': this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement)
+            ContrastEnhancement: this.getSldContrastEnhancementFromContrastEnhancement(contrastEnhancement)
           });
         }
         sldChannelSelection.push({
@@ -2360,18 +2376,18 @@ export class SldStyleParser implements StyleParser<string> {
     if (enhancementType === 'normalize') {
       // parse normalize
       sldContrastEnhancement.push({
-        'Normalize': []
+        Normalize: []
       });
     } else if (enhancementType === 'histogram') {
       // parse histogram
       sldContrastEnhancement.push({
-        'Histogram': []
+        Histogram: []
       });
     }
     // parse gammaValue
     if (contrastEnhancement.gammaValue !== undefined) {
       sldContrastEnhancement.push({
-        'GammaValue': [{
+        GammaValue: [{
           '#text': contrastEnhancement.gammaValue
         }]
       });
