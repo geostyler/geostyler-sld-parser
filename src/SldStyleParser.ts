@@ -1108,7 +1108,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   writeStyle(geoStylerStyle: Style): Promise<WriteStyleResult<string>> {
     return new Promise<WriteStyleResult<string>>(resolve => {
-      const unsupportedProperties = this.checkForUnsupportedProperites(geoStylerStyle);
+      const unsupportedProperties = this.checkForUnsupportedProperties(geoStylerStyle);
       try {
         const sldObject = this.geoStylerStyleToSldObject(geoStylerStyle);
         const sldString = this.builder.build(sldObject);
@@ -2395,7 +2395,7 @@ export class SldStyleParser implements StyleParser<string> {
     return sldContrastEnhancement;
   }
 
-  checkForUnsupportedProperites(geoStylerStyle: Style): UnsupportedProperties | undefined {
+  checkForUnsupportedProperties(geoStylerStyle: Style): UnsupportedProperties | undefined {
     const capitalizeFirstLetter = (a: string) => a[0].toUpperCase() + a.slice(1);
     const unsupportedProperties: UnsupportedProperties = {};
     geoStylerStyle.rules.forEach(rule => {
