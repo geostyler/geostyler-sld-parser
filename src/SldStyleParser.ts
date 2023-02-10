@@ -2230,8 +2230,9 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The object representation of a SLD RasterSymbolizer (readable with fast-xml-parser)
    */
   getSldRasterSymbolizerFromRasterSymbolizer(rasterSymbolizer: GsRasterSymbolizer): any {
-    const sldRasterSymbolizer: any = [{}];
+    const sldRasterSymbolizer: any = [];
     if (rasterSymbolizer.opacity !== undefined) {
+      sldRasterSymbolizer.push({});
       sldRasterSymbolizer[0].Opacity = [{
         '#text': rasterSymbolizer.opacity
       }];
