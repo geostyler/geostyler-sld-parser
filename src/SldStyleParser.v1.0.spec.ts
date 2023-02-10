@@ -38,6 +38,7 @@ import point_styledLabel_literalPlaceholder from '../data/styles/point_styledLab
 import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_elementOrder';
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
+import raster_without_opacity from '../data/styles/raster_without_opacity';
 import unsupported_properties from '../data/styles/unsupported_properties';
 import function_markSymbolizer from '../data/styles/function_markSymbolizer';
 import function_filter from '../data/styles/function_filter';
@@ -207,6 +208,12 @@ describe('SldStyleParser implements StyleParser', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(raster_complexraster);
+    });
+    it('can read a SLD RasterSymbolizer without opacity', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/raster_without_opacity.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(raster_without_opacity);
     });
     it('can read a SLD style with a filter', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/point_simplepoint_filter.sld', 'utf8');
