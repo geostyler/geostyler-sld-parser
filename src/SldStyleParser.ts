@@ -30,7 +30,8 @@ import {
   TextSymbolizer as GsTextSymbolizer,
   UnsupportedProperties,
   WellKnownName as GsWellKnownName,
-  WriteStyleResult
+  WriteStyleResult,
+  GeoStylerFunction
 } from 'geostyler-style';
 import {
   Style
@@ -65,6 +66,32 @@ export type ConstructorParams = {
 };
 
 const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
+
+const COMPARISON_MAP = {
+  PropertyIsEqualTo: '==',
+  PropertyIsNotEqualTo: '!=',
+  PropertyIsLike: '*=',
+  PropertyIsLessThan: '<',
+  PropertyIsLessThanOrEqualTo: '<=',
+  PropertyIsGreaterThan: '>',
+  PropertyIsGreaterThanOrEqualTo: '>=',
+  PropertyIsNull: '==',
+  PropertyIsBetween: '<=x<='
+};
+
+type ComparisonType = keyof typeof COMPARISON_MAP;
+
+const NEGATION_OPERATOR_MAP = {
+  Not: '!'
+};
+
+const COMBINATION_MAP = {
+  And: '&&',
+  Or: '||',
+  PropertyIsBetween: '&&'
+};
+
+type CombinationType = keyof typeof COMBINATION_MAP;
 
 /**
  * This parser can be used with the GeoStyler.
@@ -141,26 +168,6 @@ export class SldStyleParser implements StyleParser<string> {
         visibility: 'none'
       }
     }
-  };
-
-  static negationOperatorMap = {
-    Not: '!'
-  };
-  static combinationMap = {
-    And: '&&',
-    Or: '||',
-    PropertyIsBetween: '&&'
-  };
-  static comparisonMap = {
-    PropertyIsEqualTo: '==',
-    PropertyIsNotEqualTo: '!=',
-    PropertyIsLike: '*=',
-    PropertyIsLessThan: '<',
-    PropertyIsLessThanOrEqualTo: '<=',
-    PropertyIsGreaterThan: '>',
-    PropertyIsGreaterThanOrEqualTo: '>=',
-    PropertyIsNull: '==',
-    PropertyIsBetween: '<=x<='
   };
 
   constructor(opts?: ConstructorParams) {
@@ -398,7 +405,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (!operator) {
       return;
     }
-    const filter = this.getFilterFromOperatorAndComparison(operator, sldFilter);
+    const filter = this.getFilterFromOperatorAndComparison(operator as ComparisonType, sldFilter);
     return filter;
   }
 
@@ -462,13 +469,16 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldFilter The SLD Filter
    * @return The geostyler-style Filter
    */
-  getFilterFromOperatorAndComparison(sldOperatorName: string, sldFilter: any): GsFilter {
+  getFilterFromOperatorAndComparison(
+    sldOperatorName: ComparisonType | 'Function',
+    sldFilter: any
+  ): GsFilter {
     let filter: GsFilter;
 
     if (sldOperatorName === 'Function') {
       const functionName = sldFilter[0][':@']['@_name'];
       const tempFunctionName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
-      sldOperatorName = `PropertyIs${tempFunctionName}`;
+      sldOperatorName = `PropertyIs${tempFunctionName}` as ComparisonType;
     }
 
     // we have to first check for PropertyIsBetween,
@@ -481,8 +491,8 @@ export class SldStyleParser implements StyleParser<string> {
       const upper = Number(get(sldFilter, 'PropertyIsBetween.UpperBoundary.Literal.#text'));
 
       filter = ['<=x<=', propertyName, lower, upper];
-    } else if (Object.keys(SldStyleParser.comparisonMap).includes(sldOperatorName)) {
-      const comparisonOperator: ComparisonOperator = SldStyleParser.comparisonMap[sldOperatorName];
+    } else if (Object.keys(COMPARISON_MAP).includes(sldOperatorName)) {
+      const comparisonOperator: ComparisonOperator = COMPARISON_MAP[sldOperatorName] as ComparisonOperator;
       const filterIsFunction = !!get(sldFilter, 'Function');
       let args: any[] = [];
       const childrenToArgs = (child: any) => {
@@ -505,26 +515,27 @@ export class SldStyleParser implements StyleParser<string> {
         ...args
       ] as ComparisonFilter;
 
-    } else if (Object.keys(SldStyleParser.combinationMap).includes(sldOperatorName)) {
-      const combinationOperator: CombinationOperator = SldStyleParser.combinationMap[sldOperatorName];
+    } else if (Object.keys(COMBINATION_MAP).includes(sldOperatorName)) {
+      const combinationOperator: CombinationOperator = COMBINATION_MAP[
+        sldOperatorName as CombinationType] as CombinationOperator;
       const filters: GsFilter[] = get(sldFilter, sldOperatorName)?.map((op: any) => {
         const operatorName = Object.keys(op)?.[0];
-        return this.getFilterFromOperatorAndComparison(operatorName, op);
+        return this.getFilterFromOperatorAndComparison(operatorName as any, op);
       });
       filter = [
         combinationOperator,
         ...filters
       ];
-    } else if (Object.keys(SldStyleParser.negationOperatorMap).includes(sldOperatorName)) {
-      const negationOperator = SldStyleParser.negationOperatorMap[sldOperatorName];
+    } else if (Object.keys(NEGATION_OPERATOR_MAP).includes(sldOperatorName)) {
+      const negationOperator = NEGATION_OPERATOR_MAP[sldOperatorName as 'Not'];
       const negatedOperator = Object.keys(sldFilter[sldOperatorName][0])[0];
       const negatedComparison = sldFilter[sldOperatorName][0];
       const negatedFilter: GsFilter = this.getFilterFromOperatorAndComparison(
-        negatedOperator,
+        negatedOperator as any,
         negatedComparison
       );
       filter = [
-        negationOperator,
+        negationOperator as any,
         negatedFilter
       ];
     } else {
@@ -1170,12 +1181,9 @@ export class SldStyleParser implements StyleParser<string> {
       '@_xmlns': 'http://www.opengis.net/sld',
       '@_xmlns:ogc': 'http://www.opengis.net/ogc',
       '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
-      '@_xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance'
+      '@_xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@_xmlns:se': 'http://www.opengis.net/se'
     };
-
-    if (this.sldVersion === '1.1.0') {
-      attributes['@_xmlns:se'] = 'http://www.opengis.net/se';
-    }
 
     return [{
       '?xml': [{ '#text': '' }],
@@ -1285,7 +1293,7 @@ export class SldStyleParser implements StyleParser<string> {
     const key = comparisonFilter[1];
     const value = comparisonFilter[2];
 
-    const sldOperators: string[] = keysByValue(SldStyleParser.comparisonMap, operator);
+    const sldOperators: string[] = keysByValue(COMPARISON_MAP, operator);
     const sldOperator: string = (sldOperators.length > 1 && value === null)
       ? sldOperators[1] : sldOperators[0];
 
@@ -1413,7 +1421,7 @@ export class SldStyleParser implements StyleParser<string> {
         operator,
         ...args
       ] = filter;
-      const sldOperators: string[] = keysByValue(SldStyleParser.combinationMap, operator);
+      const sldOperators: string[] = keysByValue(COMBINATION_MAP, operator);
       const combinator = sldOperators[0];
       const sldSubFilters = args.map(subFilter => this.getSldFilterFromFilter(subFilter)[0]);
       sldFilter.push({
@@ -1755,25 +1763,26 @@ export class SldStyleParser implements StyleParser<string> {
     };
 
     const fontCssParameters: any[] = Object.keys(textSymbolizer)
-      .filter((property: any) => property !== 'kind' && fontPropertyMap[property])
+      .filter((property: any) => property !== 'kind' && fontPropertyMap[property as keyof typeof fontPropertyMap])
       .map((property: any) => {
-        if (isGeoStylerFunction(textSymbolizer[property])) {
-          const children = geoStylerFunctionToSldFunction(textSymbolizer[property]);
+        if (isGeoStylerFunction(textSymbolizer[property as keyof typeof fontPropertyMap])) {
+          const children = geoStylerFunctionToSldFunction(textSymbolizer[
+            property as keyof typeof textSymbolizer] as GeoStylerFunction);
           return {
             [CssParameter]: children,
             ':@': {
-              '@_name': fontPropertyMap[property]
+              '@_name': fontPropertyMap[property as keyof typeof fontPropertyMap]
             }
           };
         } else {
           return {
             [CssParameter]: [{
               '#text': property === 'font'
-                ? textSymbolizer[property][0]
-                : textSymbolizer[property],
+                ? (textSymbolizer[property as keyof typeof textSymbolizer] as any[])?.[0]
+                : textSymbolizer[property as keyof typeof textSymbolizer],
             }],
             ':@': {
-              '@_name': fontPropertyMap[property]
+              '@_name': fontPropertyMap[property as keyof typeof fontPropertyMap]
             }
           };
         }
@@ -1998,10 +2007,11 @@ export class SldStyleParser implements StyleParser<string> {
     const sldLineSymbolizer: any = [];
 
     const cssParameters: any[] = Object.keys(lineSymbolizer)
-      .filter((property: any) => property !== 'kind' && propertyMap[property] &&
-          lineSymbolizer[property] !== undefined && lineSymbolizer[property] !== null)
+      .filter((property: any) => property !== 'kind' && propertyMap[property as keyof typeof propertyMap] &&
+          lineSymbolizer[property as keyof typeof lineSymbolizer] !== undefined &&
+          lineSymbolizer[property as keyof typeof lineSymbolizer] !== null)
       .map((property: any) => {
-        let value = lineSymbolizer[property];
+        let value = lineSymbolizer[property as keyof typeof lineSymbolizer];
         if (property === 'dasharray') {
           value = lineSymbolizer.dasharray ? lineSymbolizer.dasharray.join(' ') : undefined;
 
@@ -2010,7 +2020,7 @@ export class SldStyleParser implements StyleParser<string> {
               '#text': value,
             }],
             ':@': {
-              '@_name': propertyMap[property]
+              '@_name': propertyMap[property as keyof typeof propertyMap]
             }
           };
         }
@@ -2019,21 +2029,22 @@ export class SldStyleParser implements StyleParser<string> {
           value = 'mitre';
         }
 
-        if (isGeoStylerFunction(lineSymbolizer[property])) {
-          const children = geoStylerFunctionToSldFunction(lineSymbolizer[property]);
+        if (isGeoStylerFunction(lineSymbolizer[property as keyof typeof lineSymbolizer])) {
+          const children = geoStylerFunctionToSldFunction(lineSymbolizer[
+            property as keyof typeof lineSymbolizer] as GeoStylerFunction);
           return {
             [CssParameter]: children,
             ':@': {
-              '@_name': propertyMap[property]
+              '@_name': propertyMap[property as keyof typeof propertyMap]
             }
           };
         } else {
           return {
             [CssParameter]: [{
-              '#text': lineSymbolizer[property],
+              '#text': lineSymbolizer[property as keyof typeof lineSymbolizer],
             }],
             ':@': {
-              '@_name': propertyMap[property]
+              '@_name': propertyMap[property as keyof typeof propertyMap]
             }
           };
         }
@@ -2135,24 +2146,26 @@ export class SldStyleParser implements StyleParser<string> {
 
     Object.keys(fillSymbolizer)
       .filter((property: any) => property !== 'kind')
-      .filter((property: any) => fillSymbolizer[property] !== undefined && fillSymbolizer[property] !== null)
+      .filter((property: any) => fillSymbolizer[property as keyof typeof fillSymbolizer] !== undefined &&
+        fillSymbolizer[property as keyof typeof fillSymbolizer] !== null)
       .forEach((property: any) => {
         if (Object.keys(fillPropertyMap).includes(property)) {
-          if (isGeoStylerFunction(fillSymbolizer[property])) {
-            const children = geoStylerFunctionToSldFunction(fillSymbolizer[property]);
+          if (isGeoStylerFunction(fillSymbolizer[property as keyof typeof fillSymbolizer])) {
+            const children = geoStylerFunctionToSldFunction(fillSymbolizer[
+              property as keyof typeof fillSymbolizer] as GeoStylerFunction);
             fillCssParameters.push({
               [CssParameter]: children,
               ':@': {
-                '@_name': fillPropertyMap[property]
+                '@_name': fillPropertyMap[property as keyof typeof fillPropertyMap]
               }
             });
           } else {
             fillCssParameters.push({
               [CssParameter]: [{
-                '#text': fillSymbolizer[property],
+                '#text': fillSymbolizer[property as keyof typeof fillSymbolizer],
               }],
               ':@': {
-                '@_name': fillPropertyMap[property]
+                '@_name': fillPropertyMap[property as keyof typeof fillPropertyMap]
               }
             });
           }
@@ -2161,7 +2174,7 @@ export class SldStyleParser implements StyleParser<string> {
           let transformedValue: string = '';
 
           if (property === 'outlineDasharray') {
-            const paramValue: number[] = fillSymbolizer[property];
+            const paramValue: number[] = fillSymbolizer[property as keyof typeof fillSymbolizer] as number[];
             transformedValue = '';
             paramValue.forEach((dash: number, idx) => {
               transformedValue += dash;
@@ -2170,19 +2183,19 @@ export class SldStyleParser implements StyleParser<string> {
               }
             });
           } else if (property === 'outlineWidth') {
-            transformedValue = fillSymbolizer[property] + '';
+            transformedValue = fillSymbolizer[property as keyof typeof fillSymbolizer] + '';
           }  else if (property === 'outlineOpacity') {
-            transformedValue = fillSymbolizer[property] + '';
+            transformedValue = fillSymbolizer[property as keyof typeof fillSymbolizer] + '';
           } else {
-            transformedValue = fillSymbolizer[property];
+            (transformedValue as any) = fillSymbolizer[property as keyof typeof fillSymbolizer];
           }
 
-          if (isGeoStylerFunction(fillSymbolizer[property])) {
-            const children = geoStylerFunctionToSldFunction(fillSymbolizer[property]);
+          if (isGeoStylerFunction(fillSymbolizer[property as keyof typeof fillSymbolizer])) {
+            const children = geoStylerFunctionToSldFunction((fillSymbolizer as any)[property]);
             strokeCssParameters.push({
               [CssParameter]: children,
               ':@': {
-                '@_name': strokePropertyMap[property]
+                '@_name': strokePropertyMap[property as keyof typeof strokePropertyMap]
               }
             });
           } else {
@@ -2191,7 +2204,7 @@ export class SldStyleParser implements StyleParser<string> {
                 '#text': transformedValue,
               }],
               ':@': {
-                '@_name': strokePropertyMap[property]
+                '@_name': strokePropertyMap[property as keyof typeof strokePropertyMap]
               }
             });
           }
@@ -2282,17 +2295,17 @@ export class SldStyleParser implements StyleParser<string> {
     // parse colorMap.type
     if (colorMap.type) {
       const type = colorMap.type;
-      sldColorMap[':@'] = {
+      (sldColorMap as any)[':@'] = {
         '@_type': type
       };
     }
     // parse colorMap.extended
     if (colorMap.extended !== undefined) {
       const extended = colorMap.extended.toString();
-      if (!sldColorMap[':@']) {
-        sldColorMap[':@'] = {};
+      if (!(sldColorMap as any)[':@']) {
+        (sldColorMap as any)[':@'] = {};
       }
-      sldColorMap[':@']['@_extended'] = extended;
+      (sldColorMap as any)[':@']['@_extended'] = extended;
     }
     // parse colorMap.colorMapEntries
     if (colorMap.colorMapEntries && colorMap.colorMapEntries.length > 0) {
@@ -2339,10 +2352,10 @@ export class SldStyleParser implements StyleParser<string> {
     keys.forEach((key: string) => {
       const channel: any = [];
       // parse sourceChannelName
-      const sourceChannelName = channelSelection?.[key]?.sourceChannelName;
-      const channelName = propertyMap[key];
+      const sourceChannelName = (channelSelection?.[key as keyof ChannelSelection] as any)?.sourceChannelName;
+      const channelName = propertyMap[key as keyof typeof propertyMap];
       // parse contrastEnhancement
-      const contrastEnhancement = channelSelection?.[key]?.contrastEnhancement;
+      const contrastEnhancement = (channelSelection?.[key as keyof ChannelSelection] as any)?.contrastEnhancement;
       if (sourceChannelName || contrastEnhancement) {
         if (sourceChannelName) {
           channel.push({
@@ -2403,23 +2416,23 @@ export class SldStyleParser implements StyleParser<string> {
       // ScaleDenominator and Filters are completely supported so we just check for symbolizers
       rule.symbolizers.forEach(symbolizer => {
         const key = capitalizeFirstLetter(`${symbolizer.kind}Symbolizer`);
-        const value = this.unsupportedProperties?.Symbolizer?.[key];
+        const value = (this.unsupportedProperties?.Symbolizer as any)?.[key];
         if (value) {
           if (typeof value === 'string' || value instanceof String) {
             if (!unsupportedProperties.Symbolizer) {
               unsupportedProperties.Symbolizer = {};
             }
-            unsupportedProperties.Symbolizer[key] = value;
+            (unsupportedProperties.Symbolizer as any)[key] = value;
           } else {
             Object.keys(symbolizer).forEach(property => {
               if (value[property]) {
                 if (!unsupportedProperties.Symbolizer) {
                   unsupportedProperties.Symbolizer = {};
                 }
-                if (!unsupportedProperties.Symbolizer[key]) {
-                  unsupportedProperties.Symbolizer[key] = {};
+                if (!unsupportedProperties.Symbolizer[key as keyof typeof unsupportedProperties.Symbolizer]) {
+                  (unsupportedProperties.Symbolizer as any)[key] = {};
                 }
-                unsupportedProperties.Symbolizer[key][property] = value[property];
+                (unsupportedProperties.Symbolizer as any)[key][property] = value[property];
               }
             });
           }
