@@ -2,6 +2,7 @@
 /* eslint camelcase: 0 */
 import fs from 'fs';
 import SldStyleParser from './SldStyleParser';
+import { beforeEach, expect, it, describe } from 'vitest';
 
 import burg from '../data/styles/geoserver/burg';
 import capitals from '../data/styles/geoserver/capitals';

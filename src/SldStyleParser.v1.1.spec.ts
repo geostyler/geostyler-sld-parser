@@ -3,6 +3,7 @@
 
 import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
+import { beforeEach, expect, it, describe } from 'vitest';
 
 import empty_filter from '../data/styles/empty_filter';
 import point_simplepoint from '../data/styles/point_simplepoint';
