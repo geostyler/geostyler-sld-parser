@@ -178,7 +178,8 @@ export class SldStyleParser implements StyleParser<string> {
       ignoreDeclaration: true,
       removeNSPrefix: true,
       ignoreAttributes: false,
-      preserveOrder: true
+      preserveOrder: true,
+      trimValues: true
     });
     this.builder = new XMLBuilder({
       ...opts?.builderOptions,
