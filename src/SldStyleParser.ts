@@ -114,7 +114,10 @@ export class SldStyleParser implements StyleParser<string> {
       MarkSymbolizer: {
         avoidEdges: 'none',
         blur: 'none',
-        offset: 'none',
+        offset: {
+          support: 'partial',
+          info: 'Only supported for SLD Version 1.1.0'
+        },
         offsetAnchor: 'none',
         pitchAlignment: 'none',
         pitchScale: 'none',
@@ -138,7 +141,10 @@ export class SldStyleParser implements StyleParser<string> {
         haloOpacity: 'none',
         haloWidth: 'none',
         keepUpright: 'none',
-        offset: 'none',
+        offset: {
+          support: 'partial',
+          info: 'Only supported for SLD Version 1.1.0'
+        },
         offsetAnchor: 'none',
         optional: 'none',
         padding: 'none',
@@ -688,8 +694,8 @@ export class SldStyleParser implements StyleParser<string> {
       const x = get(displacement, 'DisplacementX.#text');
       const y = get(displacement, 'DisplacementY.#text');
       textSymbolizer.offset = [
-        x ? parseFloat(x) : 0,
-        y ? parseFloat(y) : 0,
+        Number.isFinite(x) ? numberExpression(x) : 0,
+        Number.isFinite(y) ? numberExpression(y) : 0,
       ];
     }
     const rotation = get(sldSymbolizer, 'LabelPlacement.PointPlacement.Rotation.#text');
@@ -890,6 +896,7 @@ export class SldStyleParser implements StyleParser<string> {
     const rotation = get(sldSymbolizer, 'Graphic.Rotation.#text');
     const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
     const color = getParameterValue(fillEl, 'fill', this.sldVersion);
+    const displacement = get(sldSymbolizer, 'Graphic.Displacement');
 
     const markSymbolizer: GsMarkSymbolizer = {
       kind: 'Mark',
@@ -911,6 +918,14 @@ export class SldStyleParser implements StyleParser<string> {
     if (size) {
       // edge case where the value has to be divided by 2 which has to be considered in the function
       markSymbolizer.radius = isGeoStylerNumberFunction(size) ? size : Number(size) / 2;
+    }
+    if (displacement) {
+      const x = get(displacement, 'DisplacementX.#text');
+      const y = get(displacement, 'DisplacementY.#text');
+      markSymbolizer.offset = [
+        Number.isFinite(x) ? numberExpression(x) : 0,
+        Number.isFinite(y) ? numberExpression(y) : 0,
+      ];
     }
 
     switch (wellKnownName) {
@@ -970,6 +985,7 @@ export class SldStyleParser implements StyleParser<string> {
     const opacity: string = get(sldSymbolizer, 'Graphic.Opacity.#text');
     const size: string = get(sldSymbolizer, 'Graphic.Size.#text');
     const rotation: string = get(sldSymbolizer, 'Graphic.Rotation.#text');
+    const displacement = get(sldSymbolizer, 'Graphic.Displacement');
     if (opacity) {
       iconSymbolizer.opacity = numberExpression(opacity);
     }
@@ -978,6 +994,14 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (rotation) {
       iconSymbolizer.rotate = numberExpression(rotation);
+    }
+    if (displacement) {
+      const x = get(displacement, 'DisplacementX.#text');
+      const y = get(displacement, 'DisplacementY.#text');
+      iconSymbolizer.offset = [
+        Number.isFinite(x) ? numberExpression(x) : 0,
+        Number.isFinite(y) ? numberExpression(y) : 0,
+      ];
     }
     return iconSymbolizer;
   }
@@ -1498,6 +1522,9 @@ export class SldStyleParser implements StyleParser<string> {
     const Rotation = this.getTagName('Rotation');
     const Size = this.getTagName('Size');
     const Graphic = this.getTagName('Graphic');
+    const Displacement = this.getTagName('Displacement');
+    const DisplacementX = this.getTagName('DisplacementX');
+    const DisplacementY = this.getTagName('DisplacementY');
 
     const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
     const mark: any[] = [{
@@ -1655,6 +1682,20 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    if (markSymbolizer.offset && this.sldVersion === '1.1.0') {
+      graphic.push({
+        [Displacement]: [{
+          [DisplacementX]: [{
+            '#text': markSymbolizer.offset[0].toString()
+          }]
+        }, {
+          [DisplacementY]: [{
+            '#text': markSymbolizer.offset[1].toString()
+          }]
+        }]
+      });
+    }
+
     return [{
       [Graphic]: graphic
     }];
@@ -1675,6 +1716,9 @@ export class SldStyleParser implements StyleParser<string> {
     const Rotation = this.getTagName('Rotation');
     const Size = this.getTagName('Size');
     const Graphic = this.getTagName('Graphic');
+    const Displacement = this.getTagName('Displacement');
+    const DisplacementX = this.getTagName('DisplacementX');
+    const DisplacementY = this.getTagName('DisplacementY');
 
     const graphic: any[] = [{
       [ExternalGraphic]: [{
@@ -1724,6 +1768,19 @@ export class SldStyleParser implements StyleParser<string> {
       graphic.push({
         [Rotation]: [{
           '#text':  iconSymbolizer.rotate
+        }]
+      });
+    }
+    if (iconSymbolizer.offset && this.sldVersion === '1.1.0') {
+      graphic.push({
+        [Displacement]: [{
+          [DisplacementX]: [{
+            '#text': iconSymbolizer.offset[0].toString()
+          }]
+        }, {
+          [DisplacementY]: [{
+            '#text': iconSymbolizer.offset[1].toString()
+          }]
         }]
       });
     }

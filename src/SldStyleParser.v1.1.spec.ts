@@ -20,12 +20,14 @@ import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simpleLabel from '../data/styles/point_simpleLabel';
 import point_simpleLabel2 from '../data/styles/point_simpleLabel2';
 import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
+import point_simplepoint_displacement from '../data/styles/point_simplepoint_displacement';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_floatingPoint from '../data/styles/point_externalgraphic_floatingPoint';
 import point_externalgraphic_svg from '../data/styles/point_externalgraphic_svg';
+import point_externalgraphic_svg_displacement from '../data/styles/point_externalgraphic_svg_displacement';
 import multi_simplelineLabel from '../data/styles/multi_simplelineLabel';
 import point_simplesquare from '../data/styles/point_simplesquare';
 import point_simpletriangle from '../data/styles/point_simpletriangle';
@@ -67,6 +69,12 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_simplepoint);
     });
+    it('can read a SLD 1.1 PointSymbolizer with Displacment', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/point_simplepoint_displacement.sld', 'utf8');
+      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(point_simplepoint_displacement);
+    });
     it('can read a SLD 1.1 PointSymbolizer with ExternalGraphic', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/point_externalgraphic.sld', 'utf8');
       const { output: geoStylerStyle} = await styleParser.readStyle(sld);
@@ -84,6 +92,12 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       const { output: geoStylerStyle} = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_externalgraphic_svg);
+    });
+    it('can read a SLD 1.1 PointSymbolizer with ExternalGraphic and Displacement', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/point_externalgraphic_svg_displacement.sld', 'utf8');
+      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(point_externalgraphic_svg_displacement);
     });
     it('can read a SLD 1.1 PointSymbolizer with wellKnownName square', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/point_simplesquare.sld', 'utf8');
@@ -355,6 +369,14 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_simplepoint);
     });
+    it('can write a SLD 1.1 PointSymbolizer with Displacement', async () => {
+      const { output: sldString } = await styleParser.writeStyle(point_simplepoint_displacement);
+      expect(sldString).toBeDefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(point_simplepoint_displacement);
+    });
     it('can write a SLD 1.1 PointSymbolizer with ExternalGraphic', async () => {
       const { output: sldString } = await styleParser.writeStyle(point_externalgraphic);
       expect(sldString).toBeDefined();
@@ -370,6 +392,14 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_externalgraphic_svg);
+    });
+    it('can write a SLD 1.1 PointSymbolizer with ExternalGraphic svg and displacment', async () => {
+      const { output: sldString } = await styleParser.writeStyle(point_externalgraphic_svg_displacement);
+      expect(sldString).toBeDefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(point_externalgraphic_svg_displacement);
     });
     it('can write a SLD 1.1 PointSymbolizer with wellKnownName square', async () => {
       const { output: sldString } = await styleParser.writeStyle(point_simplesquare);

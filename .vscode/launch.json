@@ -2,33 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Jest Tests",
       "type": "node",
       "request": "launch",
-      "port": 9230,
-      "runtimeArgs": [
-        "--inspect-brk=9230",
-        "${workspaceRoot}/node_modules/.bin/jest",
-        "--runInBand",
-        "--watch"
-      ],
-      "runtimeExecutable": null,
+      "name": "Debug Current Test File",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "smartStep": true,
       "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Jest Tests Windows",
-      "program": "${workspaceRoot}/node_modules/jest/bin/jest",
-      "args": [
-        "-i",
-        "--watch"
-      ],
-      "internalConsoleOptions": "openOnSessionStart",
-      "console": "integratedTerminal",
-      "outFiles": [
-        "${workspaceRoot}/build/dist/**/*"
-      ]
     }
   ]
 }
