@@ -10,7 +10,7 @@
           <se:PolygonSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
             <se:Fill>
               <se:SvgParameter name="fill">#000080</se:SvgParameter>
-              <se:SvgParameter name="fill-opacity">0.5</se:SvgParameter>
+              <se:SvgParameter name="fill-opacity">0</se:SvgParameter>
             </se:Fill>
             <se:Stroke>
               <se:SvgParameter name="stroke">#FFFFFF</se:SvgParameter>
