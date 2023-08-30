@@ -57,7 +57,7 @@
     "eslint": "^8.40.0",
     "np": "^8.0.0",
     "typescript": "^5.0.4",
-    "vite": "4.3.9",
+    "vite": "4.4.9",
     "vitest": "0.34.3"
   },
   "browserslist": [
