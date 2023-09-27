@@ -4,7 +4,7 @@
     <se:Name>GeoStyler Demo</se:Name>
     <UserStyle>
       <se:Name>GeoStyler Demo</se:Name>
-      <se:Title>Line width has to be 50m in map coordinates, so less pixels when zooming out and more when zooming in</se:Title>
+      <se:Title>Red line width has to be 50m in map coordinates, so less pixels when zooming out and more when zooming in. Grren line has to fixed width.</se:Title>
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Rule 1</se:Name>
@@ -12,6 +12,15 @@
             <se:Stroke>
               <se:SvgParameter name="stroke">#ff0000</se:SvgParameter>
               <se:SvgParameter name="stroke-width">50</se:SvgParameter>
+            </se:Stroke>
+          </se:LineSymbolizer>
+        </se:Rule>
+        <se:Rule>
+          <se:Name>Rule 2</se:Name>
+          <se:LineSymbolizer>
+            <se:Stroke>
+              <se:SvgParameter name="stroke">#00ff00</se:SvgParameter>
+              <se:SvgParameter name="stroke-width">5</se:SvgParameter>
             </se:Stroke>
           </se:LineSymbolizer>
         </se:Rule>
