@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources 🔰
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js 18 👷🏻
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies ⏬
+        run: npm ci
+
+      - name: Build artifacts 🏗️
+        run: npm run build
+
+      - name: Release 🚀
+        uses: cycjimmy/semantic-release-action@v3
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
