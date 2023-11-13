@@ -32,7 +32,6 @@
     "lint:test": "npm run lint && npm run test",
     "lint": "eslint -c .eslintrc.js --ext .ts . && tsc --noEmit --project tsconfig.json",
     "prepublishOnly": "npm run lint:test:build",
-    "release": "np --no-yarn --any-branch && git push git@github.com:geostyler/geostyler-sld-parser.git master",
     "test-watch": "vitest",
     "test": "vitest run --coverage"
   },
@@ -57,7 +56,6 @@
     "@vitest/coverage-istanbul": "^0.34.0",
     "coveralls": "^3.1.1",
     "eslint": "^8.40.0",
-    "np": "^8.0.0",
     "typescript": "^5.0.4",
     "vite": "4.4.9",
     "vitest": "0.34.3"
