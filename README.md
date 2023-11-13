@@ -1,7 +1,7 @@
 # geostyler-sld-parser
 
 [![Test Push to Master](https://github.com/geostyler/geostyler-sld-parser/actions/workflows/on-push-master.yml/badge.svg)](https://github.com/geostyler/geostyler-sld-parser/actions/workflows/on-push-master.yml)
-[![Coverage Status](https://coveralls.io/repos/github/terrestris/geostyler-sld-parser/badge.svg?branch=master)](https://coveralls.io/github/terrestris/geostyler-sld-parser?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/geostyler/geostyler-sld-parser/badge.svg?branch=master)](https://coveralls.io/github/geostyler/geostyler-sld-parser?branch=master)
 [![npm version](https://badge.fury.io/js/geostyler-sld-parser.svg)](https://www.npmjs.com/package/geostyler-sld-parser)
 
 [GeoStyler](https://github.com/terrestris/geostyler/) Style Parser implementation for Styled Layer Descriptor (SLD)
