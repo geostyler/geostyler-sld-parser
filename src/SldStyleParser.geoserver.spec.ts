@@ -194,8 +194,8 @@ describe('SldStyleParser implements StyleParser', () => {
       } = await styleParser.writeStyle(burg);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();
-      expect(warnings).toBeUndefined();
-      expect(unsupportedProperties).toBeUndefined();
+      expect(warnings).toHaveLength(1);
+      expect(unsupportedProperties).toBeDefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);

@@ -153,6 +153,10 @@ export class SldStyleParser implements StyleParser<string> {
         pitchAlignment: 'none',
         rotationAlignment: 'none',
         textFit: 'none',
+        image: {
+          support: 'partial',
+          info: 'Sprites are not supported'
+        },
         textFitPadding: 'none',
         visibility: 'none'
       },
