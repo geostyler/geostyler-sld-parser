@@ -379,8 +379,8 @@ describe('SldStyleParser implements StyleParser', () => {
       } = await styleParser.writeStyle(point_externalgraphic);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();
-      expect(warnings).toBeUndefined();
-      expect(unsupportedProperties).toBeUndefined();
+      expect(warnings).toHaveLength(1);
+      expect(unsupportedProperties).toBeDefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
@@ -395,8 +395,8 @@ describe('SldStyleParser implements StyleParser', () => {
       } = await styleParser.writeStyle(point_externalgraphic_svg);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();
-      expect(warnings).toBeUndefined();
-      expect(unsupportedProperties).toBeUndefined();
+      expect(warnings).toHaveLength(1);
+      expect(unsupportedProperties).toBeDefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
