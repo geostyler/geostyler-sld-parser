@@ -439,7 +439,7 @@ export class SldStyleParser implements StyleParser<string> {
       scaleDenominator.max = Number(max);
     }
 
-    return (scaleDenominator.min || scaleDenominator.max)
+    return (Number.isFinite(scaleDenominator.min) || Number.isFinite(scaleDenominator.max))
       ? scaleDenominator
       : undefined;
   }
@@ -1586,7 +1586,10 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity) {
+    if (markSymbolizer.strokeColor ||
+      Number.isFinite(markSymbolizer.strokeWidth) ||
+      Number.isFinite(markSymbolizer.strokeOpacity)
+    ) {
       const strokeCssParameters = [];
       if (markSymbolizer.strokeColor) {
         if (isGeoStylerFunction(markSymbolizer.strokeColor)) {
@@ -1858,7 +1861,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (textSymbolizer.offset || textSymbolizer.rotate !== undefined) {
+    if (Number.isFinite(textSymbolizer.offset) || textSymbolizer.rotate !== undefined) {
       const pointPlacement: any = [];
       if (textSymbolizer.offset) {
         pointPlacement.push({
@@ -1887,7 +1890,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (textSymbolizer.haloWidth || textSymbolizer.haloColor) {
+    if (Number.isFinite(textSymbolizer.haloWidth) || textSymbolizer.haloColor) {
       const halo: any = [];
       const haloFillCssParameter = [];
       if (textSymbolizer.haloWidth) {
@@ -1926,7 +1929,7 @@ export class SldStyleParser implements StyleParser<string> {
         [Halo]: halo
       });
     }
-    if (textSymbolizer.color || textSymbolizer.opacity) {
+    if (textSymbolizer.color || Number.isFinite(textSymbolizer.opacity)) {
       const fill = [{
         [CssParameter]: [{
           '#text': textSymbolizer.color || '#000000',
@@ -1937,7 +1940,7 @@ export class SldStyleParser implements StyleParser<string> {
       },
       {
         [CssParameter]: [{
-          '#text': textSymbolizer.opacity || '1',
+          '#text': Number.isFinite(textSymbolizer.opacity) ? textSymbolizer.opacity : '1',
         }],
         ':@': {
           '@_name': 'fill-opacity'
