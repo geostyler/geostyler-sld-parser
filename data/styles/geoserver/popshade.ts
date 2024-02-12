@@ -65,7 +65,8 @@ const style: Style = {
             'Times New Roman'
           ],
           fontStyle: 'normal',
-          size: 14
+          size: 14,
+          placement: 'point'
         }
       ]
     }

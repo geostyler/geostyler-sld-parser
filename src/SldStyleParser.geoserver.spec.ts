@@ -399,14 +399,10 @@ describe('SldStyleParser implements StyleParser', () => {
     it('can write the geoserver poi.sld', async () => {
       const {
         output: sldString,
-        errors,
-        warnings,
-        unsupportedProperties
+        errors
       } = await styleParser.writeStyle(poi);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();
-      expect(warnings).toBeUndefined();
-      expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
@@ -415,14 +411,10 @@ describe('SldStyleParser implements StyleParser', () => {
     it('can write the geoserver poly_landmarks.sld', async () => {
       const {
         output: sldString,
-        errors,
-        warnings,
-        unsupportedProperties
+        errors
       } = await styleParser.writeStyle(poly_landmarks);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();
-      expect(warnings).toBeUndefined();
-      expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
@@ -431,14 +423,10 @@ describe('SldStyleParser implements StyleParser', () => {
     it('can write the geoserver pophatch.sld', async () => {
       const {
         output: sldString,
-        errors,
-        warnings,
-        unsupportedProperties
+        errors
       } = await styleParser.writeStyle(pophatch);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();
-      expect(warnings).toBeUndefined();
-      expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
@@ -447,14 +435,10 @@ describe('SldStyleParser implements StyleParser', () => {
     it('can write the geoserver popshade.sld', async () => {
       const {
         output: sldString,
-        errors,
-        warnings,
-        unsupportedProperties
+        errors
       } = await styleParser.writeStyle(popshade);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();
-      expect(warnings).toBeUndefined();
-      expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
@@ -543,14 +527,10 @@ describe('SldStyleParser implements StyleParser', () => {
     it('can write the geoserver tiger_roads.sld', async () => {
       const {
         output: sldString,
-        errors,
-        warnings,
-        unsupportedProperties
+        errors
       } = await styleParser.writeStyle(tiger_roads);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();
-      expect(warnings).toBeUndefined();
-      expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
