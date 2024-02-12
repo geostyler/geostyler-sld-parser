@@ -7,7 +7,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Small populated New Yorks</se:Name>
-          <ogc:Filter xmlns="http://www.opengis.net/ogc">
+          <Filter xmlns="http://www.opengis.net/ogc">
             <PropertyIsLike wildCard="*" singleChar="." escapeChar="!">
               <Function name="strMatches">
                 <PropertyName>year</PropertyName>
@@ -15,7 +15,7 @@
               </Function>
               <Literal>true</Literal>
             </PropertyIsLike>
-          </ogc:Filter>
+          </Filter>
           <se:MinScaleDenominator>10000</se:MinScaleDenominator>
           <se:MaxScaleDenominator>20000</se:MaxScaleDenominator>
           <se:PointSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
