@@ -401,7 +401,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The name to be used for the GeoStyler Style Style
    */
   getStyleNameFromSldObject(sldObject: any): string {
-    const userStyleTitle = get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle.Title.#text');
+    const userStyleTitle = get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle.Name.#text');
     const namedLayerName = get(sldObject, 'StyledLayerDescriptor.NamedLayer.Name.#text');
     return userStyleTitle ? userStyleTitle
       : namedLayerName ? namedLayerName : '';
@@ -1228,6 +1228,19 @@ export class SldStyleParser implements StyleParser<string> {
       '@_xmlns:se': 'http://www.opengis.net/se'
     };
 
+    const userStyle = [];
+    userStyle.push({
+      [Name]: [{ '#text': geoStylerStyle.name || '' }]
+    });
+    if (this.sldVersion === '1.0.0') {
+      userStyle.push({
+        [Title]: [{ '#text': geoStylerStyle.name || '' }]
+      });
+    }
+    userStyle.push({
+      [FeatureTypeStyle]: featureTypeStyle
+    });
+
     return [{
       '?xml': [{ '#text': '' }],
       ':@': {
@@ -1240,13 +1253,7 @@ export class SldStyleParser implements StyleParser<string> {
         NamedLayer: [{
           [Name]: [{ '#text': geoStylerStyle.name || '' }]
         }, {
-          UserStyle: [{
-            [Name]: [{ '#text': geoStylerStyle.name || '' }]
-          }, {
-            [Title]: [{ '#text': geoStylerStyle.name || '' }]
-          }, {
-            [FeatureTypeStyle]: featureTypeStyle
-          }]
+          UserStyle: userStyle
         }]
       }],
       ':@': attributes

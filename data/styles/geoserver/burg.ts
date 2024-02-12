@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const burg: Style = {
-  name: 'A small red flag',
+  name: 'burg',
   rules: [
     {
       name: 'Red flag',

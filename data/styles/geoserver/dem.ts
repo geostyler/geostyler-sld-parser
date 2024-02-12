@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Simple DEM style',
+  name: 'dem',
   rules: [
     {
       name: '',

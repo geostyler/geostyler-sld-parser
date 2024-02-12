@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Green polygon',
+  name: 'green',
   rules: [
     {
       name: '',
