@@ -707,7 +707,7 @@ export class SldStyleParser implements StyleParser<string> {
       const linePlacement = get(placement, 'LinePlacement');
       if (!isNil(pointPlacement)) {
         textSymbolizer.placement = 'point';
-        const displacement = get(placement, 'PointPlacement.Displacement');
+        const displacement = get(pointPlacement, 'Displacement');
         if (!isNil(displacement)) {
           const x = get(displacement, 'DisplacementX.#text');
           const y = get(displacement, 'DisplacementY.#text');
@@ -716,7 +716,7 @@ export class SldStyleParser implements StyleParser<string> {
             Number.isFinite(y) ? numberExpression(y) : 0,
           ];
         }
-        const rotation = get(placement, 'PointPlacement.Rotation.#text');
+        const rotation = get(pointPlacement, 'Rotation.#text');
         if (!isNil(rotation)) {
           textSymbolizer.rotate = numberExpression(rotation);
         }
