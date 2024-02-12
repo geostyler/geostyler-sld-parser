@@ -8,7 +8,7 @@
       <FeatureTypeStyle>
         <Rule>
           <Name>Function Property Rule 0</Name>
-          <Filter>
+          <Filter xmlns="http://www.opengis.net/ogc">
             <Function name="equalTo">
               <Function name="between">
                 <PropertyName>testprop</PropertyName>
