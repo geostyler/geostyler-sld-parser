@@ -178,6 +178,12 @@ export class SldStyleParser implements StyleParser<string> {
         resampling: 'none',
         saturation: 'none',
         visibility: 'none'
+      },
+      TextSymbolizer: {
+        placement: {
+          support: 'partial',
+          info: 'Only "line" and "point" are currently supported'
+        }
       }
     }
   };
@@ -695,18 +701,28 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(haloColor)) {
       textSymbolizer.haloColor = haloColor;
     }
-    const displacement = get(sldSymbolizer, 'LabelPlacement.PointPlacement.Displacement');
-    if (!isNil(displacement)) {
-      const x = get(displacement, 'DisplacementX.#text');
-      const y = get(displacement, 'DisplacementY.#text');
-      textSymbolizer.offset = [
-        Number.isFinite(x) ? numberExpression(x) : 0,
-        Number.isFinite(y) ? numberExpression(y) : 0,
-      ];
-    }
-    const rotation = get(sldSymbolizer, 'LabelPlacement.PointPlacement.Rotation.#text');
-    if (!isNil(rotation)) {
-      textSymbolizer.rotate = numberExpression(rotation);
+    const placement = get(sldSymbolizer, 'LabelPlacement');
+    if (!isNil(placement)) {
+      const pointPlacement = get(placement, 'PointPlacement');
+      const linePlacement = get(placement, 'LinePlacement');
+      if (!isNil(pointPlacement)) {
+        textSymbolizer.placement = 'point';
+        const displacement = get(placement, 'PointPlacement.Displacement');
+        if (!isNil(displacement)) {
+          const x = get(displacement, 'DisplacementX.#text');
+          const y = get(displacement, 'DisplacementY.#text');
+          textSymbolizer.offset = [
+            Number.isFinite(x) ? numberExpression(x) : 0,
+            Number.isFinite(y) ? numberExpression(y) : 0,
+          ];
+        }
+        const rotation = get(placement, 'PointPlacement.Rotation.#text');
+        if (!isNil(rotation)) {
+          textSymbolizer.rotate = numberExpression(rotation);
+        }
+      } else if (!isNil(linePlacement)) {
+        textSymbolizer.placement = 'line';
+      }
     }
     if (!isNil(fontFamily)) {
       textSymbolizer.font = [fontFamily];
@@ -1807,6 +1823,7 @@ export class SldStyleParser implements StyleParser<string> {
     const DisplacementY = this.getTagName('DisplacementY');
     const LabelPlacement = this.getTagName('LabelPlacement');
     const PointPlacement = this.getTagName('PointPlacement');
+    const LinePlacement = this.getTagName('LinePlacement');
     const Rotation = this.getTagName('Rotation');
     const Radius = this.getTagName('Radius');
     const Label = this.getTagName('Label');
@@ -1854,7 +1871,13 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (textSymbolizer.offset || textSymbolizer.rotate !== undefined) {
+    if (textSymbolizer.placement === 'line') {
+      sldTextSymbolizer.push({
+        [LabelPlacement]: [{
+          [LinePlacement]: []
+        }]
+      });
+    } else if (textSymbolizer.offset || textSymbolizer.rotate !== undefined || textSymbolizer.placement === 'point') {
       const pointPlacement: any = [];
       if (textSymbolizer.offset) {
         pointPlacement.push({

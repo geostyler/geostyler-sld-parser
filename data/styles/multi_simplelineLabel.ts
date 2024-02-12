@@ -18,7 +18,8 @@ const multiSimplelineLabel: Style = {
       size: 12,
       offset: [0, 5],
       fontStyle: 'normal',
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      placement: 'point'
     }]
   }]
 };
