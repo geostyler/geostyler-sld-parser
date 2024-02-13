@@ -8,7 +8,7 @@
   <NamedLayer>
     <Name>Simple Line and Point</Name>
     <UserStyle>
-      <Title>Simple Line with label</Title>
+      <Name>Simple Line with label</Name>
       <FeatureTypeStyle>
         <Rule>
           <LineSymbolizer>

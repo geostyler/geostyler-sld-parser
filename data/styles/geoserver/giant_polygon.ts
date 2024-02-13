@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Border-less gray fill',
+  name: 'area landmarks',
   rules: [
     {
       name: '',

@@ -12,7 +12,6 @@
     <se:Name>OL Style</se:Name>
     <UserStyle>
       <se:Name>OL Style</se:Name>
-      <se:Title>OL Style</se:Title>
       <FeatureTypeStyle>
         <se:Rule>
           <se:Name>OL Style Rule 0</se:Name>

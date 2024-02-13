@@ -36,7 +36,7 @@ describe('SldStyleParser implements StyleParser', () => {
   let styleParser: SldStyleParser;
 
   beforeEach(() => {
-    styleParser = new SldStyleParser();
+    styleParser = new SldStyleParser({sldVersion: '1.0.0'});
   });
 
   describe('#readStyle', () => {

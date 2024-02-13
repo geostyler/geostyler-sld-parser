@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Default Polygon',
+  name: 'default_polygon',
   rules: [
     {
       name: 'Gray Polygon with Black Outline',

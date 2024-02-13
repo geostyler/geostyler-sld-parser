@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Generic',
+  name: 'generic',
   rules: [{
     name: 'Opaque Raster',
     filter: ['==', {

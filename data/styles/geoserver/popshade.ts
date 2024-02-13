@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Population in the United States',
+  name: 'population',
   rules: [
     {
       name: '< 2M',

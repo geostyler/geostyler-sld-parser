@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Red, translucent style',
+  name: 'Restricted areas',
   rules: [
     {
       name: 'RedFill RedOutline',

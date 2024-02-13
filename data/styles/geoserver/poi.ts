@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Points of interest',
+  name: 'poi',
   rules: [
     {
       name: '',
