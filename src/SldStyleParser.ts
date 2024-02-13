@@ -1190,6 +1190,10 @@ export class SldStyleParser implements StyleParser<string> {
    * @returns The tagName as used by the configured sldVersion
    */
   getTagName(tagName: string): string {
+    const ogcList = ['Filter'];
+    if (ogcList.includes(tagName)) {
+      return tagName;
+    }
     if (tagName === 'CssParameter') {
       return this.sldVersion === '1.1.0' ? 'se:SvgParameter' : 'CssParameter';
     }
