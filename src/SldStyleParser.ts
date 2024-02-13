@@ -1210,8 +1210,12 @@ export class SldStyleParser implements StyleParser<string> {
     const rules: any[] = this.getSldRulesFromRules(geoStylerStyle.rules);
     // add the ogc namespace to the filter element, if a filter is present
     rules.forEach(rule => {
-      if (rule.Filter && !rule.Filter['@_xmlns']) {
-        rule.Filter['@_xmlns'] = 'http://www.opengis.net/ogc';
+      const ruleEl = get(rule, this.getTagName('Rule'));
+      const filter = getChildren(ruleEl, 'Filter').at(0);
+      if (filter) {
+        filter[':@'] = {
+          '@_xmlns': 'http://www.opengis.net/ogc'
+        };
       }
     });
 
