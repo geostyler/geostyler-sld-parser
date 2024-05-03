@@ -1,6 +1,6 @@
 {
   "name": "geostyler-sld-parser-infas",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "GeoStyler Style Parser implementation for SLD",
   "main": "build/dist/SldStyleParser.js",
   "types": "build/dist/SldStyleParser.d.ts",
