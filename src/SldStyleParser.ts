@@ -1521,6 +1521,11 @@ export class SldStyleParser implements StyleParser<string> {
           break;
         case 'Line':
           sldSymb = this.getSldLineSymbolizerFromLineSymbolizer(symb);
+          if (sldSymb[sldSymb.length-1].uom)
+            {
+              sldSymbolizer[':@'] = {'@_uom': sldSymb[sldSymb.length-1].uom};
+              sldSymb.pop();
+            }
           sldSymbolizer[LineSymbolizer] = sldSymb;
           break;
         case 'Fill':
@@ -2206,7 +2211,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (lineSymbolizer.widthUnit==='m') {
-      sldLineSymbolizer.push({'@_uom': 'http://www.opengeospatial.org/se/units/metre'});          
+      sldLineSymbolizer.push({'uom': 'http://www.opengeospatial.org/se/units/metre'});          
     }
 
     return sldLineSymbolizer;
