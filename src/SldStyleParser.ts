@@ -1490,8 +1490,10 @@ export class SldStyleParser implements StyleParser<string> {
     return sldFilter;
   }
 
-  /**Checks on presence of the pseudo-property 'uom' inserted by function 'addUomEntry', removes it and inserts
-   * an uom-attribute. Do it only for SLD 1.1.0, ignore it otherwise.
+  /**
+   * Checks on presence of the pseudo-property 'uom' inserted by function 'addUomEntry',
+   * removes it and inserts an uom-attribute. Do it only for SLD 1.1.0, ignore it otherwise.
+   * 
    */
   moveUomEntryToAttributes(sldSymbolizer: any, sldSymbolizerProperties: any[]) {    
     const uomValue = sldSymbolizerProperties[sldSymbolizerProperties.length-1].uom;
@@ -1506,9 +1508,11 @@ export class SldStyleParser implements StyleParser<string> {
     sldSymbolizerProperties.pop();    
   }
   
-  /**Checks Distance-Unit used by given symbolizer and inserts a pseudo-property 'uom' if required, because
+  /**
+   * Checks Distance-Unit used by given symbolizer and inserts a pseudo-property 'uom' if required, because
    * we only have a property-array returned by the getSldXXXSymbolizerFromXXXSymbolizer-functions.
    * Later, we will move to an attribute within function 'moveUomEntryToAttributes'
+   * 
    */
   addUomEntry(sldSymbolizerProperties: any[], unit: DistanceUnit | undefined) {
     if (unit==='m') {
@@ -2014,7 +2018,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    this.addUomEntry(sldTextSymbolizer, (textSymbolizer as any)["sizeUnit"]);
+    this.addUomEntry(sldTextSymbolizer, (textSymbolizer as any).sizeUnit);
 
     return sldTextSymbolizer;
   }
