@@ -2205,7 +2205,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (lineSymbolizer.widthUnit=="m") {
+    if (lineSymbolizer.widthUnit==='m') {
       sldLineSymbolizer.push({'@_uom': 'http://www.opengeospatial.org/se/units/metre'});          
     }
 
