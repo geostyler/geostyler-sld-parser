@@ -2103,7 +2103,7 @@ export class SldStyleParser implements StyleParser<string> {
     };
 
     const sldLineSymbolizer: any = [];
-
+    
     const cssParameters: any[] = Object.keys(lineSymbolizer)
       .filter((property: any) => property !== 'kind' && propertyMap[property as keyof typeof propertyMap] &&
           lineSymbolizer[property as keyof typeof lineSymbolizer] !== undefined &&
@@ -2203,6 +2203,10 @@ export class SldStyleParser implements StyleParser<string> {
       sldLineSymbolizer.push({
         [Stroke]: {}
       });
+    }
+
+    if (lineSymbolizer.widthUnit=="m") {
+      sldLineSymbolizer.push({'@_uom': 'http://www.opengeospatial.org/se/units/metre'});          
     }
 
     return sldLineSymbolizer;
