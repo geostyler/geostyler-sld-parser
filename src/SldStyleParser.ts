@@ -2211,7 +2211,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (lineSymbolizer.widthUnit==='m') {
-      sldLineSymbolizer.push({'uom': 'http://www.opengeospatial.org/se/units/metre'});          
+      sldLineSymbolizer.push({uom: 'http://www.opengeospatial.org/se/units/metre'});          
     }
 
     return sldLineSymbolizer;
