@@ -34,7 +34,8 @@ import {
   GeoStylerFunction
 } from 'geostyler-style';
 import {
-  Style
+  Style,
+  DistanceUnit
 } from 'geostyler-style';
 import {
   XMLBuilder,
@@ -1489,6 +1490,32 @@ export class SldStyleParser implements StyleParser<string> {
     return sldFilter;
   }
 
+  /**Checks on presence of the pseudo-property 'uom' inserted by function 'addUomEntry', removes it and inserts
+   * an uom-attribute. Do it only for SLD 1.1.0, ignore it otherwise.
+   */
+  moveUomEntryToAttributes(sldSymbolizer: any, sldSymbolizerProperties: any[]) {    
+    const uomValue = sldSymbolizerProperties[sldSymbolizerProperties.length-1].uom;
+    if (!uomValue) {
+      return;
+    }      
+    // put uom as attribute of symbolizer-node
+    if (this.sldVersion === '1.1.0') {
+      sldSymbolizer[':@'] = {'@_uom': uomValue};
+    }
+    // and remove this entry from symbolizer-properties because it isn't a valid property
+    sldSymbolizerProperties.pop();    
+  }
+  
+  /**Checks Distance-Unit used by given symbolizer and inserts a pseudo-property 'uom' if required, because
+   * we only have a property-array returned by the getSldXXXSymbolizerFromXXXSymbolizer-functions.
+   * Later, we will move to an attribute within function 'moveUomEntryToAttributes'
+   */
+  addUomEntry(sldSymbolizerProperties: any[], unit: DistanceUnit | undefined) {
+    if (unit==='m') {
+      sldSymbolizerProperties.push({uom: 'http://www.opengeospatial.org/se/units/metre'});          
+    }
+  }
+
   /**
    * Get the SLD Object (readable with fast-xml-parser) from geostyler-style Symbolizers.
    *
@@ -1513,26 +1540,27 @@ export class SldStyleParser implements StyleParser<string> {
           break;
         case 'Icon':
           sldSymb = this.getSldPointSymbolizerFromIconSymbolizer(symb);
+          this.moveUomEntryToAttributes(sldSymbolizer, sldSymb);
           sldSymbolizer[PointSymbolizer] = sldSymb;
           break;
         case 'Text':
           sldSymb = this.getSldTextSymbolizerFromTextSymbolizer(symb);
+          this.moveUomEntryToAttributes(sldSymbolizer, sldSymb);
           sldSymbolizer[TextSymbolizer] = sldSymb;
           break;
         case 'Line':
           sldSymb = this.getSldLineSymbolizerFromLineSymbolizer(symb);
-          if (sldSymb[sldSymb.length-1].uom) {
-            sldSymbolizer[':@'] = {'@_uom': sldSymb[sldSymb.length-1].uom};
-            sldSymb.pop();
-          }
+          this.moveUomEntryToAttributes(sldSymbolizer, sldSymb);          
           sldSymbolizer[LineSymbolizer] = sldSymb;
           break;
         case 'Fill':
           sldSymb = this.getSldPolygonSymbolizerFromFillSymbolizer(symb);
+          this.moveUomEntryToAttributes(sldSymbolizer, sldSymb);
           sldSymbolizer[PolygonSymbolizer] = sldSymb;
           break;
         case 'Raster':
           sldSymb = this.getSldRasterSymbolizerFromRasterSymbolizer(symb);
+          this.moveUomEntryToAttributes(sldSymbolizer, sldSymb);
           sldSymbolizer[RasterSymbolizer] = sldSymb;
           break;
         default:
@@ -1986,6 +2014,8 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    this.addUomEntry(sldTextSymbolizer, (textSymbolizer as any)["sizeUnit"]);
+
     return sldTextSymbolizer;
   }
 
@@ -2209,9 +2239,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (lineSymbolizer.widthUnit==='m') {
-      sldLineSymbolizer.push({uom: 'http://www.opengeospatial.org/se/units/metre'});          
-    }
+    this.addUomEntry(sldLineSymbolizer, lineSymbolizer.widthUnit);
 
     return sldLineSymbolizer;
   }
@@ -2338,6 +2366,8 @@ export class SldStyleParser implements StyleParser<string> {
         [Stroke]: strokeCssParameters
       });
     }
+
+    this.addUomEntry(polygonSymbolizer, fillSymbolizer.outlineWidthUnit);
 
     return polygonSymbolizer;
   }
