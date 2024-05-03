@@ -1521,11 +1521,10 @@ export class SldStyleParser implements StyleParser<string> {
           break;
         case 'Line':
           sldSymb = this.getSldLineSymbolizerFromLineSymbolizer(symb);
-          if (sldSymb[sldSymb.length-1].uom)
-            {
-              sldSymbolizer[':@'] = {'@_uom': sldSymb[sldSymb.length-1].uom};
-              sldSymb.pop();
-            }
+          if (sldSymb[sldSymb.length-1].uom) {
+            sldSymbolizer[':@'] = {'@_uom': sldSymb[sldSymb.length-1].uom};
+            sldSymb.pop();
+          }
           sldSymbolizer[LineSymbolizer] = sldSymb;
           break;
         case 'Fill':
