@@ -34,6 +34,7 @@ import {
   UnsupportedProperties,
   WellKnownName,
   WriteStyleResult,
+  DistanceUnit
 } from 'geostyler-style';
 import {
   X2jOptions,
@@ -121,6 +122,8 @@ const COMBINATION_MAP = {
 };
 
 type CombinationType = keyof typeof COMBINATION_MAP;
+
+const unitSldMetre: string = 'http://www.opengeospatial.org/se/units/metre';
 
 const ARITHMETIC_OPERATORS = [
   'add',
@@ -638,15 +641,16 @@ export class SldStyleParser implements StyleParser<string> {
       .filter(isSymbolizer)
       .map((sldSymbolizer: any) => {
         const sldSymbolizerName: string = Object.keys(sldSymbolizer)[0];
+        const distanceUnit: DistanceUnit | undefined = this.getDistanceUnit(sldSymbolizer);
         switch (sldSymbolizerName) {
           case 'PointSymbolizer':
-            return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer.PointSymbolizer);
+            return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer.PointSymbolizer, distanceUnit);
           case 'LineSymbolizer':
-            return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer.LineSymbolizer);
+            return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer.LineSymbolizer, distanceUnit);
           case 'TextSymbolizer':
-            return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer.TextSymbolizer);
+            return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer.TextSymbolizer, distanceUnit);
           case 'PolygonSymbolizer':
-            return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer.PolygonSymbolizer);
+            return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer.PolygonSymbolizer, distanceUnit);
           case 'RasterSymbolizer':
             return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer.RasterSymbolizer);
           default:
@@ -819,12 +823,12 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    * @return The geostyler-style PointSymbolizer
    */
-  getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
+  getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any, distanceUnit: DistanceUnit | undefined): PointSymbolizer {
     let pointSymbolizer: PointSymbolizer;
     const wellKnownName: string = get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text');
     const externalGraphic: any = get(sldSymbolizer, 'Graphic.ExternalGraphic');
     if (externalGraphic) {
-      pointSymbolizer = this.getIconSymbolizerFromSldSymbolizer(sldSymbolizer);
+      pointSymbolizer = this.getIconSymbolizerFromSldSymbolizer(sldSymbolizer, distanceUnit);
     } else {
       // geoserver does not set a wellKnownName for square explicitly since it is the default value.
       // Therefore, we have to set the wellKnownName to square if no wellKownName is given.
@@ -832,7 +836,7 @@ export class SldStyleParser implements StyleParser<string> {
         // TODO: Fix this. Idealy without lodash
         // _set(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]._', 'square');
       }
-      pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer);
+      pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer, distanceUnit);
     }
     return pointSymbolizer;
   }
@@ -845,7 +849,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    * @return The geostyler-style LineSymbolizer
    */
-  getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any): LineSymbolizer {
+  getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any, distanceUnit: DistanceUnit | undefined): LineSymbolizer {
     const lineSymbolizer: LineSymbolizer = {
       kind: 'Line'
     };
@@ -863,6 +867,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (!isNil(width)) {
       lineSymbolizer.width = numberExpression(width);
+      lineSymbolizer.widthUnit = distanceUnit;
     }
     if (!isNil(opacity)) {
       lineSymbolizer.opacity = numberExpression(opacity);
@@ -889,12 +894,12 @@ export class SldStyleParser implements StyleParser<string> {
 
     const graphicStroke = get(strokeEl, 'GraphicStroke');
     if (!isNil(graphicStroke)) {
-      lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(graphicStroke);
+      lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(graphicStroke, distanceUnit);
     }
 
     const graphicFill = get(strokeEl, 'GraphicFill');
     if (!isNil(graphicFill)) {
-      lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(graphicFill);
+      lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(graphicFill, distanceUnit);
     }
 
     const perpendicularOffset = get(sldSymbolizer, 'PerpendicularOffset.#text');
@@ -911,7 +916,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    * @return The geostyler-style TextSymbolizer
    */
-  getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): TextSymbolizer {
+  getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any, distanceUnit: DistanceUnit | undefined): TextSymbolizer {
     const textSymbolizer: TextSymbolizer = {
       kind: 'Text'
     };
@@ -944,6 +949,7 @@ export class SldStyleParser implements StyleParser<string> {
     const haloRadius = get(sldSymbolizer, 'Halo.Radius.#text');
     if (!isNil(haloRadius)) {
       textSymbolizer.haloWidth = numberExpression(haloRadius);
+      textSymbolizer.haloWidthUnit = distanceUnit;
     }
     const haloOpacity = getParameterValue(haloFillEl, 'fill-opacity', this.readingSldVersion);
     if (!isNil(haloOpacity)) {
@@ -992,6 +998,9 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (!isNil(fontSize)) {
       textSymbolizer.size = numberExpression(fontSize);
+      if (distanceUnit) {
+        (textSymbolizer as any).sizeUnit = distanceUnit; // Why isn't there a sizeUnit property??
+      }
     }
     return textSymbolizer;
   }
@@ -1065,7 +1074,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    * @return The geostyler-style FillSymbolizer
    */
-  getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): FillSymbolizer {
+  getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any, distanceUnit: DistanceUnit | undefined): FillSymbolizer {
     const fillSymbolizer: FillSymbolizer = {
       kind: 'Fill'
     };
@@ -1086,7 +1095,7 @@ export class SldStyleParser implements StyleParser<string> {
     const graphicFill = get(sldSymbolizer, 'Fill.GraphicFill');
     if (!isNil(graphicFill)) {
       fillSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
-        graphicFill
+        graphicFill, distanceUnit
       );
     }
     if (this.isSldEnv(sldEnvGeoServer)) {
@@ -1107,6 +1116,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (!isNil(outlineWidth)) {
       fillSymbolizer.outlineWidth = numberExpression(outlineWidth);
+      fillSymbolizer.outlineWidthUnit = distanceUnit;
     }
     if (!isNil(outlineOpacity)) {
       fillSymbolizer.outlineOpacity = numberExpression(outlineOpacity);
@@ -1171,7 +1181,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    * @return The geostyler-style MarkSymbolizer
    */
-  getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
+  getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any, distanceUnit: DistanceUnit | undefined): MarkSymbolizer {
     const wellKnownName: WellKnownName = get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text');
     const strokeEl = get(sldSymbolizer, 'Graphic.Mark.Stroke');
     const fillEl = get(sldSymbolizer, 'Graphic.Mark.Fill');
@@ -1203,6 +1213,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(size)) {
       // edge case where the value has to be divided by 2 which has to be considered in the function
       markSymbolizer.radius = isGeoStylerNumberFunction(size) ? size : Number(size) / 2;
+      markSymbolizer.radiusUnit = distanceUnit;
     }
     if (displacement) {
       const x = get(displacement, 'DisplacementX.#text');
@@ -1290,6 +1301,7 @@ export class SldStyleParser implements StyleParser<string> {
     const strokeWidth = getParameterValue(strokeEl, 'stroke-width', this.readingSldVersion);
     if (!isNil(strokeWidth)) {
       markSymbolizer.strokeWidth = numberExpression(strokeWidth);
+      markSymbolizer.strokeWidthUnit = distanceUnit;
     }
     const strokeOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.readingSldVersion);
     if (!isNil(strokeOpacity)) {
@@ -1310,7 +1322,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    * @return The geostyler-style IconSymbolizer
    */
-  getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
+  getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any, distanceUnit: DistanceUnit | undefined): IconSymbolizer {
     const image = get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
     const iconSymbolizer: IconSymbolizer = <IconSymbolizer>{
       kind: 'Icon',
@@ -1325,6 +1337,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (!isNil(size)) {
       iconSymbolizer.size = numberExpression(size);
+      iconSymbolizer.sizeUnit = distanceUnit;
     }
     if (!isNil(rotation)) {
       iconSymbolizer.rotate = numberExpression(rotation);
@@ -1801,6 +1814,53 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
+   * Checks on presence of the pseudo-property 'uom' inserted by function 'addUomEntry', removes it and inserts
+   * an uom-attribute. Do it only for SLD 1.1.0, ignore it otherwise.
+   */
+  moveUomEntryToAttributes(sldSymbolizer: any, sldSymbolizerProperties: any[]) {
+    const uomValue = sldSymbolizerProperties[sldSymbolizerProperties.length-1].uom;
+    if (!uomValue) {
+      return;
+    }
+    // put uom as attribute of symbolizer-node
+    if (this.sldVersion === '1.1.0') {
+      sldSymbolizer[':@'] = {'@_uom': uomValue};
+    }
+    // and remove this entry from symbolizer-properties because it isn't a valid property
+    sldSymbolizerProperties.pop();
+  }
+
+  /**
+   * Checks Distance-Unit used by given symbolizer and inserts a pseudo-property 'uom' if required, because
+   * we only have a property-array returned by the getSldXXXSymbolizerFromXXXSymbolizer-functions.
+   * Later, we will move to an attribute within function 'moveUomEntryToAttributes'
+   */
+  addUomEntry(sldSymbolizerProperties: any[], unit: DistanceUnit | undefined) {
+    if (unit==='m') {
+      sldSymbolizerProperties.push({uom: unitSldMetre});
+    }
+  }
+
+  /**
+   * Checks for an 'uom'-attribute and returns the distance-unit to be used for interpreting the
+   * units of the symbolizer.
+   */
+  getDistanceUnit(sldSymbolizer: any): DistanceUnit | undefined {
+    if (!sldSymbolizer) {
+      return undefined;
+    }
+    const uomAttribute = getAttribute(sldSymbolizer,'uom');
+    if (!uomAttribute) {
+      return undefined;
+    }
+    if (uomAttribute===unitSldMetre) {
+      return 'm';
+    }
+    return undefined;
+  }
+
+
+  /**
    * Get the SLD Object (readable with fast-xml-parser) from geostyler-style Symbolizers.
    *
    * @param symbolizers A geostyler-style Symbolizer array.
@@ -1816,7 +1876,7 @@ export class SldStyleParser implements StyleParser<string> {
 
     symbolizers.forEach(symb => {
       const sldSymbolizer: any = {};
-      let sldSymb: any[];
+      let sldSymb: any[] | undefined;
       switch (symb.kind) {
         case 'Mark':
           sldSymb = this.getSldPointSymbolizerFromMarkSymbolizer(symb);
@@ -1844,6 +1904,10 @@ export class SldStyleParser implements StyleParser<string> {
           break;
         default:
           break;
+      }
+      if (sldSymbolizer && sldSymb) {
+        // move the pseudo-property 'uom' to an attribute if required
+        this.moveUomEntryToAttributes(sldSymbolizer, sldSymb);
       }
       sldSymbolizers.push(sldSymbolizer);
     });
@@ -2063,9 +2127,12 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    return [{
+    const result = [{
       [Graphic]: graphic
     }];
+
+    this.addUomEntry(result, markSymbolizer.radiusUnit);
+    return result;
   }
 
   /**
@@ -2436,6 +2503,8 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    this.addUomEntry(sldTextSymbolizer, (textSymbolizer as any).sizeUnit);
+
     return sldTextSymbolizer;
   }
 
@@ -2659,6 +2728,8 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    this.addUomEntry(sldLineSymbolizer, lineSymbolizer.widthUnit);
+
     return sldLineSymbolizer;
   }
 
@@ -2785,6 +2856,8 @@ export class SldStyleParser implements StyleParser<string> {
         [Stroke]: strokeCssParameters
       });
     }
+
+    this.addUomEntry(polygonSymbolizer, fillSymbolizer.outlineWidthUnit);
 
     return polygonSymbolizer;
   }
