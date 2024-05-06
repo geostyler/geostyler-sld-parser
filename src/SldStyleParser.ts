@@ -96,6 +96,8 @@ const COMBINATION_MAP = {
 
 type CombinationType = keyof typeof COMBINATION_MAP;
 
+const unitSldMetre: string = 'http://www.opengeospatial.org/se/units/metre';
+
 /**
  * This parser can be used with the GeoStyler.
  * It implements the geostyler-style StyleParser interface.
@@ -473,7 +475,7 @@ export class SldStyleParser implements StyleParser<string> {
           case 'PolygonSymbolizer':
             return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer.PolygonSymbolizer, distanceUnit);
           case 'RasterSymbolizer':
-            return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer.RasterSymbolizer, distanceUnit);
+            return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer.RasterSymbolizer);
           default:
             throw new Error('Failed to parse SymbolizerKind from SldRule');
         }
@@ -876,7 +878,7 @@ export class SldStyleParser implements StyleParser<string> {
    *
    * @param sldSymbolizer The SLD Symbolizer
    */
-  getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any, distanceUnit: DistanceUnit | undefined): GsRasterSymbolizer {
+  getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsRasterSymbolizer {
     const rasterSymbolizer: GsRasterSymbolizer = {
       kind: 'Raster'
     };
@@ -1524,7 +1526,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   addUomEntry(sldSymbolizerProperties: any[], unit: DistanceUnit | undefined) {
     if (unit==='m') {
-      sldSymbolizerProperties.push({uom: 'http://www.opengeospatial.org/se/units/metre'});          
+      sldSymbolizerProperties.push({uom: unitSldMetre});          
     }
   }
 
@@ -1532,14 +1534,17 @@ export class SldStyleParser implements StyleParser<string> {
    * Checks for an 'uom'-attribute and returns the distance-unit to be used for interpreting the
    * units of the symbolizer.
    */
-  getDistanceUnit(sldSymbolizer: any) : DistanceUnit | undefined {
-    if (!sldSymbolizer)
+  getDistanceUnit(sldSymbolizer: any): DistanceUnit | undefined {
+    if (!sldSymbolizer) {
       return undefined;
-    let uomAttribute = getAttribute(sldSymbolizer,'uom');
-    if (!uomAttribute)
+    }
+    const uomAttribute = getAttribute(sldSymbolizer,'uom');
+    if (!uomAttribute) {
       return undefined;
-    if (uomAttribute==='http://www.opengeospatial.org/se/units/metre')
-      return "m";
+    }
+    if (uomAttribute===unitSldMetre) {
+      return 'm';
+    }
     return undefined;
   }
 
