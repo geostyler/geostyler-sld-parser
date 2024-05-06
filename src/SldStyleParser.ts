@@ -473,7 +473,7 @@ export class SldStyleParser implements StyleParser<string> {
           case 'PolygonSymbolizer':
             return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer.PolygonSymbolizer, distanceUnit);
           case 'RasterSymbolizer':
-            return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer.RasterSymbolizer, distanceUnit);
+            return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer.RasterSymbolizer);
           default:
             throw new Error('Failed to parse SymbolizerKind from SldRule');
         }
@@ -876,7 +876,7 @@ export class SldStyleParser implements StyleParser<string> {
    *
    * @param sldSymbolizer The SLD Symbolizer
    */
-  getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any, distanceUnit: DistanceUnit | undefined): GsRasterSymbolizer {
+  getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any): GsRasterSymbolizer {
     const rasterSymbolizer: GsRasterSymbolizer = {
       kind: 'Raster'
     };
@@ -1531,14 +1531,17 @@ export class SldStyleParser implements StyleParser<string> {
    * Checks for an 'uom'-attribute and returns the distance-unit to be used for interpreting the
    * units of the symbolizer.
    */
-  getDistanceUnit(sldSymbolizer: any) : DistanceUnit | undefined {
-    if (!sldSymbolizer)
+  getDistanceUnit(sldSymbolizer: any): DistanceUnit | undefined {
+    if (!sldSymbolizer) {
       return undefined;
-    let uomAttribute = getAttribute(sldSymbolizer,'uom');
-    if (!uomAttribute)
+    }
+    const uomAttribute = getAttribute(sldSymbolizer,'uom');
+    if (!uomAttribute) {
       return undefined;
-    if (uomAttribute==='http://www.opengeospatial.org/se/units/metre')
-      return "m";
+    }
+    if (uomAttribute==='http://www.opengeospatial.org/se/units/metre') {
+      return 'm';
+    }
     return undefined;
   }
 
@@ -2041,7 +2044,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    this.addUomEntry(sldTextSymbolizer, (textSymbolizer as any)["sizeUnit"]);
+    this.addUomEntry(sldTextSymbolizer, (textSymbolizer as any).sizeUnit);
 
     return sldTextSymbolizer;
   }
