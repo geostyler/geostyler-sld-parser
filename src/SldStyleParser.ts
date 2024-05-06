@@ -96,6 +96,8 @@ const COMBINATION_MAP = {
 
 type CombinationType = keyof typeof COMBINATION_MAP;
 
+const unitSldMetre: string = 'http://www.opengeospatial.org/se/units/metre';
+
 /**
  * This parser can be used with the GeoStyler.
  * It implements the geostyler-style StyleParser interface.
@@ -1523,7 +1525,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   addUomEntry(sldSymbolizerProperties: any[], unit: DistanceUnit | undefined) {
     if (unit==='m') {
-      sldSymbolizerProperties.push({uom: 'http://www.opengeospatial.org/se/units/metre'});          
+      sldSymbolizerProperties.push({uom: unitSldMetre});          
     }
   }
 
@@ -1539,7 +1541,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (!uomAttribute) {
       return undefined;
     }
-    if (uomAttribute==='http://www.opengeospatial.org/se/units/metre') {
+    if (uomAttribute===unitSldMetre) {
       return 'm';
     }
     return undefined;
