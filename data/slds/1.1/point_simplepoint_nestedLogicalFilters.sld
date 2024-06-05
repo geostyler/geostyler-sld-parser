@@ -7,7 +7,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Test</se:Name>
-          <ogc:Filter xmlns="http://www.opengis.net/ogc">
+          <Filter xmlns="http://www.opengis.net/ogc">
             <And>
               <Or>
                 <PropertyIsEqualTo>
@@ -40,7 +40,7 @@
                 </And>
               </Or>
             </And>
-          </ogc:Filter>
+          </Filter>
           <se:MinScaleDenominator>10000</se:MinScaleDenominator>
           <se:MaxScaleDenominator>20000</se:MaxScaleDenominator>
           <se:PointSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">

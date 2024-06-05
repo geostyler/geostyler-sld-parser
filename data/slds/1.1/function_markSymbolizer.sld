@@ -11,7 +11,6 @@
   <NamedLayer>
     <se:Name>Function MarkSymbolizer</se:Name>
     <UserStyle>
-      <se:Title>Function MarkSymbolizer</se:Title>
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Function MarkSymbolizer</se:Name>

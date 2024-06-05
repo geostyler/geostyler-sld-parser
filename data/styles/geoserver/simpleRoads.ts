@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Red Line',
+  name: 'Simple Roads',
   rules: [
     {
       name: 'Roads',

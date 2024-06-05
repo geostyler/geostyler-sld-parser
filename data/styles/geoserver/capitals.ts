@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Capital cities',
+  name: 'capitals',
   rules: [
     {
       name: 'Capitals',

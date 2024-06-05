@@ -61,7 +61,8 @@ const style: Style = {
           ],
           fontStyle: 'normal',
           fontWeight: 'bold',
-          size: 14
+          size: 14,
+          placement: 'line'
         }
       ]
     }

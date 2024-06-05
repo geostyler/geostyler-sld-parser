@@ -178,6 +178,12 @@ export class SldStyleParser implements StyleParser<string> {
         resampling: 'none',
         saturation: 'none',
         visibility: 'none'
+      },
+      TextSymbolizer: {
+        placement: {
+          support: 'partial',
+          info: 'Only "line" and "point" are currently supported'
+        }
       }
     }
   };
@@ -395,7 +401,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The name to be used for the GeoStyler Style Style
    */
   getStyleNameFromSldObject(sldObject: any): string {
-    const userStyleTitle = get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle.Title.#text');
+    const userStyleTitle = get(sldObject, 'StyledLayerDescriptor.NamedLayer[0].UserStyle.Name.#text');
     const namedLayerName = get(sldObject, 'StyledLayerDescriptor.NamedLayer.Name.#text');
     return userStyleTitle ? userStyleTitle
       : namedLayerName ? namedLayerName : '';
@@ -695,18 +701,28 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(haloColor)) {
       textSymbolizer.haloColor = haloColor;
     }
-    const displacement = get(sldSymbolizer, 'LabelPlacement.PointPlacement.Displacement');
-    if (!isNil(displacement)) {
-      const x = get(displacement, 'DisplacementX.#text');
-      const y = get(displacement, 'DisplacementY.#text');
-      textSymbolizer.offset = [
-        Number.isFinite(x) ? numberExpression(x) : 0,
-        Number.isFinite(y) ? numberExpression(y) : 0,
-      ];
-    }
-    const rotation = get(sldSymbolizer, 'LabelPlacement.PointPlacement.Rotation.#text');
-    if (!isNil(rotation)) {
-      textSymbolizer.rotate = numberExpression(rotation);
+    const placement = get(sldSymbolizer, 'LabelPlacement');
+    if (!isNil(placement)) {
+      const pointPlacement = get(placement, 'PointPlacement');
+      const linePlacement = get(placement, 'LinePlacement');
+      if (!isNil(pointPlacement)) {
+        textSymbolizer.placement = 'point';
+        const displacement = get(pointPlacement, 'Displacement');
+        if (!isNil(displacement)) {
+          const x = get(displacement, 'DisplacementX.#text');
+          const y = get(displacement, 'DisplacementY.#text');
+          textSymbolizer.offset = [
+            Number.isFinite(x) ? numberExpression(x) : 0,
+            Number.isFinite(y) ? numberExpression(y) : 0,
+          ];
+        }
+        const rotation = get(pointPlacement, 'Rotation.#text');
+        if (!isNil(rotation)) {
+          textSymbolizer.rotate = numberExpression(rotation);
+        }
+      } else if (!isNil(linePlacement)) {
+        textSymbolizer.placement = 'line';
+      }
     }
     if (!isNil(fontFamily)) {
       textSymbolizer.font = [fontFamily];
@@ -1176,7 +1192,7 @@ export class SldStyleParser implements StyleParser<string> {
   getTagName(tagName: string): string {
     const ogcList = ['Filter'];
     if (ogcList.includes(tagName)) {
-      return this.sldVersion === '1.1.0' ? `ogc:${tagName}` : tagName;
+      return tagName;
     }
     if (tagName === 'CssParameter') {
       return this.sldVersion === '1.1.0' ? 'se:SvgParameter' : 'CssParameter';
@@ -1194,8 +1210,12 @@ export class SldStyleParser implements StyleParser<string> {
     const rules: any[] = this.getSldRulesFromRules(geoStylerStyle.rules);
     // add the ogc namespace to the filter element, if a filter is present
     rules.forEach(rule => {
-      if (rule.Filter && !rule.Filter['@_xmlns']) {
-        rule.Filter['@_xmlns'] = 'http://www.opengis.net/ogc';
+      const ruleEl = get(rule, this.getTagName('Rule'));
+      const filter = getChildren(ruleEl, 'Filter').at(0);
+      if (filter) {
+        filter[':@'] = {
+          '@_xmlns': 'http://www.opengis.net/ogc'
+        };
       }
     });
 
@@ -1216,6 +1236,19 @@ export class SldStyleParser implements StyleParser<string> {
       '@_xmlns:se': 'http://www.opengis.net/se'
     };
 
+    const userStyle = [];
+    userStyle.push({
+      [Name]: [{ '#text': geoStylerStyle.name || '' }]
+    });
+    if (this.sldVersion === '1.0.0') {
+      userStyle.push({
+        [Title]: [{ '#text': geoStylerStyle.name || '' }]
+      });
+    }
+    userStyle.push({
+      [FeatureTypeStyle]: featureTypeStyle
+    });
+
     return [{
       '?xml': [{ '#text': '' }],
       ':@': {
@@ -1228,13 +1261,7 @@ export class SldStyleParser implements StyleParser<string> {
         NamedLayer: [{
           [Name]: [{ '#text': geoStylerStyle.name || '' }]
         }, {
-          UserStyle: [{
-            [Name]: [{ '#text': geoStylerStyle.name || '' }]
-          }, {
-            [Title]: [{ '#text': geoStylerStyle.name || '' }]
-          }, {
-            [FeatureTypeStyle]: featureTypeStyle
-          }]
+          UserStyle: userStyle
         }]
       }],
       ':@': attributes
@@ -1814,6 +1841,7 @@ export class SldStyleParser implements StyleParser<string> {
     const DisplacementY = this.getTagName('DisplacementY');
     const LabelPlacement = this.getTagName('LabelPlacement');
     const PointPlacement = this.getTagName('PointPlacement');
+    const LinePlacement = this.getTagName('LinePlacement');
     const Rotation = this.getTagName('Rotation');
     const Radius = this.getTagName('Radius');
     const Label = this.getTagName('Label');
@@ -1861,7 +1889,13 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (Number.isFinite(textSymbolizer.offset) || textSymbolizer.rotate !== undefined) {
+    if (textSymbolizer.placement === 'line') {
+      sldTextSymbolizer.push({
+        [LabelPlacement]: [{
+          [LinePlacement]: []
+        }]
+      });
+    } else if (Number.isFinite(textSymbolizer.offset) || textSymbolizer.rotate !== undefined || textSymbolizer.placement === 'point') {
       const pointPlacement: any = [];
       if (textSymbolizer.offset) {
         pointPlacement.push({

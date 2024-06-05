@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Streams',
+  name: 'Simple Streams',
   rules: [
     {
       name: 'Blue Line',

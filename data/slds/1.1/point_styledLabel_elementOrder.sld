@@ -4,7 +4,6 @@
     <se:Name>Styled Label</se:Name>
     <UserStyle>
       <se:Name>Styled Label</se:Name>
-      <se:Title>Styled Label</se:Title>
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:TextSymbolizer>

@@ -12,7 +12,6 @@
     <se:Name>Function Property</se:Name>
     <UserStyle>
       <se:Name>Function Property</se:Name>
-      <se:Title>Function Property</se:Title>
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Function Property Rule 0</se:Name>

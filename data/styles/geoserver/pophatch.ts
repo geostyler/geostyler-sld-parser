@@ -1,7 +1,7 @@
 import { Style } from 'geostyler-style';
 
 const style: Style = {
-  name: 'Population in the United States',
+  name: 'population',
   rules: [
     {
       name: '< 2M',
@@ -78,7 +78,8 @@ const style: Style = {
             'Times New Roman'
           ],
           fontStyle: 'normal',
-          size: 14
+          size: 14,
+          placement: 'point'
         }
       ]
     }
