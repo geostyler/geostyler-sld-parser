@@ -52,13 +52,11 @@ it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
 });
 
-describe('SldStyleParser with Symbology Encoding implements StyleParser', () => {
+describe('SldStyleParser with Symbology Encoding implements StyleParser (reading)', () => {
   let styleParser: SldStyleParser;
 
   beforeEach(() => {
-    styleParser = new SldStyleParser({
-      sldVersion: '1.1.0'
-    });
+    styleParser = new SldStyleParser();
   });
 
   describe('#readStyle', () => {
@@ -370,11 +368,20 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser', () => 
       });
     });
   });
+});
+
+describe('SldStyleParser with Symbology Encoding implements StyleParser (writing)', () => {
+  let styleParser: SldStyleParser;
+
+  beforeEach(() => {
+    styleParser = new SldStyleParser({sldVersion: '1.1.0'});
+  });
 
   describe('#writeStyle', () => {
     it('is defined', () => {
       expect(styleParser.writeStyle).toBeDefined();
     });
+    
     it('can write a SLD 1.1 PointSymbolizer', async () => {
       const { output: sldString } = await styleParser.writeStyle(point_simplepoint);
       expect(sldString).toBeDefined();

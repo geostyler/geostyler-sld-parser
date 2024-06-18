@@ -56,11 +56,14 @@ import {
   numberExpression
 } from './Util/SldUtil';
 
-export type SldVersion = '1.0.0' | '1.1.0';
+const SLD_VERSIONS = ['1.0.0','1.1.0'] as const;
+
+export type SldVersion = (typeof SLD_VERSIONS)[number];
 
 export type ConstructorParams = {
   numericFilterFields?: string[];
   boolFilterFields?: string[];
+  /* optional for reading style (it will be guessed from sld style) and mandatory for writing */
   sldVersion?: SldVersion;
   symbolizerUnits?: string;
   parserOptions?: X2jOptionsOptional;
@@ -271,9 +274,9 @@ export class SldStyleParser implements StyleParser<string> {
 
   /**
    * String indicating the SLD version to use. 1.1.0 will make use of
-   * Symbology Encoding. Default ist to use SLD 1.0.0
+   * Symbology Encoding.
    */
-  private _sldVersion: SldVersion = '1.0.0';
+  private _sldVersion: SldVersion;
 
   /**
    * Getter for _sldVersion
@@ -325,6 +328,15 @@ export class SldStyleParser implements StyleParser<string> {
     return new Promise<ReadStyleResult>((resolve) => {
       try {
         const sldObject = this.parser.parse(sldString);
+
+        if (this._sldVersion === undefined) {
+          const version = getAttribute(sldObject[0], 'version');
+          if (! SLD_VERSIONS.includes(version)) {
+            throw new Error(`SLD version must be ${SLD_VERSIONS.toString()}`);
+          }
+          this._sldVersion = version;
+        }
+
         const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(sldObject);
         resolve({
           output: geoStylerStyle
@@ -1165,6 +1177,10 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The Promise resolving with the SLD as a string.
    */
   writeStyle(geoStylerStyle: Style): Promise<WriteStyleResult<string>> {
+    if (this._sldVersion === undefined) {
+      throw new Error('sldVersion is mandatory');
+    }
+
     return new Promise<WriteStyleResult<string>>(resolve => {
       const unsupportedProperties = this.checkForUnsupportedProperties(geoStylerStyle);
       try {

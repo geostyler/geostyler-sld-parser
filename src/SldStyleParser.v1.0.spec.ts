@@ -51,7 +51,7 @@ it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
 });
 
-describe('SldStyleParser implements StyleParser', () => {
+describe('SldStyleParser implements StyleParser (reading)', () => {
   let styleParser: SldStyleParser;
 
   beforeEach(() => {
@@ -360,6 +360,14 @@ describe('SldStyleParser implements StyleParser', () => {
         expect(styleParser.getTextSymbolizerLabelFromSldSymbolizer).toBeDefined();
       });
     });
+  });
+});
+
+describe('SldStyleParser implements StyleParser (writing)', () => {
+  let styleParser: SldStyleParser;
+
+  beforeEach(() => {
+    styleParser = new SldStyleParser({sldVersion: '1.0.0'});
   });
 
   describe('#writeStyle', () => {
@@ -924,6 +932,7 @@ describe('SldStyleParser implements StyleParser', () => {
 
     it('creates the correct order in a text symbolizer', async () => {
       const styleParserOrder = new SldStyleParser({
+        sldVersion: '1.0.0',
         builderOptions: {
           format: true
         }
@@ -935,6 +944,7 @@ describe('SldStyleParser implements StyleParser', () => {
     });
     it('adds unsupportedProperties to the write output', async () => {
       const styleParserOrder = new SldStyleParser({
+        sldVersion: '1.0.0',
         builderOptions: {
           format: true
         }
