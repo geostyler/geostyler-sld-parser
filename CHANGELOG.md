@@ -1,3 +1,15 @@
+## [6.0.0-next.1](https://github.com/geostyler/geostyler-sld-parser/compare/v5.3.1...v6.0.0-next.1) (2024-06-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* You may need to adapt your imports. Also the
+location of the browser build has changed.
+
+### Features
+
+* update package versions and switch to esm build ([3284c97](https://github.com/geostyler/geostyler-sld-parser/commit/3284c97455240cb0b7b403da00439fedcbd6141e))
+
 ## [5.3.1](https://github.com/geostyler/geostyler-sld-parser/compare/v5.3.0...v5.3.1) (2024-02-13)
 
 
