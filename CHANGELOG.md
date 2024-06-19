@@ -1,3 +1,10 @@
+## [6.0.0-next.3](https://github.com/geostyler/geostyler-sld-parser/compare/v6.0.0-next.2...v6.0.0-next.3) (2024-06-19)
+
+
+### Bug Fixes
+
+* update semantic release ([3897a2c](https://github.com/geostyler/geostyler-sld-parser/commit/3897a2c53f38c0e20fdb158c0c2c7ea68750d993))
+
 ## [6.0.0-next.2](https://github.com/geostyler/geostyler-sld-parser/compare/v6.0.0-next.1...v6.0.0-next.2) (2024-06-19)
 
 
