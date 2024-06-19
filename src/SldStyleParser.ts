@@ -127,16 +127,19 @@ export const defaultTranslations: SldStyleParserTranslations = {
   de: {},
   fr: {
     marksymbolizerParseFailedUnknownWellknownName: 
-      'Lecture de MarkSymbolizer échoué. Le WellKnownName {{wellKnownName}} n\'est pas supporté.',
+      'Échec de lecture du symbole de type MarkSymbolizer. Le WellKnownName {{wellKnownName}} n\'est pas supporté.',
     noFilterDetected: 'Aucun filtre détecté.',
-    symbolizerKindParseFailed: 'Lecture de SymbolizerKind {{sldSymbolizerName}} à partir de SldRule échoué.',
+    symbolizerKindParseFailed: 'Échec de lecture du type de symbole {{sldSymbolizerName}} à partir de SldRule.',
     colorMapEntriesParseFailedColorUndefined: 'Lecture de ColorMapEntries échoué. color n\'est pas défini.',
     contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
-      'Lecture de ContrastEnhancement échoué. Histogram et Normalize sont mutuellement exclusifs.',
+      'Échec de lecture des propriétés de contraste ContrastEnhancement échoué. '
+      +'Histogram et Normalize sont mutuellement exclusifs.',
     channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive:
-      'Lecture de ChannelSelection échoué. RGB et Grayscale sont mutuellement exclusifs.',
+      'Échec de lecture de la sélection de canaux ChannelSelection. '
+      +'RGB et Grayscale sont mutuellement exclusifs.',
     channelSelectionParseFailedRGBChannelsUndefined:
-      'Lecture de ChannelSelection échoué. Les canaux Rouge, Vert et Bleu doivent être définis.',
+      'Échec de lecture de la sélection de canaux ChannelSelection. '
+      +'Les canaux Rouge, Vert et Bleu doivent être définis.',
 
   },
 } as const;

@@ -312,7 +312,7 @@ describe('SldStyleParser implements StyleParser', () => {
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .contains('Lecture de MarkSymbolizer échoué.');
+            .contains('Échec de lecture du symbole de type MarkSymbolizer.');
         });
       });
 
