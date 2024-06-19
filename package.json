@@ -4,6 +4,7 @@
   "description": "GeoStyler Style Parser implementation for SLD",
   "type": "module",
   "main": "dist/SldStyleParser.js",
+  "module": "dist/SldStyleParser.js",
   "types": "dist/SldStyleParser.d.ts",
   "browser": "dist/sldStyleParser.iife.js",
   "files": [
@@ -57,7 +58,7 @@
     "coveralls": "^3.1.1",
     "eslint": "^8.40.0",
     "semantic-release": "^24.0.0",
-    "typescript": "^5.0.4",
+    "typescript": "^5.4.5",
     "vite": "4.5.3",
     "vitest": "0.34.3"
   },

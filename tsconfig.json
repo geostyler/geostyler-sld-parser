@@ -6,7 +6,7 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": ["ES2022", "dom"],
-    "module": "ES2022",
+    "module": "Preserve",
     "moduleResolution": "Bundler",
     "noImplicitAny": true,
     "noImplicitReturns": true,
