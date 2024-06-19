@@ -10,6 +10,9 @@
 /build
 /browser
 
+# history
+/.history
+
 # misc
 .DS_Store
 .env.local

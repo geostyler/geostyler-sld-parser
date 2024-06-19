@@ -56,11 +56,14 @@ import {
   numberExpression
 } from './Util/SldUtil';
 
-export type SldVersion = '1.0.0' | '1.1.0';
+const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
+
+export type SldVersion = (typeof SLD_VERSIONS)[number];
 
 export type ConstructorParams = {
   numericFilterFields?: string[];
   boolFilterFields?: string[];
+  /* optional for reading style (it will be guessed from sld style) and mandatory for writing */
   sldVersion?: SldVersion;
   symbolizerUnits?: string;
   parserOptions?: X2jOptionsOptional;
@@ -271,7 +274,7 @@ export class SldStyleParser implements StyleParser<string> {
 
   /**
    * String indicating the SLD version to use. 1.1.0 will make use of
-   * Symbology Encoding. Default ist to use SLD 1.0.0
+   * Symbology Encoding.
    */
   private _sldVersion: SldVersion = '1.0.0';
 
@@ -289,6 +292,28 @@ export class SldStyleParser implements StyleParser<string> {
    */
   set sldVersion(sldVersion: SldVersion) {
     this._sldVersion = sldVersion;
+  }
+
+  
+  /**
+   * String indicating the SLD version used in reading mode
+   */
+  private _readingSldVersion: SldVersion = '1.0.0';
+
+  /**
+     * Getter for _readingSldVersion
+     * @return
+     */
+  get readingSldVersion(): SldVersion {
+    return this._readingSldVersion;
+  }
+
+  /**
+   * Setter for _readingSldVersion
+   * @param sldVersion The _readingSldVersion value to set
+   */
+  set readingSldVersion(sldVersion: SldVersion) {
+    this._readingSldVersion = sldVersion;
   }
 
   /**
@@ -325,6 +350,13 @@ export class SldStyleParser implements StyleParser<string> {
     return new Promise<ReadStyleResult>((resolve) => {
       try {
         const sldObject = this.parser.parse(sldString);
+
+        const version = getAttribute(sldObject[0], 'version');
+        if (!SLD_VERSIONS.includes(version)) {
+          throw new Error(`SLD version must be ${SLD_VERSIONS.toString()}`);
+        }
+        this._readingSldVersion = version;
+
         const geoStylerStyle: Style = this.sldObjectToGeoStylerStyle(sldObject);
         resolve({
           output: geoStylerStyle
@@ -601,14 +633,14 @@ export class SldStyleParser implements StyleParser<string> {
     const lineSymbolizer: GsLineSymbolizer = {
       kind: 'Line'
     };
-    const strokeEl = get(sldSymbolizer, 'Stroke');
-    const color = getParameterValue(strokeEl, 'stroke', this.sldVersion);
-    const width = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
-    const opacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
-    const lineJoin = getParameterValue(strokeEl, 'stroke-linejoin', this.sldVersion);
-    const lineCap = getParameterValue(strokeEl, 'stroke-linecap', this.sldVersion);
-    const dashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.sldVersion);
-    const dashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.sldVersion);
+    const strokeEl = get(sldSymbolizer, 'Stroke', this.readingSldVersion);
+    const color = getParameterValue(strokeEl, 'stroke', this.readingSldVersion);
+    const width = getParameterValue(strokeEl, 'stroke-width', this.readingSldVersion);
+    const opacity = getParameterValue(strokeEl, 'stroke-opacity', this.readingSldVersion);
+    const lineJoin = getParameterValue(strokeEl, 'stroke-linejoin', this.readingSldVersion);
+    const lineCap = getParameterValue(strokeEl, 'stroke-linecap', this.readingSldVersion);
+    const dashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.readingSldVersion);
+    const dashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.readingSldVersion);
 
     if (!isNil(color)) {
       lineSymbolizer.color = color;
@@ -673,15 +705,15 @@ export class SldStyleParser implements StyleParser<string> {
     const haloEl = get(sldSymbolizer, 'Halo');
     const haloFillEl = get(haloEl, 'Fill');
 
-    const color = getParameterValue(fillEl, 'fill', this.sldVersion);
-    const opacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
+    const color = getParameterValue(fillEl, 'fill', this.readingSldVersion);
+    const opacity = getParameterValue(fillEl, 'fill-opacity', this.readingSldVersion);
 
-    const fontFamily = getParameterValue(fontEl, 'font-family', this.sldVersion);
-    const fontStyle = getParameterValue(fontEl, 'font-style', this.sldVersion);
-    const fontSize = getParameterValue(fontEl, 'font-size', this.sldVersion);
-    const fontWeight = getParameterValue(fontEl, 'font-weight', this.sldVersion);
+    const fontFamily = getParameterValue(fontEl, 'font-family', this.readingSldVersion);
+    const fontStyle = getParameterValue(fontEl, 'font-style', this.readingSldVersion);
+    const fontSize = getParameterValue(fontEl, 'font-size', this.readingSldVersion);
+    const fontWeight = getParameterValue(fontEl, 'font-weight', this.readingSldVersion);
 
-    const haloColor = getParameterValue(haloFillEl, 'fill', this.sldVersion);
+    const haloColor = getParameterValue(haloFillEl, 'fill', this.readingSldVersion);
 
     if (!isNil(labelEl)) {
       textSymbolizer.label = this.getTextSymbolizerLabelFromSldSymbolizer(labelEl);
@@ -694,7 +726,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(haloRadius)) {
       textSymbolizer.haloWidth = numberExpression(haloRadius);
     }
-    const haloOpacity = getParameterValue(haloFillEl, 'fill-opacity', this.sldVersion);
+    const haloOpacity = getParameterValue(haloFillEl, 'fill-opacity', this.readingSldVersion);
     if (!isNil(haloOpacity)) {
       textSymbolizer.haloOpacity = numberExpression(haloOpacity);
     }
@@ -815,16 +847,16 @@ export class SldStyleParser implements StyleParser<string> {
     const strokeEl = get(sldSymbolizer, 'Stroke');
     const fillEl = get(sldSymbolizer, 'Fill');
 
-    const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
-    const color = getParameterValue(fillEl, 'fill', this.sldVersion);
+    const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.readingSldVersion);
+    const color = getParameterValue(fillEl, 'fill', this.readingSldVersion);
 
-    const outlineColor = getParameterValue(strokeEl, 'stroke', this.sldVersion);
-    const outlineWidth = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
-    const outlineOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
-    const outlineDashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.sldVersion);
-    const outlineCap = getParameterValue(strokeEl, 'stroke-linecap', this.sldVersion);
-    const outlineJoin = getParameterValue(strokeEl, 'stroke-linejoin', this.sldVersion);
-    // const outlineDashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.sldVersion);
+    const outlineColor = getParameterValue(strokeEl, 'stroke', this.readingSldVersion);
+    const outlineWidth = getParameterValue(strokeEl, 'stroke-width', this.readingSldVersion);
+    const outlineOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.readingSldVersion);
+    const outlineDashArray = getParameterValue(strokeEl, 'stroke-dasharray', this.readingSldVersion);
+    const outlineCap = getParameterValue(strokeEl, 'stroke-linecap', this.readingSldVersion);
+    const outlineJoin = getParameterValue(strokeEl, 'stroke-linejoin', this.readingSldVersion);
+    // const outlineDashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.readingSldVersion);
 
     const graphicFill = get(sldSymbolizer, 'Fill.GraphicFill');
     if (!isNil(graphicFill)) {
@@ -916,8 +948,8 @@ export class SldStyleParser implements StyleParser<string> {
     const opacity = get(sldSymbolizer, 'Graphic.Opacity.#text');
     const size = get(sldSymbolizer, 'Graphic.Size.#text');
     const rotation = get(sldSymbolizer, 'Graphic.Rotation.#text');
-    const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.sldVersion);
-    const color = getParameterValue(fillEl, 'fill', this.sldVersion);
+    const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.readingSldVersion);
+    const color = getParameterValue(fillEl, 'fill', this.readingSldVersion);
     const displacement = get(sldSymbolizer, 'Graphic.Displacement');
 
     const markSymbolizer: GsMarkSymbolizer = {
@@ -976,15 +1008,15 @@ export class SldStyleParser implements StyleParser<string> {
         throw new Error('MarkSymbolizer cannot be parsed. Unsupported WellKnownName.');
     }
 
-    const strokeColor = getParameterValue(strokeEl, 'stroke', this.sldVersion);
+    const strokeColor = getParameterValue(strokeEl, 'stroke', this.readingSldVersion);
     if (!isNil(strokeColor)) {
       markSymbolizer.strokeColor = strokeColor;
     }
-    const strokeWidth = getParameterValue(strokeEl, 'stroke-width', this.sldVersion);
+    const strokeWidth = getParameterValue(strokeEl, 'stroke-width', this.readingSldVersion);
     if (!isNil(strokeWidth)) {
       markSymbolizer.strokeWidth = numberExpression(strokeWidth);
     }
-    const strokeOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.sldVersion);
+    const strokeOpacity = getParameterValue(strokeEl, 'stroke-opacity', this.readingSldVersion);
     if (!isNil(strokeOpacity)) {
       markSymbolizer.strokeOpacity = numberExpression(strokeOpacity);
     }

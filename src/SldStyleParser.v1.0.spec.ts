@@ -51,7 +51,7 @@ it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
 });
 
-describe('SldStyleParser implements StyleParser', () => {
+describe('SldStyleParser implements StyleParser (reading)', () => {
   let styleParser: SldStyleParser;
 
   beforeEach(() => {
@@ -360,6 +360,14 @@ describe('SldStyleParser implements StyleParser', () => {
         expect(styleParser.getTextSymbolizerLabelFromSldSymbolizer).toBeDefined();
       });
     });
+  });
+});
+
+describe('SldStyleParser implements StyleParser (writing)', () => {
+  let styleParser: SldStyleParser;
+
+  beforeEach(() => {
+    styleParser = new SldStyleParser();
   });
 
   describe('#writeStyle', () => {
