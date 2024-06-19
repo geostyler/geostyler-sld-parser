@@ -2,6 +2,13 @@
 
 * offset Y for Textsymbolizer ([#932](https://github.com/geostyler/geostyler-sld-parser/issues/932)) ([398ce0c](https://github.com/geostyler/geostyler-sld-parser/commit/398ce0ca844e17d06e37ebc3eb8099c1d71f454f)), closes [#566](https://github.com/geostyler/geostyler-sld-parser/issues/566)
 
+## [6.0.0-next.4](https://github.com/geostyler/geostyler-sld-parser/compare/v6.0.0-next.3...v6.0.0-next.4) (2024-06-19)
+
+
+### Bug Fixes
+
+* fix commitlint config ([6ec0730](https://github.com/geostyler/geostyler-sld-parser/commit/6ec07303d92d23c86ef955163e357586986b9d36))
+
 ## [6.0.0-next.3](https://github.com/geostyler/geostyler-sld-parser/compare/v6.0.0-next.2...v6.0.0-next.3) (2024-06-19)
 
 
