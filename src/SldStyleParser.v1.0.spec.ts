@@ -289,6 +289,56 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(readResult.output).toEqual(function_nested);
     });
 
+    describe(('displays error messages'), () => {
+      describe('in English (default locale)', () => { 
+        it('unknown WellknownName', async () => {
+          const sld = fs.readFileSync('./data/slds/1.0/unknown_wellknownname.sld', 'utf8');
+          const readResult = await styleParser.readStyle(sld);
+
+          expect(readResult.errors).toBeDefined();
+          expect(readResult.errors?.[0].message.toString())
+            .contains('MarkSymbolizer cannot be parsed.');
+        });
+      });
+
+      describe('in French (default messages of the parser)', () => {
+        it('unknown WellknownName', async () => {
+          styleParser = new SldStyleParser({
+            locale: 'fr'
+          });
+
+          const sld = fs.readFileSync('./data/slds/1.0/unknown_wellknownname.sld', 'utf8');
+          const readResult = await styleParser.readStyle(sld);
+
+          expect(readResult.errors).toBeDefined();
+          expect(readResult.errors?.[0].message.toString())
+            .contains('Lecture du MarkSymbolizer échoué.');
+        });
+      });
+
+      describe('in French (user defined messages)', () => {
+        it('unknown WellknownName', async () => {
+          styleParser = new SldStyleParser({
+            locale: 'fr',
+            translations: {
+              fr: {
+                marksymbolizerParseFailedUnknownWellknownName:
+                  'Echec de lecture du MarkSymbolizer. WellKnownName {{wellKnownName}} inconnu.',
+              }
+            }
+          });
+
+          const sld = fs.readFileSync('./data/slds/1.0/unknown_wellknownname.sld', 'utf8');
+          const readResult = await styleParser.readStyle(sld);
+
+          expect(readResult.errors).toBeDefined();
+          expect(readResult.errors?.[0].message.toString())
+            .contains('Echec de lecture du MarkSymbolizer.');
+        });
+      });
+
+    });
+
     describe('#getFilterFromOperatorAndComparison', () => {
       it('is defined', () => {
         expect(styleParser.getFilterFromOperatorAndComparison).toBeDefined();
