@@ -66,8 +66,8 @@ export type ConstructorParams = {
   symbolizerUnits?: string;
   parserOptions?: X2jOptionsOptional;
   builderOptions?: XmlBuilderOptionsOptional;
-  translations?: Partial<SldStyleParserTranslations>;
-  locale?: Locale;
+  translations?: SldStyleParserTranslations;
+  locale?: string;
 };
 
 const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
@@ -98,9 +98,6 @@ const COMBINATION_MAP = {
 
 type CombinationType = keyof typeof COMBINATION_MAP;
 
-const SUPPORTED_LOCALES = ['en', 'de', 'fr'] as const;
-type Locale = (typeof SUPPORTED_LOCALES)[number];
-
 export type SldStyleParserTranslationKeys = {
   marksymbolizerParseFailedUnknownWellknownName?: string;
   noFilterDetected?: string;
@@ -111,7 +108,7 @@ export type SldStyleParserTranslationKeys = {
   channelSelectionParseFailedRGBChannelsUndefined?: string;
 };
 
-export type SldStyleParserTranslations = Record<Locale, Partial<SldStyleParserTranslationKeys>>;
+export type SldStyleParserTranslations = Record<string, SldStyleParserTranslationKeys>;
 
 export const defaultTranslations: SldStyleParserTranslations = {
   en: {
@@ -239,7 +236,7 @@ export class SldStyleParser implements StyleParser<string> {
 
   translations: SldStyleParserTranslations = defaultTranslations;
 
-  locale: Locale = 'en';
+  locale: string = 'en';
 
   constructor(opts?: ConstructorParams) {
     this.parser = new XMLParser({
@@ -290,7 +287,7 @@ export class SldStyleParser implements StyleParser<string> {
     Object.assign(this, opts);
   }
 
-  translate(key: keyof SldStyleParserTranslationKeys, params?: any): string{
+  translate(key: keyof SldStyleParserTranslationKeys, params?: any): string {
     return i18next.t(key, params) as string;
   }
 
