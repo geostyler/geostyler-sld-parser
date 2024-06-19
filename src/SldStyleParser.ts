@@ -130,7 +130,17 @@ export const defaultTranslations: SldStyleParserTranslations = {
   de: {},
   fr: {
     marksymbolizerParseFailedUnknownWellknownName: 
-      'Lecture du MarkSymbolizer échoué. Le WellKnownName {{wellKnownName}} n\'est pas supporté.'
+      'Lecture de MarkSymbolizer échoué. Le WellKnownName {{wellKnownName}} n\'est pas supporté.',
+    noFilterDetected: 'Aucun filtre détecté.',
+    symbolizerKindParseFailed: 'Lecture de SymbolizerKind {{sldSymbolizerName}} à partir de SldRule échoué.',
+    colorMapEntriesParseFailedColorUndefined: 'Lecture de ColorMapEntries échoué. color n\'est pas défini.',
+    contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
+      'Lecture de ContrastEnhancement échoué. Histogram et Normalize sont mutuellement exclusifs.',
+    channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive:
+      'Lecture de ChannelSelection échoué. RGB et Grayscale sont mutuellement exclusifs.',
+    channelSelectionParseFailedRGBChannelsUndefined:
+      'Lecture de ChannelSelection échoué. Les canaux Rouge, Vert et Bleu doivent être définis.',
+
   },
 } as const;
 

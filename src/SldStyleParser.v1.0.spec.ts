@@ -312,7 +312,7 @@ describe('SldStyleParser implements StyleParser', () => {
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .contains('Lecture du MarkSymbolizer échoué.');
+            .contains('Lecture de MarkSymbolizer échoué.');
         });
       });
 
@@ -323,7 +323,7 @@ describe('SldStyleParser implements StyleParser', () => {
             translations: {
               fr: {
                 marksymbolizerParseFailedUnknownWellknownName:
-                  'Echec de lecture du MarkSymbolizer. WellKnownName {{wellKnownName}} inconnu.',
+                  'Echec de lecture de MarkSymbolizer. WellKnownName {{wellKnownName}} inconnu.',
               }
             }
           });
@@ -333,7 +333,7 @@ describe('SldStyleParser implements StyleParser', () => {
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .contains('Echec de lecture du MarkSymbolizer.');
+            .contains('Echec de lecture de MarkSymbolizer.');
         });
       });
 
