@@ -13,7 +13,7 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        dir: 'browser',
+        dir: 'dist',
         exports: 'named',
         generatedCode: 'es5',
         format: 'iife',
