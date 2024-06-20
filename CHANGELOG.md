@@ -1,3 +1,10 @@
+## [6.0.0-next.8](https://github.com/geostyler/geostyler-sld-parser/compare/v6.0.0-next.7...v6.0.0-next.8) (2024-06-20)
+
+
+### Bug Fixes
+
+* update geostyler-style & cleanup package.json ([4134013](https://github.com/geostyler/geostyler-sld-parser/commit/41340133a5eb661524c2773f79589bf6c44c774f))
+
 ## [6.0.0-next.7](https://github.com/geostyler/geostyler-sld-parser/compare/v6.0.0-next.6...v6.0.0-next.7) (2024-06-19)
 
 
