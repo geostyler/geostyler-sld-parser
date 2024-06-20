@@ -1684,7 +1684,7 @@ export class SldStyleParser implements StyleParser<string> {
       [Mark]: mark
     }];
 
-    if (markSymbolizer.opacity) {
+    if (markSymbolizer.opacity !== undefined && markSymbolizer.opacity !== 1) {
       graphic.push({
         [Opacity]: [{
           '#text': markSymbolizer.opacity.toString()
