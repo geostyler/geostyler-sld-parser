@@ -37,7 +37,7 @@ const style: Style = {
           haloColor: '#FFFFFF',
           offset: [
             0,
-            -15
+            15
           ],
           font: [
             'Arial'

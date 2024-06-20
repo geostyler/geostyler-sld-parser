@@ -10,7 +10,7 @@ const pointStyledLabel: Style = {
       label: 'foo {{name}}{{prop}} entity {{bar}}',
       font: ['Arial'],
       size: 12,
-      offset: [0, 5],
+      offset: [0, -5],
       haloColor: '#000000',
       haloWidth: 5,
       haloOpacity: 1,
