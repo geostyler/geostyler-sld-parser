@@ -4,9 +4,6 @@
   "description": "GeoStyler Style Parser implementation for SLD",
   "type": "module",
   "main": "dist/SldStyleParser.js",
-  "module": "dist/SldStyleParser.js",
-  "types": "dist/SldStyleParser.d.ts",
-  "browser": "dist/sldStyleParser.iife.js",
   "files": [
     "dist"
   ],
@@ -39,7 +36,7 @@
   },
   "dependencies": {
     "fast-xml-parser": "^4.2.2",
-    "geostyler-style": "9.0.0-next.4",
+    "geostyler-style": "9.0.0-next.5",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
