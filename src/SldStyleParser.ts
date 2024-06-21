@@ -43,7 +43,8 @@ import {
   XmlBuilderOptionsOptional
 } from 'fast-xml-parser';
 
-import { isNil } from 'lodash';
+import { isNil, merge } from 'lodash';
+import i18next from 'i18next';
 
 import {
   geoStylerFunctionToSldFunction,
@@ -68,6 +69,8 @@ export type ConstructorParams = {
   symbolizerUnits?: string;
   parserOptions?: X2jOptionsOptional;
   builderOptions?: XmlBuilderOptionsOptional;
+  translations?: SldStyleParserTranslations;
+  locale?: string;
 };
 
 const WELLKNOWNNAME_TTF_REGEXP = /^ttf:\/\/(.+)#(.+)$/;
@@ -97,6 +100,52 @@ const COMBINATION_MAP = {
 };
 
 type CombinationType = keyof typeof COMBINATION_MAP;
+
+export type SldStyleParserTranslationKeys = {
+  marksymbolizerParseFailedUnknownWellknownName?: string;
+  noFilterDetected?: string;
+  symbolizerKindParseFailed?: string;
+  colorMapEntriesParseFailedColorUndefined?: string;
+  contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive?: string;
+  channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive?: string;
+  channelSelectionParseFailedRGBChannelsUndefined?: string;
+};
+
+export type SldStyleParserTranslations = Record<string, SldStyleParserTranslationKeys>;
+
+export const defaultTranslations: SldStyleParserTranslations = {
+  en: {
+    marksymbolizerParseFailedUnknownWellknownName: 
+      'MarkSymbolizer cannot be parsed. WellKnownName {{wellKnownName}} is not supported.',
+    noFilterDetected: 'No Filter detected.',
+    symbolizerKindParseFailed: 'Failed to parse SymbolizerKind {{sldSymbolizerName}} from SldRule.',
+    colorMapEntriesParseFailedColorUndefined: 'Cannot parse ColorMapEntries. color is undefined.',
+    contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive: 
+      'Cannot parse ContrastEnhancement. Histogram and Normalize are mutually exclusive.',
+    channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive:
+      'Cannot parse ChannelSelection. RGB and Grayscale are mutually exclusive.',
+    channelSelectionParseFailedRGBChannelsUndefined: 
+      'Cannot parse ChannelSelection. Red, Green and Blue channels must be defined.'
+  },
+  de: {},
+  fr: {
+    marksymbolizerParseFailedUnknownWellknownName: 
+      'Échec de lecture du symbole de type MarkSymbolizer. Le WellKnownName {{wellKnownName}} n\'est pas supporté.',
+    noFilterDetected: 'Aucun filtre détecté.',
+    symbolizerKindParseFailed: 'Échec de lecture du type de symbole {{sldSymbolizerName}} à partir de SldRule.',
+    colorMapEntriesParseFailedColorUndefined: 'Lecture de ColorMapEntries échoué. color n\'est pas défini.',
+    contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
+      'Échec de lecture des propriétés de contraste ContrastEnhancement échoué. '
+      +'Histogram et Normalize sont mutuellement exclusifs.',
+    channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive:
+      'Échec de lecture de la sélection de canaux ChannelSelection. '
+      +'RGB et Grayscale sont mutuellement exclusifs.',
+    channelSelectionParseFailedRGBChannelsUndefined:
+      'Échec de lecture de la sélection de canaux ChannelSelection. '
+      +'Les canaux Rouge, Vert et Bleu doivent être définis.',
+
+  },
+} as const;
 
 /**
  * This parser can be used with the GeoStyler.
@@ -191,6 +240,10 @@ export class SldStyleParser implements StyleParser<string> {
     }
   };
 
+  translations: SldStyleParserTranslations = defaultTranslations;
+
+  locale: string = 'en';
+
   constructor(opts?: ConstructorParams) {
     this.parser = new XMLParser({
       ...opts?.parserOptions,
@@ -213,7 +266,35 @@ export class SldStyleParser implements StyleParser<string> {
     if (opts?.sldVersion) {
       this.sldVersion = opts?.sldVersion;
     }
+
+    if (opts?.locale) {
+      this.locale = opts.locale;
+    }
+
+    if (opts?.translations){
+      this.translations = merge(this.translations, opts.translations);
+    }
+
+    i18next.init({
+      lng: this.locale,
+      resources: {
+        en: {
+          translation: this.translations.en,
+        },
+        de: {
+          translation: this.translations.de,
+        },
+        fr: {
+          translation: this.translations.fr,
+        }
+      }
+    });
+
     Object.assign(this, opts);
+  }
+
+  translate(key: keyof SldStyleParserTranslationKeys, params?: any): string {
+    return i18next.t(key, params) as string;
   }
 
   private _parser: XMLParser;
@@ -505,7 +586,7 @@ export class SldStyleParser implements StyleParser<string> {
           case 'RasterSymbolizer':
             return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer.RasterSymbolizer);
           default:
-            throw new Error('Failed to parse SymbolizerKind from SldRule');
+            throw new Error(this.translate('symbolizerKindParseFailed', { sldSymbolizerName: sldSymbolizerName }));
         }
       });
 
@@ -590,7 +671,7 @@ export class SldStyleParser implements StyleParser<string> {
         negatedFilter
       ];
     } else {
-      throw new Error('No Filter detected');
+      throw new Error(this.translate('noFilterDetected'));
     }
     return filter;
   }
@@ -1005,7 +1086,9 @@ export class SldStyleParser implements StyleParser<string> {
           markSymbolizer.wellKnownName = wellKnownName;
           break;
         }
-        throw new Error('MarkSymbolizer cannot be parsed. Unsupported WellKnownName.');
+        throw new Error(
+          this.translate('marksymbolizerParseFailedUnknownWellknownName', { wellKnownName: wellKnownName })
+        );
     }
 
     const strokeColor = getParameterValue(strokeEl, 'stroke', this.readingSldVersion);
@@ -1083,7 +1166,7 @@ export class SldStyleParser implements StyleParser<string> {
       const cmEntries = colorMapEntries.map((cm) => {
         const color = getAttribute(cm, 'color');
         if (!color) {
-          throw new Error('Cannot parse ColorMapEntries. color is undefined.');
+          throw new Error(this.translate('colorMapEntriesParseFailedColorUndefined'));
         }
         let quantity = getAttribute(cm, 'quantity');
         if (quantity) {
@@ -1119,8 +1202,7 @@ export class SldStyleParser implements StyleParser<string> {
     const hasHistogram = !!get(sldContrastEnhancement, 'Histogram');
     const hasNormalize = !!get(sldContrastEnhancement, 'Normalize');
     if (hasHistogram && hasNormalize) {
-      throw new Error(`Cannot parse ContrastEnhancement. Histogram and Normalize
-        are mutually exclusive.`);
+      throw new Error(this.translate('contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive'));
     } else if (hasHistogram) {
       contrastEnhancement.enhancementType = 'histogram';
     } else if (hasNormalize) {
@@ -1166,7 +1248,7 @@ export class SldStyleParser implements StyleParser<string> {
     const gray = get(sldChannelSelection, 'GrayChannel');
 
     if (gray && red && blue && green) {
-      throw new Error('Cannot parse ChannelSelection. RGB and Grayscale are mutually exclusive');
+      throw new Error(this.translate('channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive'));
     }
     if (gray) {
       const grayChannel = this.getChannelFromSldChannel(gray);
@@ -1183,7 +1265,7 @@ export class SldStyleParser implements StyleParser<string> {
         greenChannel
       };
     } else {
-      throw new Error('Cannot parse ChannelSelection. Red, Green and Blue channels must be defined.');
+      throw new Error(this.translate('channelSelectionParseFailedRGBChannelsUndefined'));
     }
     return channelSelection;
   }
