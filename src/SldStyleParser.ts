@@ -826,7 +826,7 @@ export class SldStyleParser implements StyleParser<string> {
           const y = get(displacement, 'DisplacementY.#text');
           textSymbolizer.offset = [
             Number.isFinite(x) ? numberExpression(x) : 0,
-            Number.isFinite(y) ? numberExpression(y) : 0,
+            Number.isFinite(y) ? -numberExpression(y) : 0,
           ];
         }
         const rotation = get(pointPlacement, 'Rotation.#text');
@@ -2016,7 +2016,7 @@ export class SldStyleParser implements StyleParser<string> {
             }]
           }, {
             [DisplacementY]: [{
-              '#text': textSymbolizer.offset[1].toString()
+              '#text': (-textSymbolizer.offset[1]).toString()
             }]
           }]
         });
