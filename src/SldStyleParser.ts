@@ -1631,7 +1631,7 @@ export class SldStyleParser implements StyleParser<string> {
       }]
     }];
 
-    if (markSymbolizer.color || markSymbolizer.fillOpacity) {
+    if (markSymbolizer.color || markSymbolizer.fillOpacity!== undefined) {
       const fillCssParamaters = [];
       if (markSymbolizer.color) {
         if (isGeoStylerFunction(markSymbolizer.color)) {
@@ -1653,7 +1653,9 @@ export class SldStyleParser implements StyleParser<string> {
           });
         }
       }
-      if (markSymbolizer.fillOpacity) {
+
+      // write also if 0 because that isn't default
+      if (markSymbolizer.fillOpacity!== undefined) {
         if (isGeoStylerFunction(markSymbolizer.fillOpacity)) {
           const children = geoStylerFunctionToSldFunction(markSymbolizer.fillOpacity);
           fillCssParamaters.push({
@@ -1678,7 +1680,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity) {
+    if (markSymbolizer.strokeColor || markSymbolizer.strokeWidth || markSymbolizer.strokeOpacity!== undefined) {
       const strokeCssParameters = [];
       if (markSymbolizer.strokeColor) {
         if (isGeoStylerFunction(markSymbolizer.strokeColor)) {
@@ -1720,7 +1722,9 @@ export class SldStyleParser implements StyleParser<string> {
           });
         }
       }
-      if (markSymbolizer.strokeOpacity) {
+
+      // write also if 0 because that isn't default
+      if (markSymbolizer.strokeOpacity!== undefined) {
         if (isGeoStylerFunction(markSymbolizer.strokeOpacity)) {
           const children = geoStylerFunctionToSldFunction(markSymbolizer.strokeOpacity);
           strokeCssParameters.push({
@@ -1850,7 +1854,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
     }
 
-    if (iconSymbolizer.opacity) {
+    if (iconSymbolizer.opacity!==undefined) {
       graphic.push({
         [Opacity]: [{
           '#text': iconSymbolizer.opacity
@@ -2008,7 +2012,7 @@ export class SldStyleParser implements StyleParser<string> {
           }
         });
       }
-      if (textSymbolizer.haloOpacity) {
+      if (textSymbolizer.haloOpacity!==undefined) {
         haloFillCssParameter.push({
           [CssParameter]: [{
             '#text': textSymbolizer.haloOpacity,
@@ -2027,7 +2031,7 @@ export class SldStyleParser implements StyleParser<string> {
         [Halo]: halo
       });
     }
-    if (textSymbolizer.color || textSymbolizer.opacity) {
+    if (textSymbolizer.color || textSymbolizer.opacity!==undefined) {
       const fill = [{
         [CssParameter]: [{
           '#text': textSymbolizer.color || '#000000',
