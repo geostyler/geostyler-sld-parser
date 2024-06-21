@@ -1684,7 +1684,9 @@ export class SldStyleParser implements StyleParser<string> {
       [Mark]: mark
     }];
 
-    if (markSymbolizer.opacity !== undefined && markSymbolizer.opacity !== 1) {
+    // one could als check && markSymbolizer.opacity !== 1 in the next line,
+    // but than the tests fill fail because they expect opacity:1 in the result.
+    if (markSymbolizer.opacity !== undefined) {
       graphic.push({
         [Opacity]: [{
           '#text': markSymbolizer.opacity.toString()
