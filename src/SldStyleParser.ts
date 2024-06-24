@@ -1823,6 +1823,37 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
+   * Translates an anchor-setting into SLD-anchor-numbers
+   */
+  getSldAnchorPointFromAnchor(anchor: any, dimension: 'x' | 'y'): number {
+    if (!anchor || !(anchor instanceof String)) {
+      return 0;
+    }
+    if (dimension==='x') {
+      if (anchor.indexOf('left')>=0) {
+        return 0.0;
+      } 
+      else if (anchor.indexOf('right')>=0) {
+        return 1.0;
+      }
+      else {
+        return 0.5;      
+      }
+    }
+    else {
+      if (anchor.indexOf('bottom')>=0) {
+        return 0.0;
+      }
+      else if (anchor.indexOf('top')>=0) {
+        return 1.0;
+      }
+      else {
+        return 0.5;
+      }
+    }
+  }
+
+  /**
    * Get the SLD Object (readable with fast-xml-parser) from a geostyler-style TextSymbolizer.
    *
    * @param textSymbolizer A geostyler-style TextSymbolizer.
@@ -1836,6 +1867,9 @@ export class SldStyleParser implements StyleParser<string> {
     const Displacement = this.getTagName('Displacement');
     const DisplacementX = this.getTagName('DisplacementX');
     const DisplacementY = this.getTagName('DisplacementY');
+    const AnchorPoint = this.getTagName('AnchorPoint');
+    const AnchorPointX = this.getTagName('AnchorPointX');
+    const AnchorPointY = this.getTagName('AnchorPointY');
     const LabelPlacement = this.getTagName('LabelPlacement');
     const PointPlacement = this.getTagName('PointPlacement');
     const LinePlacement = this.getTagName('LinePlacement');
@@ -1892,7 +1926,8 @@ export class SldStyleParser implements StyleParser<string> {
           [LinePlacement]: []
         }]
       });
-    } else if (textSymbolizer.offset || textSymbolizer.rotate !== undefined || textSymbolizer.placement === 'point') {
+    } else if (textSymbolizer.offset || textSymbolizer.anchor || textSymbolizer.rotate !== undefined ||
+       textSymbolizer.placement === 'point') {
       const pointPlacement: any = [];
       if (textSymbolizer.offset) {
         pointPlacement.push({
@@ -1903,6 +1938,19 @@ export class SldStyleParser implements StyleParser<string> {
           }, {
             [DisplacementY]: [{
               '#text': textSymbolizer.offset[1].toString()
+            }]
+          }]
+        });
+      }
+      if (textSymbolizer.anchor) {
+        pointPlacement.push({
+          [AnchorPoint]: [{
+            [AnchorPointX]: [{
+              '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor,'x').toString()
+            }]
+          }, {
+            [AnchorPointY]: [{
+              '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor,'y').toString()
             }]
           }]
         });
