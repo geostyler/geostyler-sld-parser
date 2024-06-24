@@ -95,6 +95,9 @@ const COMBINATION_MAP = {
 
 type CombinationType = keyof typeof COMBINATION_MAP;
 
+type TextSymbolizerAnchor = Expression<'center' | 'left' | 'right' | 'top' | 'bottom' | 'top-left' |
+'top-right' | 'bottom-left' | 'bottom-right'>;
+
 /**
  * This parser can be used with the GeoStyler.
  * It implements the geostyler-style StyleParser interface.
@@ -1825,8 +1828,8 @@ export class SldStyleParser implements StyleParser<string> {
   /**
    * Translates an anchor-setting into SLD-anchor-numbers
    */
-  getSldAnchorPointFromAnchor(anchor: any, dimension: 'x' | 'y'): number {
-    if (!anchor || !(anchor instanceof String)) {
+  getSldAnchorPointFromAnchor(anchor: TextSymbolizerAnchor, dimension: 'x' | 'y'): number {
+    if (!anchor || isGeoStylerFunction(anchor)) {
       return 0;
     }
     if (dimension==='x') {
