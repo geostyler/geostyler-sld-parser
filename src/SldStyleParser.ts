@@ -788,7 +788,8 @@ export class SldStyleParser implements StyleParser<string> {
           case '#text':
             return labelEl['#text'];
           case 'Literal':
-            return labelEl?.[labelName]?.[0 ]?.['#text'] || labelEl?.[labelName]?.[0]?.['#cdata']?.[0]?.['#text'];
+            return labelEl?.[labelName]?.[0 ]?.['#text']
+              || labelEl?.[labelName]?.[0]?.['#cdata']?.[0]?.['#text'];
           case 'PropertyName':
             const propName = labelEl[labelName][0]['#text'];
             return `{{${propName}}}`;
@@ -1895,7 +1896,10 @@ export class SldStyleParser implements StyleParser<string> {
           [LinePlacement]: []
         }]
       });
-    } else if (Number.isFinite(textSymbolizer.offset) || textSymbolizer.rotate !== undefined || textSymbolizer.placement === 'point') {
+    } else if (Number.isFinite(textSymbolizer.offset)
+      || textSymbolizer.rotate !== undefined
+      || textSymbolizer.placement === 'point'
+    ) {
       const pointPlacement: any = [];
       if (textSymbolizer.offset) {
         pointPlacement.push({
