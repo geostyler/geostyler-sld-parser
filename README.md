@@ -4,10 +4,6 @@
 [![License](https://img.shields.io/github/license/geostyler/geostyler-sld-parser)](https://github.com/geostyler/geostyler-sld-parser/blob/master/LICENSE)
 [![npm version](https://badge.fury.io/js/geostyler-sld-parser.svg)](https://www.npmjs.com/package/geostyler-sld-parser)
 
-## :rocket: GeoStyler Code Sprint 2024
-
-We are happy to announce the third GeoStyler Code Sprint from **17.-21.06.2024** in Paris. Be part of it! More infos on https://geostyler.org/.
-
 [GeoStyler](https://github.com/terrestris/geostyler/) Style Parser implementation for Styled Layer Descriptor (SLD)
 
 ### How to use
