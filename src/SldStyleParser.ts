@@ -37,7 +37,6 @@ import {
 } from 'fast-xml-parser';
 
 import { merge } from 'lodash';
-import i18next from 'i18next';
 
 import {
   geoStylerFunctionToSldFunction,
@@ -102,9 +101,9 @@ const COMBINATION_MAP = {
 type CombinationType = keyof typeof COMBINATION_MAP;
 
 export type SldStyleParserTranslationKeys = {
-  marksymbolizerParseFailedUnknownWellknownName?: string;
+  marksymbolizerParseFailedUnknownWellknownName?: (params: {wellKnownName: string}) => string;
   noFilterDetected?: string;
-  symbolizerKindParseFailed?: string;
+  symbolizerKindParseFailed?: (params: {sldSymbolizerName: string}) => string;
   colorMapEntriesParseFailedColorUndefined?: string;
   contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive?: string;
   channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive?: string;
@@ -115,10 +114,11 @@ export type SldStyleParserTranslations = Record<string, SldStyleParserTranslatio
 
 export const defaultTranslations: SldStyleParserTranslations = {
   en: {
-    marksymbolizerParseFailedUnknownWellknownName:
-      'MarkSymbolizer cannot be parsed. WellKnownName {{wellKnownName}} is not supported.',
+    marksymbolizerParseFailedUnknownWellknownName: ({wellKnownName}) =>
+      `MarkSymbolizer cannot be parsed. WellKnownName ${wellKnownName} is not supported.`,
     noFilterDetected: 'No Filter detected.',
-    symbolizerKindParseFailed: 'Failed to parse SymbolizerKind {{sldSymbolizerName}} from SldRule.',
+    symbolizerKindParseFailed: ({sldSymbolizerName}) => 
+      `Failed to parse SymbolizerKind ${sldSymbolizerName} from SldRule.`,
     colorMapEntriesParseFailedColorUndefined: 'Cannot parse ColorMapEntries. color is undefined.',
     contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
       'Cannot parse ContrastEnhancement. Histogram and Normalize are mutually exclusive.',
@@ -129,10 +129,11 @@ export const defaultTranslations: SldStyleParserTranslations = {
   },
   de: {},
   fr: {
-    marksymbolizerParseFailedUnknownWellknownName:
-      'Échec de lecture du symbole de type MarkSymbolizer. Le WellKnownName {{wellKnownName}} n\'est pas supporté.',
+    marksymbolizerParseFailedUnknownWellknownName: ({wellKnownName}) =>
+      `Échec de lecture du symbole de type MarkSymbolizer. Le WellKnownName ${wellKnownName} n'est pas supporté.`,
     noFilterDetected: 'Aucun filtre détecté.',
-    symbolizerKindParseFailed: 'Échec de lecture du type de symbole {{sldSymbolizerName}} à partir de SldRule.',
+    symbolizerKindParseFailed: ({sldSymbolizerName}) => 
+      `Échec de lecture du type de symbole ${sldSymbolizerName} à partir de SldRule.`,
     colorMapEntriesParseFailedColorUndefined: 'Lecture de ColorMapEntries échoué. color n\'est pas défini.',
     contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
       'Échec de lecture des propriétés de contraste ContrastEnhancement échoué. '
@@ -276,26 +277,17 @@ export class SldStyleParser implements StyleParser<string> {
       this.translations = merge(this.translations, opts.translations);
     }
 
-    i18next.init({
-      lng: this.locale,
-      resources: {
-        en: {
-          translation: this.translations.en,
-        },
-        de: {
-          translation: this.translations.de,
-        },
-        fr: {
-          translation: this.translations.fr,
-        }
-      }
-    });
-
     Object.assign(this, opts);
   }
 
   translate(key: keyof SldStyleParserTranslationKeys, params?: any): string {
-    return i18next.t(key, params) as string;
+    const trans = this.translations?.[this.locale]?.[key] ?? key;
+
+    if (typeof trans === 'function') {
+      return trans(params);
+    }
+
+    return trans;
   }
 
   private _parser: XMLParser;

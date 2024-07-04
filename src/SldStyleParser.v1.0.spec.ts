@@ -297,7 +297,7 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .contains('MarkSymbolizer cannot be parsed.');
+            .equals('MarkSymbolizer cannot be parsed. WellKnownName brush://dense5 is not supported.');
         });
       });
 
@@ -312,7 +312,9 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .contains('Échec de lecture du symbole de type MarkSymbolizer.');
+            .equals(
+              'Échec de lecture du symbole de type MarkSymbolizer. Le WellKnownName brush://dense5 n\'est pas supporté.'
+            );
         });
       });
 
@@ -322,8 +324,8 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
             locale: 'fr',
             translations: {
               fr: {
-                marksymbolizerParseFailedUnknownWellknownName:
-                  'Echec de lecture de MarkSymbolizer. WellKnownName {{wellKnownName}} inconnu.',
+                marksymbolizerParseFailedUnknownWellknownName: ({ wellKnownName }) =>
+                  `Echec de lecture de MarkSymbolizer. WellKnownName ${wellKnownName} inconnu.`,
               }
             }
           });
@@ -333,7 +335,7 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .contains('Echec de lecture de MarkSymbolizer.');
+            .equals('Echec de lecture de MarkSymbolizer. WellKnownName brush://dense5 inconnu.');
         });
       });
 
