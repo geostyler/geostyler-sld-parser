@@ -1,3 +1,10 @@
+## [6.1.0](https://github.com/geostyler/geostyler-sld-parser/compare/v6.0.0...v6.1.0) (2024-07-04)
+
+
+### Features
+
+* reimplementing i18n for error messages without i18next [#923](https://github.com/geostyler/geostyler-sld-parser/issues/923) [#924](https://github.com/geostyler/geostyler-sld-parser/issues/924) [#928](https://github.com/geostyler/geostyler-sld-parser/issues/928) [#944](https://github.com/geostyler/geostyler-sld-parser/issues/944) ([8252180](https://github.com/geostyler/geostyler-sld-parser/commit/825218070948d162d66d39ba6c414f63e90f5445))
+
 ## [6.0.0](https://github.com/geostyler/geostyler-sld-parser/compare/v5.4.0...v6.0.0) (2024-06-25)
 
 
