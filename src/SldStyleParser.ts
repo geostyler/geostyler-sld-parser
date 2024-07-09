@@ -117,7 +117,7 @@ export const defaultTranslations: SldStyleParserTranslations = {
     marksymbolizerParseFailedUnknownWellknownName: ({wellKnownName}) =>
       `MarkSymbolizer cannot be parsed. WellKnownName ${wellKnownName} is not supported.`,
     noFilterDetected: 'No Filter detected.',
-    symbolizerKindParseFailed: ({sldSymbolizerName}) => 
+    symbolizerKindParseFailed: ({sldSymbolizerName}) =>
       `Failed to parse SymbolizerKind ${sldSymbolizerName} from SldRule.`,
     colorMapEntriesParseFailedColorUndefined: 'Cannot parse ColorMapEntries. color is undefined.',
     contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
@@ -132,7 +132,7 @@ export const defaultTranslations: SldStyleParserTranslations = {
     marksymbolizerParseFailedUnknownWellknownName: ({wellKnownName}) =>
       `Échec de lecture du symbole de type MarkSymbolizer. Le WellKnownName ${wellKnownName} n'est pas supporté.`,
     noFilterDetected: 'Aucun filtre détecté.',
-    symbolizerKindParseFailed: ({sldSymbolizerName}) => 
+    symbolizerKindParseFailed: ({sldSymbolizerName}) =>
       `Échec de lecture du type de symbole ${sldSymbolizerName} à partir de SldRule.`,
     colorMapEntriesParseFailedColorUndefined: 'Lecture de ColorMapEntries échoué. color n\'est pas défini.',
     contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
@@ -250,7 +250,6 @@ export class SldStyleParser implements StyleParser<string> {
     this.parser = new XMLParser({
       ...opts?.parserOptions,
       // Fixed attributes
-      cdataPropName: '#cdata',
       ignoreDeclaration: true,
       removeNSPrefix: true,
       ignoreAttributes: false,

@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "fast-xml-parser": "^4.2.2",
-    "geostyler-style": "^9.0.1",
+    "geostyler-style": "^9.1.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
