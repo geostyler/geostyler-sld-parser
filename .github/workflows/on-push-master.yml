@@ -1,9 +1,9 @@
-name: Test Push to Master
+name: Test Push to Main
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
