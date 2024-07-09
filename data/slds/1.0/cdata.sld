@@ -1,6 +1,9 @@
 <!--SLD file created with GeoCat Bridge v2.0.0 using ArcGIS Desktop with
 	Geoserver extensions. Date: 18 February 2016 See www.geocat.net for more
-	details -->
+	details
+	Origin:	https://register.geostandaarden.nl/visualisatie/top10nl/1.2.0/Wegdeel_Vlak_style.sld
+	Date: 09.07.2024
+	-->
 <StyledLayerDescriptor xmlns="http://www.opengis.net/sld"
 	xmlns:ogc="http://www.opengis.net/ogc" xmlns:xlink="http://www.w3.org/1999/xlink"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
