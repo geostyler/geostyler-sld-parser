@@ -1,3 +1,10 @@
+## [6.1.1](https://github.com/geostyler/geostyler-sld-parser/compare/v6.1.0...v6.1.1) (2024-07-09)
+
+
+### Bug Fixes
+
+* fix reading CDATA values from SLD ([3afb066](https://github.com/geostyler/geostyler-sld-parser/commit/3afb0669c81bd36326126e46cd5cb8e7fa9fece7))
+
 ## [6.1.0](https://github.com/geostyler/geostyler-sld-parser/compare/v6.0.0...v6.1.0) (2024-07-04)
 
 
