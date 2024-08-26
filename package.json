@@ -56,7 +56,7 @@
     "semantic-release": "^24.0.0",
     "typescript": "^5.4.5",
     "vite": "4.5.3",
-    "vitest": "0.34.3"
+    "vitest": "0.34.6"
   },
   "engines": {
     "node": ">=20.6.0"
