@@ -1,3 +1,10 @@
+## [6.1.2](https://github.com/geostyler/geostyler-sld-parser/compare/v6.1.1...v6.1.2) (2024-08-26)
+
+
+### Bug Fixes
+
+* updates fast-xml-parser ([511e02f](https://github.com/geostyler/geostyler-sld-parser/commit/511e02f275fef6f77c50cbc1681db433b9485062))
+
 ## [6.1.1](https://github.com/geostyler/geostyler-sld-parser/compare/v6.1.0...v6.1.1) (2024-07-09)
 
 
