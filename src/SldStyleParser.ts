@@ -30,10 +30,10 @@ import {
 } from 'geostyler-style/dist/style';
 import { GeoStylerFunction } from 'geostyler-style/dist/functions';
 import {
+  X2jOptions,
   XMLBuilder,
-  XMLParser,
-  X2jOptionsOptional,
-  XmlBuilderOptionsOptional
+  XmlBuilderOptions,
+  XMLParser
 } from 'fast-xml-parser';
 
 import { merge } from 'lodash';
@@ -60,14 +60,29 @@ const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
 
 export type SldVersion = (typeof SLD_VERSIONS)[number];
 
+export type ParserOptions = Omit<X2jOptions,
+'ignoreDeclaration' |
+'removeNSPrefix' |
+'ignoreAttributes' |
+'preserveOrder' |
+'trimValues'
+>;
+
+export type BuilderOptions = Omit<XmlBuilderOptions,
+'cdataPropName' |
+'ignoreAttributes' |
+'suppressEmptyNode' |
+'preserveOrder'
+>;
+
 export type ConstructorParams = {
   numericFilterFields?: string[];
   boolFilterFields?: string[];
   /* optional for reading style (it will be guessed from sld style) and mandatory for writing */
   sldVersion?: SldVersion;
   symbolizerUnits?: string;
-  parserOptions?: X2jOptionsOptional;
-  builderOptions?: XmlBuilderOptionsOptional;
+  parserOptions?: ParserOptions;
+  builderOptions?: XmlBuilderOptions;
   translations?: SldStyleParserTranslations;
   locale?: string;
 };
