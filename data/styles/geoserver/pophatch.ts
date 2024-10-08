@@ -71,7 +71,6 @@ const style: Style = {
           kind: 'Text',
           label: '{{STATE_ABBR}}',
           color: '#000000',
-          opacity: 1,
           haloWidth: 2,
           haloColor: '#FFFFFF',
           font: [

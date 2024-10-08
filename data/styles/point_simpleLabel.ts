@@ -6,7 +6,6 @@ const pointStyledLabel: Style = {
     name: '',
     symbolizers: [{
       color: '#000000',
-      opacity: 1,
       kind: 'Text',
       label: 'myText'
     }]

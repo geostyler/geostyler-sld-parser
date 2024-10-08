@@ -812,7 +812,10 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     textSymbolizer.color = color ? color : '#000000';
-    textSymbolizer.opacity = isNil(opacity) ? 1 : numberExpression(opacity);
+
+    if (!isNil(opacity)) {
+      textSymbolizer.opacity = numberExpression(opacity);
+    }
 
     const haloRadius = get(sldSymbolizer, 'Halo.Radius.#text');
     if (!isNil(haloRadius)) {
@@ -2099,15 +2102,17 @@ export class SldStyleParser implements StyleParser<string> {
         ':@': {
           '@_name': 'fill'
         }
-      },
-      {
-        [CssParameter]: [{
-          '#text': Number.isFinite(textSymbolizer.opacity) ? textSymbolizer.opacity : '1',
-        }],
-        ':@': {
-          '@_name': 'fill-opacity'
-        }
       }];
+      if (Number.isFinite(textSymbolizer.opacity)) {
+        fill.push({
+          [CssParameter]: [{
+            '#text': `${textSymbolizer.opacity}`,
+          }],
+          ':@': {
+            '@_name': 'fill-opacity'
+          },
+        });
+      }
       sldTextSymbolizer.push({
         [Fill]: fill
       });

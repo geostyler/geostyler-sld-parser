@@ -146,7 +146,6 @@ const style: Style = {
           kind: 'Text',
           label: '{{LANAME}}',
           color: '#000000',
-          opacity: 1,
           haloWidth: 2,
           haloColor: '#FDE5A5',
           haloOpacity: 0.75,
