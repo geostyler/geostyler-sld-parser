@@ -14,7 +14,6 @@ const pointStyledLabel: Style = {
       haloColor: '#000000',
       haloWidth: 5,
       haloOpacity: 1,
-      opacity: 1,
       rotate: 45,
       fontStyle: 'normal',
       fontWeight: 'bold',

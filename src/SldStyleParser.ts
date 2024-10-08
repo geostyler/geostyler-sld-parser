@@ -162,7 +162,11 @@ export const defaultTranslations: SldStyleParserTranslations = {
 
   },
 } as const;
-const isNil = (val: unknown) => val === undefined || val === null;
+
+/**
+ * @returns true if the provided value is null or undefined. Returns false otherwise.
+ */
+const isNil = (val: unknown): boolean => val === undefined || val === null;
 
 /**
  * This parser can be used with the GeoStyler.
@@ -808,7 +812,10 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     textSymbolizer.color = color ? color : '#000000';
-    textSymbolizer.opacity = opacity ? numberExpression(opacity) : 1;
+
+    if (!isNil(opacity)) {
+      textSymbolizer.opacity = numberExpression(opacity);
+    }
 
     const haloRadius = get(sldSymbolizer, 'Halo.Radius.#text');
     if (!isNil(haloRadius)) {
@@ -1181,7 +1188,7 @@ export class SldStyleParser implements StyleParser<string> {
         }
         const label = getAttribute(cm, 'label');
         let opacity = getAttribute(cm, 'opacity');
-        if (opacity) {
+        if (!isNil(opacity)) {
           opacity = numberExpression(opacity);
         }
         return {
@@ -1687,7 +1694,7 @@ export class SldStyleParser implements StyleParser<string> {
       }]
     }];
 
-    if (markSymbolizer.color || markSymbolizer.fillOpacity) {
+    if (markSymbolizer.color || !isNil(markSymbolizer.fillOpacity)) {
       const fillCssParamaters = [];
       if (markSymbolizer.color) {
         if (isGeoStylerFunction(markSymbolizer.color)) {
@@ -1709,7 +1716,7 @@ export class SldStyleParser implements StyleParser<string> {
           });
         }
       }
-      if (markSymbolizer.fillOpacity) {
+      if (!isNil(markSymbolizer.fillOpacity)) {
         if (isGeoStylerFunction(markSymbolizer.fillOpacity)) {
           const children = geoStylerFunctionToSldFunction(markSymbolizer.fillOpacity);
           fillCssParamaters.push({
@@ -1779,7 +1786,7 @@ export class SldStyleParser implements StyleParser<string> {
           });
         }
       }
-      if (markSymbolizer.strokeOpacity) {
+      if (!isNil(markSymbolizer.strokeOpacity)) {
         if (isGeoStylerFunction(markSymbolizer.strokeOpacity)) {
           const children = geoStylerFunctionToSldFunction(markSymbolizer.strokeOpacity);
           strokeCssParameters.push({
@@ -1808,10 +1815,10 @@ export class SldStyleParser implements StyleParser<string> {
       [Mark]: mark
     }];
 
-    if (markSymbolizer.opacity) {
+    if (!isNil(markSymbolizer.opacity)) {
       graphic.push({
         [Opacity]: [{
-          '#text': markSymbolizer.opacity.toString()
+          '#text': markSymbolizer.opacity!.toString()
         }]
       });
     }
@@ -1907,7 +1914,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
     }
 
-    if (iconSymbolizer.opacity) {
+    if (!isNil(iconSymbolizer.opacity)) {
       graphic.push({
         [Opacity]: [{
           '#text': iconSymbolizer.opacity
@@ -2095,15 +2102,17 @@ export class SldStyleParser implements StyleParser<string> {
         ':@': {
           '@_name': 'fill'
         }
-      },
-      {
-        [CssParameter]: [{
-          '#text': Number.isFinite(textSymbolizer.opacity) ? textSymbolizer.opacity : '1',
-        }],
-        ':@': {
-          '@_name': 'fill-opacity'
-        }
       }];
+      if (Number.isFinite(textSymbolizer.opacity)) {
+        fill.push({
+          [CssParameter]: [{
+            '#text': `${textSymbolizer.opacity}`,
+          }],
+          ':@': {
+            '@_name': 'fill-opacity'
+          },
+        });
+      }
       sldTextSymbolizer.push({
         [Fill]: fill
       });

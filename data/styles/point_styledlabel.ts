@@ -7,7 +7,6 @@ const pointStyledLabel: Style = {
     symbolizers: [{
       kind: 'Text',
       color: '#000000',
-      opacity: 1,
       label: '{{name}}',
       font: ['Arial'],
       size: 12,
