@@ -1,3 +1,15 @@
+## [7.0.0](https://github.com/geostyler/geostyler-sld-parser/compare/v6.1.2...v7.0.0) (2024-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* opacity will no longer be set to 1 on text
+symbolizer if opacity was not explicitly set.
+
+### Bug Fixes
+
+* test if opacity is really undefined ([#968](https://github.com/geostyler/geostyler-sld-parser/issues/968)) ([858b42b](https://github.com/geostyler/geostyler-sld-parser/commit/858b42bfc3a363cabceeeffd4fe9fffb9eda667f))
+
 ## [6.1.2](https://github.com/geostyler/geostyler-sld-parser/compare/v6.1.1...v6.1.2) (2024-08-26)
 
 
