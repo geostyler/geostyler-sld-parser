@@ -80,6 +80,7 @@ export type ConstructorParams = {
   boolFilterFields?: string[];
   /* optional for reading style (it will be guessed from sld style) and mandatory for writing */
   sldVersion?: SldVersion;
+  withVendorOption?: boolean;
   symbolizerUnits?: string;
   parserOptions?: ParserOptions;
   builderOptions?: XmlBuilderOptions;
@@ -275,6 +276,7 @@ export class SldStyleParser implements StyleParser<string> {
       preserveOrder: true,
       trimValues: true
     });
+
     this.builder = new XMLBuilder({
       ...opts?.builderOptions,
       // Fixed attributes
@@ -283,8 +285,14 @@ export class SldStyleParser implements StyleParser<string> {
       suppressEmptyNode: true,
       preserveOrder: true
     });
+
     if (opts?.sldVersion) {
       this.sldVersion = opts?.sldVersion;
+    }
+
+    this.withVendorOption = true;  // FIXME !
+    if (opts?.withVendorOption !== undefined) {
+      this.withVendorOption = opts.withVendorOption;
     }
 
     if (opts?.locale) {
@@ -384,6 +392,26 @@ export class SldStyleParser implements StyleParser<string> {
    */
   set sldVersion(sldVersion: SldVersion) {
     this._sldVersion = sldVersion;
+  }
+
+  /**
+   * Indicates whether additional GeoServer vendorOption should be included in
+   * sld write operations. Set to `false` by default.
+   */
+  private _withVendorOption = false;
+
+  /**
+   * Getter for _withVendorOption
+   */
+  get withVendorOption(): boolean {
+    return this._withVendorOption;
+  }
+
+  /**
+   * Setter for _withVendorOption
+   */
+  set withVendorOption(withVendorOption: boolean) {
+    this._withVendorOption = withVendorOption;
   }
 
 
@@ -1866,6 +1894,31 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
+   * FIXME
+   */
+  pushVendorOption(elementArray: any[], name: string, text: string) {
+    if (this.withVendorOption) {
+      elementArray.push(this.createVendorOption(name, text));
+    }
+  }
+
+  /**
+   * FIXME
+   * @return <VendorOption name="name">text</VendorOption>
+   */
+  createVendorOption(name: string, text: string) {
+    const VendorOption = this.getTagName('VendorOption');
+    return {
+      [VendorOption]: [{
+        '#text': text,
+      }],
+      ':@': {
+        '@_name': name,
+      }
+    };
+  }
+
+  /**
    * Get the SLD Object (readable with fast-xml-parser) from a geostyler-style IconSymbolizer.
    *
    * @param iconSymbolizer A geostyler-style IconSymbolizer.
@@ -2454,16 +2507,17 @@ export class SldStyleParser implements StyleParser<string> {
 
     const polygonSymbolizer: any = [];
     if (fillCssParameters.length > 0 || graphicFill) {
-      if (!Array.isArray(polygonSymbolizer?.[0]?.[Fill])) {
-        polygonSymbolizer[0] = { [Fill]: [] };
+      const fillArray: any[] = [];
+      const graphicFillPadding = fillSymbolizer.graphicFillPadding;
+      if (graphicFillPadding) {
+        this.pushVendorOption(polygonSymbolizer, 'graphic-margin', `${graphicFillPadding}`);
       }
+      polygonSymbolizer.push({ [Fill]: fillArray });
       if (fillCssParameters.length > 0) {
-        polygonSymbolizer[0][Fill].push(...fillCssParameters);
+        fillArray.push(...fillCssParameters);
       }
       if (graphicFill) {
-        polygonSymbolizer[0][Fill].push({
-          GraphicFill: graphicFill
-        });
+        fillArray.push({ GraphicFill: graphicFill });
       }
     }
 
