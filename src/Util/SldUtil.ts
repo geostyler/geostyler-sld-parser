@@ -118,18 +118,17 @@ export function getChild(elements: any[], tagName: string): any {
 }
 
 /**
- * Get the value of a Css-/SvgParameter.
+ * Get the value of a parameter from a specific objects in a list of sld elements.
  *
  * @param elements An array of objects as created by the fast-xml-parser.
+ * @param paramKey The name of the parameter to find in the elements.
  * @param parameter The parameter name to get.
- * @param sldVersion The sldVersion to distinguish if CssParameter or SvgParameter is used.
  * @returns The string value of the searched parameter.
  */
-export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): any {
+export function getTextValueInSldObject(elements: any[], parameter: string, paramKey: string): any {
   if (!elements) {
     return undefined;
   }
-  const paramKey = sldVersion === '1.0.0' ? 'CssParameter' : 'SvgParameter';
   const element = elements
     .filter(obj => Object.keys(obj)?.includes(paramKey))
     .find(obj => obj?.[':@']?.['@_name'] === parameter);
@@ -144,6 +143,30 @@ export function getParameterValue(elements: any[], parameter: string, sldVersion
   }
 
   return element?.[paramKey]?.[0]?.['#text'];
+}
+
+/**
+ * Get the value of a Css-/SvgParameter.
+ *
+ * @param elements An array of objects as created by the fast-xml-parser.
+ * @param parameter The parameter name to get.
+ * @param sldVersion The sldVersion to distinguish if CssParameter or SvgParameter is used.
+ * @returns The string value of the searched parameter.
+ */
+export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): any {
+  const paramKey = sldVersion === '1.0.0' ? 'CssParameter' : 'SvgParameter';
+  return getTextValueInSldObject(elements, parameter, paramKey);
+}
+
+/**
+ * Get the value of a (GeoServer) VendorOption.
+ *
+ * @param elements An array of objects as created by the fast-xml-parser.
+ * @param name The vendorOption name to get.
+ * @returns The string value of the searched parameter.
+ */
+export function getVendorOptionValue(elements: any[], name: string): any {
+  return getTextValueInSldObject(elements, name, 'VendorOption');
 }
 
 /**
@@ -240,3 +263,4 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
 export function keysByValue(object: any, value: any): string[] {
   return Object.keys(object).filter(key => object[key] === value);
 }
+
