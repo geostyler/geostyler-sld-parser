@@ -1892,7 +1892,7 @@ export class SldStyleParser implements StyleParser<string> {
           '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
           '@_xlink:href': iconSymbolizer.image
         }
-      }]
+      }, {[Format]: []}]
     }];
 
     if (typeof iconSymbolizer.image === 'string' || iconSymbolizer.image instanceof String) {
@@ -1901,13 +1901,19 @@ export class SldStyleParser implements StyleParser<string> {
         case 'png':
         case 'jpeg':
         case 'gif':
-          graphic[0][ExternalGraphic][0][Format] = [`image/${iconExt}`];
+          graphic[0][ExternalGraphic][1][Format] = [{
+            '#text': `image/${iconExt}`
+          }];
           break;
         case 'jpg':
-          graphic[0][ExternalGraphic][0][Format] = ['image/jpeg'];
+          graphic[0][ExternalGraphic][1][Format] = [{
+            '#text': 'image/jpeg'
+          }];
           break;
         case 'svg':
-          graphic[0][ExternalGraphic][0][Format] = ['image/svg+xml'];
+          graphic[0][ExternalGraphic][1][Format] = [{
+            '#text': 'image/svg+xml'
+          }];
           break;
         default:
           break;
