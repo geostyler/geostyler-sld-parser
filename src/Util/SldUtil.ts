@@ -7,7 +7,7 @@ import { isGeoStylerFunction, isGeoStylerNumberFunction } from 'geostyler-style/
  * Cast to Number if it is not a GeoStylerFunction
  *
  * @param exp The GeoStylerExpression
- * @returns The value casted to a number or the GeoStylerNumberFunction
+ * @returns The value cast to a number or the GeoStylerNumberFunction
  */
 export function numberExpression(exp: Expression<PropertyType>): GeoStylerNumberFunction | number {
   return isGeoStylerNumberFunction(exp) ? exp : Number(exp);
@@ -56,14 +56,12 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
     }
   });
 
-  const sldFunctionObj = [{
+  return [{
     Function: sldFunctionArgs,
     ':@': {
       '@_name': name
     }
   }];
-
-  return sldFunctionObj;
 }
 
 /**
@@ -99,22 +97,11 @@ export function sldFunctionToGeoStylerFunction(sldFunction: any[]): GeoStylerFun
  * Get all child objects with a given tag name.
  *
  * @param elements An array of objects as created by the fast-xml-parser.
- * @param tagName The tagname to get.
+ * @param tagName The tagName to get.
  * @returns An array of objects as created by the fast-xml-parser.
  */
 export function getChildren(elements: any[], tagName: string): any[] {
   return elements?.filter(obj => Object.keys(obj).includes(tagName));
-}
-
-/**
- * Get the child object with a given tag name.
- *
- * @param elements An array of objects as created by the fast-xml-parser.
- * @param tagName The tagname to get.
- * @returns An object as created by the fast-xml-parser.
- */
-export function getChild(elements: any[], tagName: string): any {
-  return elements?.find(obj => Object.keys(obj).includes(tagName));
 }
 
 /**
@@ -197,7 +184,7 @@ export function isSymbolizer(obj: any): boolean {
  * e.g.
  *   Get text value: get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text')
  *   Get an attribute value: get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@xlink:href')
- *   Get an Css-/SvgParameter value: get(sldSymbolizer, 'Graphic.Mark.Fill.$fill-opacity', '1.1.0')
+ *   Get a Css-/SvgParameter value: get(sldSymbolizer, 'Graphic.Mark.Fill.$fill-opacity', '1.1.0')
  *   Use with an index: get(sldObject, 'StyledLayerDescriptor.NamedLayer[1].UserStyle.Title.#text')
  *
  * @param obj A part of the parser result of the fast-xml-parser.

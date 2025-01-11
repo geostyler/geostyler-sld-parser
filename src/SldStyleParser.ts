@@ -43,7 +43,8 @@ import {
   get,
   getAttribute,
   getChildren,
-  getParameterValue, getVendorOptionValue,
+  getParameterValue,
+  getVendorOptionValue,
   isSymbolizer,
   keysByValue,
   numberExpression
