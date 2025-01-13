@@ -46,6 +46,7 @@ import unsupported_properties from '../data/styles/unsupported_properties';
 import function_markSymbolizer from '../data/styles/function_markSymbolizer';
 import function_filter from '../data/styles/function_filter';
 import function_nested from '../data/styles/function_nested';
+import functionFilterPropertyToProperty from '../data/styles/function_filter_property_to_property';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -241,6 +242,12 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_simplepoint_nestedLogicalFilters);
+    });
+    it('can read a SLD with nested property-to-property comparison filters', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/function_filter_property_to_property.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(functionFilterPropertyToProperty);
     });
     it('can read a SLD style with multiple symbolizers in one Rule', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/multi_simplelineLabel.sld', 'utf8');
@@ -877,6 +884,23 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_simplepoint_nestedLogicalFilters);
+    });
+    
+    it('can write a SLD with nested property-to-property comparison filters', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(functionFilterPropertyToProperty);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(functionFilterPropertyToProperty);
     });
     // it('can write a SLD style with functionfilters', async () => {
     //   const {
