@@ -669,8 +669,10 @@ export class SldStyleParser implements StyleParser<string> {
       const childrenToArgs = function (child: any, index: number) {
         const propName = get([child], 'PropertyName.#text');
         if (propName !== undefined) {
-          // Return property name for the first argument in case second argument is literal...
-          if (index === 0 && get([children[1]], 'PropertyName.#text') === undefined) {
+          const isSingleArgOperator = children.length === 1;
+          // Return property name for the first argument in case second argument is literal
+          // or isSingleArgOperator eg (PropertyIsNull)
+          if (isSingleArgOperator || (index === 0 && get([children[1]], 'PropertyName.#text') === undefined)) {
             return propName;
           }
           // ..otherwise + (second argument) return as property function
