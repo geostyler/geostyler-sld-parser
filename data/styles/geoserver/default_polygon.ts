@@ -17,5 +17,4 @@ const style: Style = {
   ]
 };
 
-
 export default style;

@@ -27,6 +27,7 @@ import restricted from '../data/styles/geoserver/restricted';
 import simple_streams from '../data/styles/geoserver/simple_streams';
 import simpleRoads from '../data/styles/geoserver/simpleRoads';
 import tiger_roads from '../data/styles/geoserver/tiger_roads';
+import pattern_polygon from '../data/styles/geoserver/pattern_polygon';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -36,7 +37,7 @@ describe('SldStyleParser implements StyleParser', () => {
   let styleParser: SldStyleParser;
 
   beforeEach(() => {
-    styleParser = new SldStyleParser({sldVersion: '1.0.0'});
+    styleParser = new SldStyleParser({sldVersion: '1.0.0', withGeoServerVendorOption: true});
   });
 
   describe('#readStyle', () => {
@@ -177,6 +178,12 @@ describe('SldStyleParser implements StyleParser', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(tiger_roads);
+    });
+    it('can read the geoserver pattern_polygon.sld', async () => {
+      const sld = fs.readFileSync('./data/slds/geoserver/pattern_polygon.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(pattern_polygon);
     });
   });
 
@@ -536,7 +543,18 @@ describe('SldStyleParser implements StyleParser', () => {
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(tiger_roads);
     });
-
+    it('can write the geoserver pattern_polygon.sld', async () => {
+      const {
+        output: sldString,
+        errors
+      } = await styleParser.writeStyle(pattern_polygon);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(pattern_polygon);
+    });
   });
 
 });

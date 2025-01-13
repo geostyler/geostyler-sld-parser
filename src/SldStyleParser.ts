@@ -44,6 +44,7 @@ import {
   getAttribute,
   getChildren,
   getParameterValue,
+  getVendorOptionValue,
   isSymbolizer,
   keysByValue,
   numberExpression
@@ -80,6 +81,7 @@ export type ConstructorParams = {
   boolFilterFields?: string[];
   /* optional for reading style (it will be guessed from sld style) and mandatory for writing */
   sldVersion?: SldVersion;
+  withGeoServerVendorOption?: boolean;
   symbolizerUnits?: string;
   parserOptions?: ParserOptions;
   builderOptions?: XmlBuilderOptions;
@@ -275,6 +277,7 @@ export class SldStyleParser implements StyleParser<string> {
       preserveOrder: true,
       trimValues: true
     });
+
     this.builder = new XMLBuilder({
       ...opts?.builderOptions,
       // Fixed attributes
@@ -283,8 +286,13 @@ export class SldStyleParser implements StyleParser<string> {
       suppressEmptyNode: true,
       preserveOrder: true
     });
+
     if (opts?.sldVersion) {
       this.sldVersion = opts?.sldVersion;
+    }
+
+    if (opts?.withGeoServerVendorOption !== undefined) {
+      this.withGeoServerVendorOption = opts.withGeoServerVendorOption;
     }
 
     if (opts?.locale) {
@@ -384,6 +392,26 @@ export class SldStyleParser implements StyleParser<string> {
    */
   set sldVersion(sldVersion: SldVersion) {
     this._sldVersion = sldVersion;
+  }
+
+  /**
+   * Indicates whether additional GeoServer vendorOption should be included in
+   * sld write/parse operations. Set to `false` by default.
+   */
+  private _withGeoServerVendorOption = false;
+
+  /**
+   * Getter for _withGeoServerVendorOption
+   */
+  get withGeoServerVendorOption(): boolean {
+    return this._withGeoServerVendorOption;
+  }
+
+  /**
+   * Setter for _withGeoServerVendorOption
+   */
+  set withGeoServerVendorOption(withVendorOption: boolean) {
+    this._withGeoServerVendorOption = withVendorOption;
   }
 
 
@@ -958,6 +986,12 @@ export class SldStyleParser implements StyleParser<string> {
       fillSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
         graphicFill
       );
+    }
+    if (this.withGeoServerVendorOption) {
+      const graphicFillPadding = getVendorOptionValue(sldSymbolizer, 'graphic-margin');
+      if (!isNil(graphicFillPadding)) {
+        fillSymbolizer.graphicFillPadding = graphicFillPadding.split(',').map(numberExpression);
+      }
     }
     if (!isNil(color)) {
       fillSymbolizer.color = color;
@@ -1866,6 +1900,30 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
+   * Push a new GeoServerVendorOption in the given array if such options are allowed.
+   */
+  pushGeoServerVendorOption(elementArray: any[], name: string, text: string) {
+    if (this.withGeoServerVendorOption) {
+      elementArray.push(this.createGeoServerVendorOption(name, text));
+    }
+  }
+
+  /**
+   * @returns <VendorOption name="name">text</VendorOption>
+   */
+  createGeoServerVendorOption(name: string, text: string) {
+    const VendorOption = this.getTagName('VendorOption');
+    return {
+      [VendorOption]: [{
+        '#text': text,
+      }],
+      ':@': {
+        '@_name': name,
+      }
+    };
+  }
+
+  /**
    * Get the SLD Object (readable with fast-xml-parser) from a geostyler-style IconSymbolizer.
    *
    * @param iconSymbolizer A geostyler-style IconSymbolizer.
@@ -2454,16 +2512,17 @@ export class SldStyleParser implements StyleParser<string> {
 
     const polygonSymbolizer: any = [];
     if (fillCssParameters.length > 0 || graphicFill) {
-      if (!Array.isArray(polygonSymbolizer?.[0]?.[Fill])) {
-        polygonSymbolizer[0] = { [Fill]: [] };
+      const fillArray: any[] = [];
+      const graphicFillPadding = fillSymbolizer.graphicFillPadding;
+      if (graphicFillPadding) {
+        this.pushGeoServerVendorOption(polygonSymbolizer, 'graphic-margin', `${graphicFillPadding}`);
       }
+      polygonSymbolizer.push({ [Fill]: fillArray });
       if (fillCssParameters.length > 0) {
-        polygonSymbolizer[0][Fill].push(...fillCssParameters);
+        fillArray.push(...fillCssParameters);
       }
       if (graphicFill) {
-        polygonSymbolizer[0][Fill].push({
-          GraphicFill: graphicFill
-        });
+        fillArray.push({ GraphicFill: graphicFill });
       }
     }
 
