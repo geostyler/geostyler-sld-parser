@@ -666,6 +666,8 @@ export class SldStyleParser implements StyleParser<string> {
       const comparisonOperator: ComparisonOperator = COMPARISON_MAP[sldOperatorName] as ComparisonOperator;
       const filterIsFunction = !!get(sldFilter, 'Function');
       let args: any[] = [];
+
+      const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
       const childrenToArgs = function (child: any, index: number) {
         const propName = get([child], 'PropertyName.#text');
         if (propName !== undefined) {
@@ -684,8 +686,6 @@ export class SldStyleParser implements StyleParser<string> {
           return get([child], '#text');
         }
       };
-
-      const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
       args = children.map(childrenToArgs);
 
       if (sldOperatorName === 'PropertyIsNull') {
