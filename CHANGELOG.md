@@ -1,3 +1,10 @@
+## [7.2.1](https://github.com/geostyler/geostyler-sld-parser/compare/v7.2.0...v7.2.1) (2025-01-14)
+
+
+### Bug Fixes
+
+* linting ([#976](https://github.com/geostyler/geostyler-sld-parser/issues/976)) ([f0563be](https://github.com/geostyler/geostyler-sld-parser/commit/f0563be94455bda70c1394e9dc6a4fe204ff047c))
+
 ## [7.2.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.1.0...v7.2.0) (2025-01-14)
 
 
