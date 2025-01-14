@@ -1,3 +1,10 @@
+## [7.2.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.1.0...v7.2.0) (2025-01-14)
+
+
+### Features
+
+* property to property comparison ([#975](https://github.com/geostyler/geostyler-sld-parser/issues/975)) ([72c794e](https://github.com/geostyler/geostyler-sld-parser/commit/72c794e2524f8ad0f8068d9f0d24a11f853980b1))
+
 ## [7.1.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.0.0...v7.1.0) (2025-01-13)
 
 
