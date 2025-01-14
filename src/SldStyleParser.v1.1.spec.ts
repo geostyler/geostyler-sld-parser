@@ -47,6 +47,7 @@ import unsupported_properties from '../data/styles/unsupported_properties';
 import function_markSymbolizer from '../data/styles/function_markSymbolizer';
 import function_filter from '../data/styles/function_filter';
 import function_nested from '../data/styles/function_nested';
+import functionFilterPropertyToProperty from '../data/styles/function_filter_property_to_property';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -294,6 +295,13 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (reading
       const readResult = await styleParser.readStyle(sld);
       expect(readResult.output).toBeDefined();
       expect(readResult.output).toEqual(function_nested);
+    });
+
+    it('can read a SLD with nested property-to-property comparisons', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/function_filter_property_to_property.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(functionFilterPropertyToProperty);
     });
 
     describe('#getFilterFromOperatorAndComparison', () => {
@@ -642,6 +650,16 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_simplepoint_nestedLogicalFilters);
+    });
+    it('can write a SLD 1.1 with nested property-to-property comparison filters', async () => {
+      const {
+        output: sldString
+      } = await styleParser.writeStyle(functionFilterPropertyToProperty);
+      expect(sldString).toBeDefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(functionFilterPropertyToProperty);
     });
     // it('can write a SLD 1.1 style with functionfilters', async () => {
     //   const { output: sldString } = await styleParser.writeStyle(point_simplepoint_functionfilter);

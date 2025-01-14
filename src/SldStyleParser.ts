@@ -647,7 +647,7 @@ export class SldStyleParser implements StyleParser<string> {
     let filter: Filter;
 
     if (sldOperatorName === 'Function') {
-      const functionName = sldFilter[0][':@']['@_name'];
+      const functionName = Array.isArray(sldFilter) ? sldFilter[0][':@']['@_name'] : sldFilter[':@']['@_name'];
       const tempFunctionName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
       sldOperatorName = `PropertyIs${tempFunctionName}` as ComparisonType;
     }
@@ -666,11 +666,22 @@ export class SldStyleParser implements StyleParser<string> {
       const comparisonOperator: ComparisonOperator = COMPARISON_MAP[sldOperatorName] as ComparisonOperator;
       const filterIsFunction = !!get(sldFilter, 'Function');
       let args: any[] = [];
-      const childrenToArgs = (child: any) => {
-        if (get([child], '#text') !== undefined) {
-          return get([child], '#text');
+      const childrenToArgs = function (child: any, index: number) {
+        const propName = get([child], 'PropertyName.#text');
+        if (propName !== undefined) {
+          const isSingleArgOperator = children.length === 1;
+          // Return property name for the first argument in case second argument is literal
+          // or isSingleArgOperator eg (PropertyIsNull)
+          if (isSingleArgOperator || (index === 0 && get([children[1]], 'PropertyName.#text') === undefined)) {
+            return propName;
+          }
+          // ..otherwise + (second argument) return as property function
+          return {
+            name: 'property',
+            args: [propName]
+          };
         } else {
-          return get([child], 'PropertyName.#text');
+          return get([child], '#text');
         }
       };
 
@@ -1528,7 +1539,7 @@ export class SldStyleParser implements StyleParser<string> {
       const functionChildren: any = [];
 
       if (isGeoStylerFunction(key)) {
-        functionChildren.unshift(keyResult?.[0]);
+        functionChildren.unshift(Array.isArray(keyResult) ? keyResult?.[0] : keyResult);
       } else {
         functionChildren.unshift({
           Literal: [{
@@ -1538,7 +1549,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
 
       if (isGeoStylerFunction(value)) {
-        functionChildren.push(valueResult?.[0]);
+        functionChildren.push(Array.isArray(valueResult) ? valueResult?.[0] : valueResult);
       } else {
         functionChildren.push({
           Literal: [{
