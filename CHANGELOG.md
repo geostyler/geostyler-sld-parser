@@ -1,3 +1,29 @@
+## [7.2.1](https://github.com/geostyler/geostyler-sld-parser/compare/v7.2.0...v7.2.1) (2025-01-14)
+
+
+### Bug Fixes
+
+* linting ([#976](https://github.com/geostyler/geostyler-sld-parser/issues/976)) ([f0563be](https://github.com/geostyler/geostyler-sld-parser/commit/f0563be94455bda70c1394e9dc6a4fe204ff047c))
+
+## [7.2.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.1.0...v7.2.0) (2025-01-14)
+
+
+### Features
+
+* property to property comparison ([#975](https://github.com/geostyler/geostyler-sld-parser/issues/975)) ([72c794e](https://github.com/geostyler/geostyler-sld-parser/commit/72c794e2524f8ad0f8068d9f0d24a11f853980b1))
+
+## [7.1.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.0.0...v7.1.0) (2025-01-13)
+
+
+### Features
+
+* add vendor-option graphic-margin ([#971](https://github.com/geostyler/geostyler-sld-parser/issues/971)) ([be950ea](https://github.com/geostyler/geostyler-sld-parser/commit/be950eae89dd262e2018fbdca9fab6ceba75d83d))
+
+
+### Bug Fixes
+
+* update image format handling ([0093c6b](https://github.com/geostyler/geostyler-sld-parser/commit/0093c6b979affc4db005d7fb0868c87f9504a063))
+
 ## [7.0.0](https://github.com/geostyler/geostyler-sld-parser/compare/v6.1.2...v7.0.0) (2024-10-09)
 
 

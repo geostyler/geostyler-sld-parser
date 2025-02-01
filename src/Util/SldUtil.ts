@@ -7,7 +7,7 @@ import { isGeoStylerFunction, isGeoStylerNumberFunction } from 'geostyler-style/
  * Cast to Number if it is not a GeoStylerFunction
  *
  * @param exp The GeoStylerExpression
- * @returns The value casted to a number or the GeoStylerNumberFunction
+ * @returns The value cast to a number or the GeoStylerNumberFunction
  */
 export function numberExpression(exp: Expression<PropertyType>): GeoStylerNumberFunction | number {
   return isGeoStylerNumberFunction(exp) ? exp : Number(exp);
@@ -56,14 +56,12 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
     }
   });
 
-  const sldFunctionObj = [{
+  return [{
     Function: sldFunctionArgs,
     ':@': {
       '@_name': name
     }
   }];
-
-  return sldFunctionObj;
 }
 
 /**
@@ -99,7 +97,7 @@ export function sldFunctionToGeoStylerFunction(sldFunction: any[]): GeoStylerFun
  * Get all child objects with a given tag name.
  *
  * @param elements An array of objects as created by the fast-xml-parser.
- * @param tagName The tagname to get.
+ * @param tagName The tagName to get.
  * @returns An array of objects as created by the fast-xml-parser.
  */
 export function getChildren(elements: any[], tagName: string): any[] {
@@ -107,29 +105,17 @@ export function getChildren(elements: any[], tagName: string): any[] {
 }
 
 /**
- * Get the child object with a given tag name.
+ * Get the value of a parameter from a specific objects in a list of sld elements.
  *
  * @param elements An array of objects as created by the fast-xml-parser.
- * @param tagName The tagname to get.
- * @returns An object as created by the fast-xml-parser.
- */
-export function getChild(elements: any[], tagName: string): any {
-  return elements?.find(obj => Object.keys(obj).includes(tagName));
-}
-
-/**
- * Get the value of a Css-/SvgParameter.
- *
- * @param elements An array of objects as created by the fast-xml-parser.
+ * @param paramKey The name of the parameter to find in the elements.
  * @param parameter The parameter name to get.
- * @param sldVersion The sldVersion to distinguish if CssParameter or SvgParameter is used.
  * @returns The string value of the searched parameter.
  */
-export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): any {
+export function getTextValueInSldObject(elements: any[], parameter: string, paramKey: string): any {
   if (!elements) {
     return undefined;
   }
-  const paramKey = sldVersion === '1.0.0' ? 'CssParameter' : 'SvgParameter';
   const element = elements
     .filter(obj => Object.keys(obj)?.includes(paramKey))
     .find(obj => obj?.[':@']?.['@_name'] === parameter);
@@ -144,6 +130,30 @@ export function getParameterValue(elements: any[], parameter: string, sldVersion
   }
 
   return element?.[paramKey]?.[0]?.['#text'];
+}
+
+/**
+ * Get the value of a Css-/SvgParameter.
+ *
+ * @param elements An array of objects as created by the fast-xml-parser.
+ * @param parameter The parameter name to get.
+ * @param sldVersion The sldVersion to distinguish if CssParameter or SvgParameter is used.
+ * @returns The string value of the searched parameter.
+ */
+export function getParameterValue(elements: any[], parameter: string, sldVersion: SldVersion): any {
+  const paramKey = sldVersion === '1.0.0' ? 'CssParameter' : 'SvgParameter';
+  return getTextValueInSldObject(elements, parameter, paramKey);
+}
+
+/**
+ * Get the value of a (GeoServer) VendorOption.
+ *
+ * @param elements An array of objects as created by the fast-xml-parser.
+ * @param name The vendorOption name to get.
+ * @returns The string value of the searched parameter.
+ */
+export function getVendorOptionValue(elements: any[], name: string): any {
+  return getTextValueInSldObject(elements, name, 'VendorOption');
 }
 
 /**
@@ -174,7 +184,7 @@ export function isSymbolizer(obj: any): boolean {
  * e.g.
  *   Get text value: get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text')
  *   Get an attribute value: get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@xlink:href')
- *   Get an Css-/SvgParameter value: get(sldSymbolizer, 'Graphic.Mark.Fill.$fill-opacity', '1.1.0')
+ *   Get a Css-/SvgParameter value: get(sldSymbolizer, 'Graphic.Mark.Fill.$fill-opacity', '1.1.0')
  *   Use with an index: get(sldObject, 'StyledLayerDescriptor.NamedLayer[1].UserStyle.Title.#text')
  *
  * @param obj A part of the parser result of the fast-xml-parser.
@@ -240,3 +250,4 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
 export function keysByValue(object: any, value: any): string[] {
   return Object.keys(object).filter(key => object[key] === value);
 }
+

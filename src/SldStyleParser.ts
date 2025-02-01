@@ -44,6 +44,7 @@ import {
   getAttribute,
   getChildren,
   getParameterValue,
+  getVendorOptionValue,
   isSymbolizer,
   keysByValue,
   numberExpression
@@ -80,6 +81,7 @@ export type ConstructorParams = {
   boolFilterFields?: string[];
   /* optional for reading style (it will be guessed from sld style) and mandatory for writing */
   sldVersion?: SldVersion;
+  withGeoServerVendorOption?: boolean;
   symbolizerUnits?: string;
   parserOptions?: ParserOptions;
   builderOptions?: XmlBuilderOptions;
@@ -275,6 +277,7 @@ export class SldStyleParser implements StyleParser<string> {
       preserveOrder: true,
       trimValues: true
     });
+
     this.builder = new XMLBuilder({
       ...opts?.builderOptions,
       // Fixed attributes
@@ -283,8 +286,13 @@ export class SldStyleParser implements StyleParser<string> {
       suppressEmptyNode: true,
       preserveOrder: true
     });
+
     if (opts?.sldVersion) {
       this.sldVersion = opts?.sldVersion;
+    }
+
+    if (opts?.withGeoServerVendorOption !== undefined) {
+      this.withGeoServerVendorOption = opts.withGeoServerVendorOption;
     }
 
     if (opts?.locale) {
@@ -384,6 +392,26 @@ export class SldStyleParser implements StyleParser<string> {
    */
   set sldVersion(sldVersion: SldVersion) {
     this._sldVersion = sldVersion;
+  }
+
+  /**
+   * Indicates whether additional GeoServer vendorOption should be included in
+   * sld write/parse operations. Set to `false` by default.
+   */
+  private _withGeoServerVendorOption = false;
+
+  /**
+   * Getter for _withGeoServerVendorOption
+   */
+  get withGeoServerVendorOption(): boolean {
+    return this._withGeoServerVendorOption;
+  }
+
+  /**
+   * Setter for _withGeoServerVendorOption
+   */
+  set withGeoServerVendorOption(withVendorOption: boolean) {
+    this._withGeoServerVendorOption = withVendorOption;
   }
 
 
@@ -619,7 +647,7 @@ export class SldStyleParser implements StyleParser<string> {
     let filter: Filter;
 
     if (sldOperatorName === 'Function') {
-      const functionName = sldFilter[0][':@']['@_name'];
+      const functionName = Array.isArray(sldFilter) ? sldFilter[0][':@']['@_name'] : sldFilter[':@']['@_name'];
       const tempFunctionName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
       sldOperatorName = `PropertyIs${tempFunctionName}` as ComparisonType;
     }
@@ -638,15 +666,26 @@ export class SldStyleParser implements StyleParser<string> {
       const comparisonOperator: ComparisonOperator = COMPARISON_MAP[sldOperatorName] as ComparisonOperator;
       const filterIsFunction = !!get(sldFilter, 'Function');
       let args: any[] = [];
-      const childrenToArgs = (child: any) => {
-        if (get([child], '#text') !== undefined) {
-          return get([child], '#text');
-        } else {
-          return get([child], 'PropertyName.#text');
-        }
-      };
 
       const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
+      const childrenToArgs = function (child: any, index: number) {
+        const propName = get([child], 'PropertyName.#text');
+        if (propName !== undefined) {
+          const isSingleArgOperator = children.length === 1;
+          // Return property name for the first argument in case second argument is literal
+          // or isSingleArgOperator eg (PropertyIsNull)
+          if (isSingleArgOperator || (index === 0 && get([children[1]], 'PropertyName.#text') === undefined)) {
+            return propName;
+          }
+          // ..otherwise + (second argument) return as property function
+          return {
+            name: 'property',
+            args: [propName]
+          };
+        } else {
+          return get([child], '#text');
+        }
+      };
       args = children.map(childrenToArgs);
 
       if (sldOperatorName === 'PropertyIsNull') {
@@ -958,6 +997,12 @@ export class SldStyleParser implements StyleParser<string> {
       fillSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
         graphicFill
       );
+    }
+    if (this.withGeoServerVendorOption) {
+      const graphicFillPadding = getVendorOptionValue(sldSymbolizer, 'graphic-margin');
+      if (!isNil(graphicFillPadding)) {
+        fillSymbolizer.graphicFillPadding = graphicFillPadding.split(',').map(numberExpression);
+      }
     }
     if (!isNil(color)) {
       fillSymbolizer.color = color;
@@ -1527,7 +1572,7 @@ export class SldStyleParser implements StyleParser<string> {
       const functionChildren: any = [];
 
       if (isGeoStylerFunction(key)) {
-        functionChildren.unshift(keyResult?.[0]);
+        functionChildren.unshift(Array.isArray(keyResult) ? keyResult?.[0] : keyResult);
       } else {
         functionChildren.unshift({
           Literal: [{
@@ -1537,7 +1582,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
 
       if (isGeoStylerFunction(value)) {
-        functionChildren.push(valueResult?.[0]);
+        functionChildren.push(Array.isArray(valueResult) ? valueResult?.[0] : valueResult);
       } else {
         functionChildren.push({
           Literal: [{
@@ -1896,6 +1941,30 @@ export class SldStyleParser implements StyleParser<string> {
     return [{
       [Graphic]: graphic
     }];
+  }
+
+  /**
+   * Push a new GeoServerVendorOption in the given array if such options are allowed.
+   */
+  pushGeoServerVendorOption(elementArray: any[], name: string, text: string) {
+    if (this.withGeoServerVendorOption) {
+      elementArray.push(this.createGeoServerVendorOption(name, text));
+    }
+  }
+
+  /**
+   * @returns <VendorOption name="name">text</VendorOption>
+   */
+  createGeoServerVendorOption(name: string, text: string) {
+    const VendorOption = this.getTagName('VendorOption');
+    return {
+      [VendorOption]: [{
+        '#text': text,
+      }],
+      ':@': {
+        '@_name': name,
+      }
+    };
   }
 
   /**
@@ -2487,16 +2556,17 @@ export class SldStyleParser implements StyleParser<string> {
 
     const polygonSymbolizer: any = [];
     if (fillCssParameters.length > 0 || graphicFill) {
-      if (!Array.isArray(polygonSymbolizer?.[0]?.[Fill])) {
-        polygonSymbolizer[0] = { [Fill]: [] };
+      const fillArray: any[] = [];
+      const graphicFillPadding = fillSymbolizer.graphicFillPadding;
+      if (graphicFillPadding) {
+        this.pushGeoServerVendorOption(polygonSymbolizer, 'graphic-margin', `${graphicFillPadding}`);
       }
+      polygonSymbolizer.push({ [Fill]: fillArray });
       if (fillCssParameters.length > 0) {
-        polygonSymbolizer[0][Fill].push(...fillCssParameters);
+        fillArray.push(...fillCssParameters);
       }
       if (graphicFill) {
-        polygonSymbolizer[0][Fill].push({
-          GraphicFill: graphicFill
-        });
+        fillArray.push({ GraphicFill: graphicFill });
       }
     }
 
