@@ -1123,11 +1123,44 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     switch (wellKnownName) {
+      case 'arrow':
+      case 'arrowhead':
+      case 'asterisk_fill':
       case 'circle':
-      case 'square':
-      case 'triangle':
-      case 'star':
       case 'cross':
+      case 'cross2':
+      case 'cross_fill':
+      case 'decagon':
+      case 'diagonal_half_square':
+      case 'diamond':
+      case 'equilateral_triangle':
+      case 'filled_arrowhead':
+      case 'half_arc':
+      case 'half_square':
+      case 'heart':
+      case 'hexagon':
+      case 'horline':
+      case 'left_half_triangle':
+      case 'line':
+      case 'octagon':
+      case 'parallelogram_left':
+      case 'parallelogram_right':
+      case 'pentagon':
+      case 'quarter_arc':
+      case 'quarter_circle':
+      case 'quarter_square':
+      case 'right_half_triangle':
+      case 'rounded_square':
+      case 'semi_circle':
+      case 'shield':
+      case 'square':
+      case 'square_with_corners':
+      case 'star':
+      case 'star_diamond':
+      case 'third_arc':
+      case 'third_circle':
+      case 'trapezoid':
+      case 'triangle':
       case 'x':
       case 'shape://vertline':
       case 'shape://horline':
