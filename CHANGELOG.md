@@ -1,3 +1,10 @@
+## [7.3.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.2.1...v7.3.0) (2025-02-19)
+
+
+### Features
+
+* add wellknownnames to support qgis markers ([#978](https://github.com/geostyler/geostyler-sld-parser/issues/978)) ([04b9090](https://github.com/geostyler/geostyler-sld-parser/commit/04b90901334c11da87cbf31282046f0504cc2570))
+
 ## [7.2.1](https://github.com/geostyler/geostyler-sld-parser/compare/v7.2.0...v7.2.1) (2025-01-14)
 
 
