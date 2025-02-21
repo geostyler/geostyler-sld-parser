@@ -1001,7 +1001,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (this.withGeoServerVendorOption) {
       const graphicFillPadding = getVendorOptionValue(sldSymbolizer, 'graphic-margin');
       if (!isNil(graphicFillPadding)) {
-        fillSymbolizer.graphicFillPadding = graphicFillPadding.split(',').map(numberExpression);
+        fillSymbolizer.graphicFillPadding = graphicFillPadding.split(/[,\s]/).map(numberExpression);
       }
     }
     if (!isNil(color)) {
