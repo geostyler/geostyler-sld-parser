@@ -2559,7 +2559,7 @@ export class SldStyleParser implements StyleParser<string> {
       const fillArray: any[] = [];
       const graphicFillPadding = fillSymbolizer.graphicFillPadding;
       if (graphicFillPadding) {
-        this.pushGeoServerVendorOption(polygonSymbolizer, 'graphic-margin', `${graphicFillPadding}`);
+        this.pushGeoServerVendorOption(polygonSymbolizer, 'graphic-margin', graphicFillPadding.join(' '));
       }
       polygonSymbolizer.push({ [Fill]: fillArray });
       if (fillCssParameters.length > 0) {
