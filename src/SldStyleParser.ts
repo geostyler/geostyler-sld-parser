@@ -1001,7 +1001,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (this.withGeoServerVendorOption) {
       const graphicFillPadding = getVendorOptionValue(sldSymbolizer, 'graphic-margin');
       if (!isNil(graphicFillPadding)) {
-        fillSymbolizer.graphicFillPadding = graphicFillPadding.split(',').map(numberExpression);
+        fillSymbolizer.graphicFillPadding = graphicFillPadding.split(/[,\s]/).map(numberExpression);
       }
     }
     if (!isNil(color)) {
@@ -2559,7 +2559,7 @@ export class SldStyleParser implements StyleParser<string> {
       const fillArray: any[] = [];
       const graphicFillPadding = fillSymbolizer.graphicFillPadding;
       if (graphicFillPadding) {
-        this.pushGeoServerVendorOption(polygonSymbolizer, 'graphic-margin', `${graphicFillPadding}`);
+        this.pushGeoServerVendorOption(polygonSymbolizer, 'graphic-margin', graphicFillPadding.join(' '));
       }
       polygonSymbolizer.push({ [Fill]: fillArray });
       if (fillCssParameters.length > 0) {
