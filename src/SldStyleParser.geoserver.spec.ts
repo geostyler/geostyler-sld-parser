@@ -185,12 +185,6 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(pattern_polygon);
     });
-    it('can read the geoserver pattern_polygon_alternative_margin.sld', async () => {
-      const sld = fs.readFileSync('./data/slds/geoserver/pattern_polygon_alternative_margin.sld', 'utf8');
-      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
-      expect(geoStylerStyle).toBeDefined();
-      expect(geoStylerStyle).toEqual(pattern_polygon);
-    });
   });
 
   describe('#writeStyle', () => {

@@ -15,7 +15,7 @@
           <Name>Polygon with spaced purple circle symbols</Name>
           <Abstract>Polygon with spaced purple circle symbols</Abstract>
           <PolygonSymbolizer>
-            <VendorOption name="graphic-margin">4,6,2,3</VendorOption>
+            <VendorOption name="graphic-margin">4 6 2 3</VendorOption>
             <Fill>
               <GraphicFill>
                 <Graphic>
