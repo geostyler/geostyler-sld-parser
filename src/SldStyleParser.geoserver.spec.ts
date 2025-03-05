@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint camelcase: 0 */
 import fs from 'fs';
-import SldStyleParser from './SldStyleParser';
-import { beforeEach, expect, it, describe } from 'vitest';
+import SldStyleParser, {sldEnvGeoServer} from './SldStyleParser';
+import {beforeEach, describe, expect, it} from 'vitest';
 
 import burg from '../data/styles/geoserver/burg';
 import capitals from '../data/styles/geoserver/capitals';
@@ -37,7 +37,7 @@ describe('SldStyleParser implements StyleParser', () => {
   let styleParser: SldStyleParser;
 
   beforeEach(() => {
-    styleParser = new SldStyleParser({sldVersion: '1.0.0', withGeoServerVendorOption: true});
+    styleParser = new SldStyleParser({sldEnvironment: sldEnvGeoServer});
   });
 
   describe('#readStyle', () => {
