@@ -61,6 +61,12 @@ const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
 
 export type SldVersion = (typeof SLD_VERSIONS)[number];
 
+/** GeoServer allows VendorOptions and mix some SLD versions */
+export const sldEnvGeoServer = 'GeoServer';
+const SLD_ENVIRONMENTS = [sldEnvGeoServer] as const;
+/** Environment Configuration for the SLD parser/writer. */
+export type SldEnvironment = (typeof SLD_ENVIRONMENTS)[number];
+
 export type ParserOptions = Omit<X2jOptions,
 'ignoreDeclaration' |
 'removeNSPrefix' |
@@ -81,7 +87,7 @@ export type ConstructorParams = {
   boolFilterFields?: string[];
   /* optional for reading style (it will be guessed from sld style) and mandatory for writing */
   sldVersion?: SldVersion;
-  withGeoServerVendorOption?: boolean;
+  sldEnvironment?: SldEnvironment;
   symbolizerUnits?: string;
   parserOptions?: ParserOptions;
   builderOptions?: XmlBuilderOptions;
@@ -291,8 +297,8 @@ export class SldStyleParser implements StyleParser<string> {
       this.sldVersion = opts?.sldVersion;
     }
 
-    if (opts?.withGeoServerVendorOption !== undefined) {
-      this.withGeoServerVendorOption = opts.withGeoServerVendorOption;
+    if (opts?.sldEnvironment !== undefined) {
+      this.sldEnvironment = opts.sldEnvironment;
     }
 
     if (opts?.locale) {
@@ -395,25 +401,36 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
-   * Indicates whether additional GeoServer vendorOption should be included in
-   * sld write/parse operations. Set to `false` by default.
+   * Indicate the sld environment to parse the SLD or write the SLD.
+   * This allows or restrict some SLD tags.
+   * @private
    */
-  private _withGeoServerVendorOption = false;
+  private _sldEnvironment: SldEnvironment | null = null;
 
   /**
-   * Getter for _withGeoServerVendorOption
+   * Getter for _sldEnvironment
+   * @return SldEnvironment or null.
    */
-  get withGeoServerVendorOption(): boolean {
-    return this._withGeoServerVendorOption;
+  get sldEnvironment(): SldEnvironment | null {
+    return this._sldEnvironment;
   }
 
   /**
-   * Setter for _withGeoServerVendorOption
+   * Setter for _sldEnvironment
+   * @param a SldEnvironment or null.
    */
-  set withGeoServerVendorOption(withVendorOption: boolean) {
-    this._withGeoServerVendorOption = withVendorOption;
+  set sldEnvironment(env: SldEnvironment | null) {
+    this._sldEnvironment = env;
   }
 
+  /**
+   * Check if the given SldEnvironment match the current environment.
+   * @param env the SldEnvironment to check.
+   * @private
+   */
+  private isSldEnv(env: SldEnvironment): boolean {
+    return this.sldEnvironment === env;
+  }
 
   /**
    * String indicating the SLD version used in reading mode
@@ -421,9 +438,9 @@ export class SldStyleParser implements StyleParser<string> {
   private _readingSldVersion: SldVersion = '1.0.0';
 
   /**
-     * Getter for _readingSldVersion
-     * @return
-     */
+   * Getter for _readingSldVersion
+   * @return
+   */
   get readingSldVersion(): SldVersion {
     return this._readingSldVersion;
   }
@@ -998,7 +1015,7 @@ export class SldStyleParser implements StyleParser<string> {
         graphicFill
       );
     }
-    if (this.withGeoServerVendorOption) {
+    if (this.isSldEnv(sldEnvGeoServer)) {
       const graphicFillPadding = getVendorOptionValue(sldSymbolizer, 'graphic-margin');
       if (!isNil(graphicFillPadding)) {
         fillSymbolizer.graphicFillPadding = graphicFillPadding.split(/\s/).map(numberExpression);
@@ -1947,7 +1964,7 @@ export class SldStyleParser implements StyleParser<string> {
    * Push a new GeoServerVendorOption in the given array if such options are allowed.
    */
   pushGeoServerVendorOption(elementArray: any[], name: string, text: string) {
-    if (this.withGeoServerVendorOption) {
+    if (this.isSldEnv(sldEnvGeoServer)) {
       elementArray.push(this.createGeoServerVendorOption(name, text));
     }
   }
