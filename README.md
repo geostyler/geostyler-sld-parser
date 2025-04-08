@@ -6,6 +6,10 @@
 
 [GeoStyler](https://github.com/terrestris/geostyler/) Style Parser implementation for Styled Layer Descriptor (SLD)
 
+## :rocket: GeoStyler Code Sprint 2025
+
+We are happy to announce the next GeoStyler Code Sprint from **02.-06.06.2025** in Switzerland. Be part of it! More infos on https://geostyler.org/.
+
 ### How to use
 
 ES6:
