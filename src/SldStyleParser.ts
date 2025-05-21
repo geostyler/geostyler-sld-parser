@@ -1861,7 +1861,7 @@ export class SldStyleParser implements StyleParser<string> {
           });
         }
       }
-      if (markSymbolizer.strokeWidth) {
+      if (!isNil(markSymbolizer.strokeWidth)) {
         if (isGeoStylerFunction(markSymbolizer.strokeWidth)) {
           const children = geoStylerFunctionToSldFunction(markSymbolizer.strokeWidth);
           strokeCssParameters.push({
