@@ -24,6 +24,10 @@
           </PointSymbolizer>
           <PointSymbolizer>
             <Graphic>
+              <Displacement>
+                <DisplacementX>5</DisplacementX>
+                <DisplacementY>10</DisplacementY>
+              </Displacement>
               <Mark>
                 <WellKnownName>circle</WellKnownName>
                 <Fill>
