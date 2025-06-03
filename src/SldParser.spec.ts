@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint camelcase: 0 */
 
 import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
 import { expect, it, describe } from 'vitest';
 
+// @ts-ignore
 import point_simplepoint from '../data/styles/point_simplepoint';
+// @ts-ignore
 import cdata from '../data/styles/cdata';
 
 describe('SldStyleParser implements StyleParser (reading from one version and writing to another version)', () => {

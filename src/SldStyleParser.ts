@@ -2034,6 +2034,7 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': 'image/svg+xml'
           }];
           break;
+        case undefined:
         default:
           break;
       }
