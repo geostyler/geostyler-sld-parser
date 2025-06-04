@@ -1941,7 +1941,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (markSymbolizer.offset && this.sldVersion === '1.1.0') {
+    if (markSymbolizer.offset && (this.sldVersion === '1.1.0' || this.isSldEnv(sldEnvGeoServer))) {
       graphic.push({
         [Displacement]: [{
           [DisplacementX]: [{
