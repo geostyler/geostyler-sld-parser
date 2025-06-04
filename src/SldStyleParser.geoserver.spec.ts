@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint camelcase: 0 */
 import fs from 'fs';
 import SldStyleParser, {sldEnvGeoServer} from './SldStyleParser';

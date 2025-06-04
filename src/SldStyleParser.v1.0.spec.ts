@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint camelcase: 0 */
 
 import * as fs from 'fs';
@@ -297,14 +296,14 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
     });
 
     describe(('displays error messages'), () => {
-      describe('in English (default locale)', () => { 
+      describe('in English (default locale)', () => {
         it('unknown WellknownName', async () => {
           const sld = fs.readFileSync('./data/slds/1.0/unknown_wellknownname.sld', 'utf8');
           const readResult = await styleParser.readStyle(sld);
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .equals('MarkSymbolizer cannot be parsed. WellKnownName brush://dense5 is not supported.');
+            .toEqual('MarkSymbolizer cannot be parsed. WellKnownName brush://dense5 is not supported.');
         });
       });
 
@@ -319,7 +318,7 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .equals(
+            .toEqual(
               'Échec de lecture du symbole de type MarkSymbolizer. Le WellKnownName brush://dense5 n\'est pas supporté.'
             );
         });
@@ -342,7 +341,7 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
 
           expect(readResult.errors).toBeDefined();
           expect(readResult.errors?.[0].message.toString())
-            .equals('Echec de lecture de MarkSymbolizer. WellKnownName brush://dense5 inconnu.');
+            .toEqual('Echec de lecture de MarkSymbolizer. WellKnownName brush://dense5 inconnu.');
         });
       });
 
@@ -885,7 +884,7 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_simplepoint_nestedLogicalFilters);
     });
-    
+
     it('can write a SLD with nested property-to-property comparison filters', async () => {
       const {
         output: sldString,
