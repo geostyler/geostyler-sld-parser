@@ -1212,6 +1212,11 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(strokeOpacity)) {
       markSymbolizer.strokeOpacity = numberExpression(strokeOpacity);
     }
+    const strokeDasharray = getParameterValue(strokeEl, 'stroke-dasharray', this.readingSldVersion);
+    if (!isNil(strokeDasharray)) {
+      const dashStringAsArray = strokeDasharray.split(' ').map(numberExpression);
+      markSymbolizer.strokeDasharray = dashStringAsArray;
+    }
 
     return markSymbolizer;
   }
@@ -1897,6 +1902,26 @@ export class SldStyleParser implements StyleParser<string> {
             }],
             ':@': {
               '@_name': 'stroke-opacity'
+            }
+          });
+        }
+      }
+      if (!isNil(markSymbolizer.strokeDasharray)) {
+        if (isGeoStylerFunction(markSymbolizer.strokeDasharray)) {
+          const children = geoStylerFunctionToSldFunction(markSymbolizer.strokeDasharray);
+          strokeCssParameters.push({
+            [CssParameter]: children,
+            ':@': {
+              '@_name': 'stroke-dasharray'
+            }
+          });
+        } else {
+          strokeCssParameters.push({
+            [CssParameter]: [{
+              '#text': markSymbolizer.strokeDasharray?.join(' '),
+            }],
+            ':@': {
+              '@_name': 'stroke-dasharray'
             }
           });
         }

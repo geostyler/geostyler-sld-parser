@@ -56,7 +56,8 @@ const style: Style = {
             kind: 'Mark',
             wellKnownName: 'shape://slash',
             radius: 2,
-            strokeColor: '#AAAAAA'
+            strokeColor: '#AAAAAA',
+            strokeDasharray: [4, 5]
           }
         }
       ]
