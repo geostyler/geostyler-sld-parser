@@ -1,6 +1,5 @@
-import { Expression, PropertyType, isGeoStylerFunction, isGeoStylerNumberFunction } from 'geostyler-style';
+import { Expression, PropertyType, GeoStylerFunction, GeoStylerNumberFunction, isGeoStylerFunction, isGeoStylerNumberFunction } from 'geostyler-style';
 import { SldVersion } from '../SldStyleParser';
-import { GeoStylerFunction, GeoStylerNumberFunction } from 'geostyler-style/dist/functions';
 
 /**
  * Cast to Number if it is not a GeoStylerFunction
