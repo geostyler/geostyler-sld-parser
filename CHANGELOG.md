@@ -1,3 +1,27 @@
+## [8.0.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.3.0...v8.0.0) (2025-06-06)
+
+### ⚠ BREAKING CHANGES
+
+* GeoServerVendorOption was too restrictive. You can
+now provide an sldEnvironment: GeoServer parameter. It adds
+VendorOption support.
+
+### Features
+
+* add displacement from point offset for geoserver ([e13db64](https://github.com/geostyler/geostyler-sld-parser/commit/e13db64f38c082f293e40d7ca636cce2e63ff333))
+* drop geoservervendoroption add sldenvironment ([2eda7a6](https://github.com/geostyler/geostyler-sld-parser/commit/2eda7a6a15ac04f98a780149ec8e399343870595))
+* support dasharray in stroke in mark symbolizer ([bfc2aa8](https://github.com/geostyler/geostyler-sld-parser/commit/bfc2aa8d28ef6eb4d31f7bdd6d42ed5916684423))
+
+### Bug Fixes
+
+* **#993:** add missing code ([b206151](https://github.com/geostyler/geostyler-sld-parser/commit/b206151a1dd7b1d5018432031259ff3611d3908f)), closes [#993](https://github.com/geostyler/geostyler-sld-parser/issues/993)
+* **deps:** update dependency geostyler-style to v10.1.0 ([82e0f77](https://github.com/geostyler/geostyler-sld-parser/commit/82e0f77ad0d8669115b68b16c0eb7f9e807293d5))
+* fix and cleanup workflows ([bf104b3](https://github.com/geostyler/geostyler-sld-parser/commit/bf104b3661b3effc199eaa74094d9766461ebeff))
+* join graphic-margin values with spaces for GeoServer vendor option ([fe8db5b](https://github.com/geostyler/geostyler-sld-parser/commit/fe8db5b55daa6c9db2a0951fafcc06c43b154b75))
+* support only spaces as separator in vendor-option graphic-margin ([b01783d](https://github.com/geostyler/geostyler-sld-parser/commit/b01783d60af29afd00538155e3bcf3ad531321ed))
+* support spaces as separator for vendor-option graphic-margin ([9e357b1](https://github.com/geostyler/geostyler-sld-parser/commit/9e357b1bbd811254206848f9b9e9894c576f8b05))
+* update geostyler-style imports ([9b5c088](https://github.com/geostyler/geostyler-sld-parser/commit/9b5c08894d6764572d5b2d23cc84ccbb65b62b6a))
+
 ## [7.3.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.2.1...v7.3.0) (2025-02-19)
 
 
