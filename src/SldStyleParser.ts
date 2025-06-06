@@ -11,8 +11,8 @@ import {
   Expression,
   FillSymbolizer,
   Filter,
-  GeoStylerFunction,
   FunctionCall,
+  GeoStylerFunction,
   IconSymbolizer,
   isCombinationFilter,
   isComparisonFilter,
@@ -122,18 +122,14 @@ const COMBINATION_MAP = {
 
 type CombinationType = keyof typeof COMBINATION_MAP;
 
-const ARITHMETIC_OPERATOR_MAP = {
-  Add: '+',
-  Sub: '-',
-  Mul: '*',
-  Div: '/',
-  // 'ogc:Add': '+',
-  // 'ogc:Sub': '-',
-  // 'ogc:Mul': '*',
-  // 'ogc:Div': '/',
-};
+const ARITHMETIC_OPERATORS = [
+  'add',
+  'sub',
+  'mul',
+  'div',
+] as const;
 
-type ArithmeticType = keyof typeof ARITHMETIC_OPERATOR_MAP;
+type ArithmeticType = typeof ARITHMETIC_OPERATORS[number];
 
 export type SldStyleParserTranslationKeys = {
   marksymbolizerParseFailedUnknownWellknownName?: (params: {wellKnownName: string}) => string;
@@ -736,14 +732,14 @@ export class SldStyleParser implements StyleParser<string> {
 
     const comparisonOperator: ComparisonOperator = COMPARISON_MAP[sldOperatorName] as ComparisonOperator;
     const filterIsFunction = !!get(sldFilter, 'Function');
-    let args: any[] = [];
+    let args: (FunctionCall<unknown>|null)[] = [];
 
     const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
     args = children.map((child: any, index: number) => {
 
       const operatorName = Object.keys(child)?.[0];
 
-      if (Object.keys(ARITHMETIC_OPERATOR_MAP).includes(operatorName)) {
+      if (ARITHMETIC_OPERATORS.includes(operatorName.toLowerCase() as ArithmeticType)) {
         const arithmeticOperator = child[operatorName];
         return this.getFilterFromArithmeticOperators(operatorName as ArithmeticType, arithmeticOperator);
       }
@@ -764,50 +760,39 @@ export class SldStyleParser implements StyleParser<string> {
   getFilterFromArithmeticOperators(
     arithmeticOperatorName: ArithmeticType,
     arithmeticOperator: any
-  ): FunctionCall<number>['args'] {
-    return arithmeticOperator?.map((op: any, index: number) => {
-      let args: any[] = [];
-      const operatorName = Object.keys(op)?.[0];
+  ): FunctionCall<number> {
+    // An arithmetic operator has 2 children
+    const leftSide = arithmeticOperator?.[0];
+    const rightSide = arithmeticOperator?.[1];
 
-      if (Object.keys(ARITHMETIC_OPERATOR_MAP).includes(operatorName)) {
-        args = [this.getFilterFromArithmeticOperators(operatorName as ArithmeticType, op[operatorName])];
-      } else {
-        args = [this.getFilterFromPropertyName(op, arithmeticOperator, index)];
-      }
+    const leftOperator = Object.keys(leftSide)?.[0];
+    const rightOperator = Object.keys(rightSide)?.[0];
 
-      return {
-        name: arithmeticOperatorName.toLowerCase(),
-        args,
-        // args: arithmeticOperator.map(arithOp)
-      };
-    }) ?? [];
+    let leftArg;
+    if (leftOperator && ARITHMETIC_OPERATORS.includes(leftOperator.toLowerCase() as ArithmeticType)) {
+      leftArg = this.getFilterFromArithmeticOperators(leftOperator as ArithmeticType, leftSide[leftOperator]);
+    } else {
+      leftArg = this.getFilterFromPropertyName(leftSide, arithmeticOperator, 0);
+    }
 
-    // return {
-    //   name: arithmeticOperatorName.toLocaleUpperCase(),
-    //   args
-    // };
+    let rightArg;
+    if (rightOperator && ARITHMETIC_OPERATORS.includes(rightOperator.toLowerCase() as ArithmeticType)) {
+      rightArg = this.getFilterFromArithmeticOperators(rightOperator as ArithmeticType, rightSide[rightOperator]);
+    } else {
+      rightArg = this.getFilterFromPropertyName(rightSide, arithmeticOperator, 0);
+    }
 
-    // const operatorName = Object.keys(arithmeticOperator)?.[0];
-
-    // if (Object.keys(ARITHMETIC_OPERATOR_MAP).includes(operatorName)) {
-    //   args = [this.getFilterFromArithmeticOperators(operatorName as ArithmeticType, arithmeticOperator[operatorName])];
-    // } else {
-    //   args = [this.getFilterFromPropertyName(arithmeticOperator)];
-    // }
-
-    // // @ts-expect-error // TODO
-    // return {
-    //   name: arithmeticOperatorName.toLowerCase(),
-    //   args,
-    //   // args: arithmeticOperator.map(arithOp)
-    // };
+    return {
+      name: arithmeticOperatorName.toLowerCase() as FunctionCall<number>['name'],
+      args: [leftArg, rightArg]
+    };
   }
 
   getFilterFromPropertyName(
     child: any,
     children?: any,
     index?: number
-  ): Filter {
+  ): FunctionCall<unknown> {
     const propName = get([child], 'PropertyName.#text');
     if (propName !== undefined) {
       const isSingleArgOperator = children.length === 1;
