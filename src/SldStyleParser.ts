@@ -11,6 +11,7 @@ import {
   Expression,
   FillSymbolizer,
   Filter,
+  GeoStylerFunction,
   IconSymbolizer,
   isCombinationFilter,
   isComparisonFilter,
@@ -33,7 +34,6 @@ import {
   WellKnownName,
   WriteStyleResult,
 } from 'geostyler-style';
-import { GeoStylerFunction } from 'geostyler-style/dist/functions';
 import {
   X2jOptions,
   XMLBuilder,
