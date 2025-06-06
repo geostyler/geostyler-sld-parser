@@ -12,6 +12,11 @@ import {
   FillSymbolizer,
   Filter,
   IconSymbolizer,
+  isCombinationFilter,
+  isComparisonFilter,
+  isGeoStylerFunction,
+  isGeoStylerNumberFunction,
+  isNegationFilter,
   LineSymbolizer,
   MarkSymbolizer,
   PointSymbolizer,
@@ -26,8 +31,8 @@ import {
   TextSymbolizer,
   UnsupportedProperties,
   WellKnownName,
-  WriteStyleResult
-} from 'geostyler-style/dist/style';
+  WriteStyleResult,
+} from 'geostyler-style';
 import { GeoStylerFunction } from 'geostyler-style/dist/functions';
 import {
   X2jOptions,
@@ -49,13 +54,6 @@ import {
   keysByValue,
   numberExpression
 } from './Util/SldUtil';
-import {
-  isCombinationFilter,
-  isComparisonFilter,
-  isGeoStylerFunction,
-  isGeoStylerNumberFunction,
-  isNegationFilter
-} from 'geostyler-style/dist/typeguards';
 
 const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
 
