@@ -11,6 +11,7 @@ import {
   Expression,
   FillSymbolizer,
   Filter,
+  FunctionCall,
   GeoStylerFunction,
   IconSymbolizer,
   isCombinationFilter,
@@ -120,6 +121,15 @@ const COMBINATION_MAP = {
 };
 
 type CombinationType = keyof typeof COMBINATION_MAP;
+
+const ARITHMETIC_OPERATORS = [
+  'add',
+  'sub',
+  'mul',
+  'div',
+] as const;
+
+type ArithmeticType = typeof ARITHMETIC_OPERATORS[number];
 
 export type SldStyleParserTranslationKeys = {
   marksymbolizerParseFailedUnknownWellknownName?: (params: {wellKnownName: string}) => string;
@@ -678,39 +688,8 @@ export class SldStyleParser implements StyleParser<string> {
 
       filter = ['<=x<=', propertyName, lower, upper];
     } else if (Object.keys(COMPARISON_MAP).includes(sldOperatorName)) {
-      const comparisonOperator: ComparisonOperator = COMPARISON_MAP[sldOperatorName] as ComparisonOperator;
-      const filterIsFunction = !!get(sldFilter, 'Function');
-      let args: any[] = [];
 
-      const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
-      const childrenToArgs = function (child: any, index: number) {
-        const propName = get([child], 'PropertyName.#text');
-        if (propName !== undefined) {
-          const isSingleArgOperator = children.length === 1;
-          // Return property name for the first argument in case second argument is literal
-          // or isSingleArgOperator eg (PropertyIsNull)
-          if (isSingleArgOperator || (index === 0 && get([children[1]], 'PropertyName.#text') === undefined)) {
-            return propName;
-          }
-          // ..otherwise + (second argument) return as property function
-          return {
-            name: 'property',
-            args: [propName]
-          };
-        } else {
-          return get([child], '#text');
-        }
-      };
-      args = children.map(childrenToArgs);
-
-      if (sldOperatorName === 'PropertyIsNull') {
-        args[1] = null;
-      }
-
-      filter = [
-        comparisonOperator,
-        ...args
-      ] as ComparisonFilter;
+      filter = this.getFilterFromComparisonOperator(sldOperatorName, sldFilter);
 
     } else if (Object.keys(COMBINATION_MAP).includes(sldOperatorName)) {
       const combinationOperator: CombinationOperator = COMBINATION_MAP[
@@ -739,6 +718,97 @@ export class SldStyleParser implements StyleParser<string> {
       throw new Error(this.translate('noFilterDetected'));
     }
     return filter;
+  }
+
+  getFilterFromComparisonOperator(
+    sldOperatorName: ComparisonType | 'Function',
+    sldFilter: any
+  ): Filter {
+    if (sldOperatorName === 'Function') {
+      const functionName = Array.isArray(sldFilter) ? sldFilter[0][':@']['@_name'] : sldFilter[':@']['@_name'];
+      const tempFunctionName = functionName.charAt(0).toUpperCase() + functionName.slice(1);
+      sldOperatorName = `PropertyIs${tempFunctionName}` as ComparisonType;
+    }
+
+    const comparisonOperator: ComparisonOperator = COMPARISON_MAP[sldOperatorName] as ComparisonOperator;
+    const filterIsFunction = !!get(sldFilter, 'Function');
+    let args: (FunctionCall<unknown>|null)[] = [];
+
+    const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
+    args = children.map((child: any, index: number) => {
+      const operatorName = Object.keys(child)?.[0];
+
+      if (ARITHMETIC_OPERATORS.includes(operatorName.toLowerCase() as ArithmeticType)) {
+        const arithmeticOperator = child[operatorName];
+        return this.getFilterArgsFromArithmeticOperators(operatorName as ArithmeticType, arithmeticOperator);
+      }
+
+      return this.getFilterArgsFromPropertyName(child, children, index);
+    });
+
+    if (sldOperatorName === 'PropertyIsNull') {
+      args[1] = null;
+    }
+
+    return [
+      comparisonOperator,
+      ...args
+    ] as ComparisonFilter;
+  }
+
+  /**
+   * Creates a FunctionCall from arithmetic operators in SLD filters.
+   * Handles nested arithmetic operations recursively.
+   */
+  getFilterArgsFromArithmeticOperators(
+    arithmeticOperatorName: ArithmeticType,
+    arithmeticOperator: any
+  ): FunctionCall<number> {
+    const [leftSide, rightSide] = arithmeticOperator;
+    return {
+      name: arithmeticOperatorName.toLowerCase() as FunctionCall<number>['name'],
+      args: [
+        this.processArithmeticOperand(leftSide, arithmeticOperator),
+        this.processArithmeticOperand(rightSide, arithmeticOperator)
+      ]
+    };
+  }
+
+  /**
+   * Processes a single operand in an arithmetic operation.
+   * If the operand is itself an arithmetic operator, processes it recursively.
+   */
+  private processArithmeticOperand(operand: any, parentOperator: any): any {
+    const operatorName = Object.keys(operand)?.[0];
+
+    if (operatorName && ARITHMETIC_OPERATORS.includes(operatorName.toLowerCase() as ArithmeticType)) {
+      return this.getFilterArgsFromArithmeticOperators(operatorName as ArithmeticType, operand[operatorName]);
+    }
+
+    return this.getFilterArgsFromPropertyName(operand, parentOperator, 0);
+  }
+
+  getFilterArgsFromPropertyName(
+    child: any,
+    children?: any,
+    index?: number
+  ): FunctionCall<unknown> {
+    const propName = get([child], 'PropertyName.#text');
+    if (propName !== undefined) {
+      const isSingleArgOperator = children.length === 1;
+      // Return property name for the first argument in case second argument is literal
+      // or isSingleArgOperator eg (PropertyIsNull)
+      if (isSingleArgOperator || (index === 0 && get([children[1]], 'PropertyName.#text') === undefined)) {
+        return propName;
+      }
+      // ..otherwise + (second argument) return as property function
+      return {
+        name: 'property',
+        args: [propName]
+      };
+    } else {
+      return get([child], '#text');
+    }
   }
 
   /**

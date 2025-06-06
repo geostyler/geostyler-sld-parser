@@ -61,4 +61,4 @@ const functionFilterPropertyToProperty: Style = {
   }]
 };
 
-export default functionFilterPropertyToProperty; 
+export default functionFilterPropertyToProperty;

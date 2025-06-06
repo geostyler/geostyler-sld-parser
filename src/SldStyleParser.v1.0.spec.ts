@@ -46,6 +46,7 @@ import function_markSymbolizer from '../data/styles/function_markSymbolizer';
 import function_filter from '../data/styles/function_filter';
 import function_nested from '../data/styles/function_nested';
 import functionFilterPropertyToProperty from '../data/styles/function_filter_property_to_property';
+import functionFilterOgcArithmetic from '../data/styles/function_filter_ogc_arithmetic';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -248,6 +249,12 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(functionFilterPropertyToProperty);
     });
+    it('can read an SLD with OGC arithmetic functions in a filter', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/function_filter_ogc_arithmetic.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(functionFilterOgcArithmetic);
+    });
     it('can read a SLD style with multiple symbolizers in one Rule', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/multi_simplelineLabel.sld', 'utf8');
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
@@ -294,7 +301,6 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       expect(readResult.output).toBeDefined();
       expect(readResult.output).toEqual(function_nested);
     });
-
     describe(('displays error messages'), () => {
       describe('in English (default locale)', () => {
         it('unknown WellknownName', async () => {
