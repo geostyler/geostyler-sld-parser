@@ -83,6 +83,7 @@
                     <WellKnownName>shape://slash</WellKnownName>
                     <Stroke>
                       <CssParameter name="stroke">#AAAAAA</CssParameter>
+                      <CssParameter name="stroke-dasharray">4 5</CssParameter>
                     </Stroke>
                   </Mark>
                   <Size>4</Size>
