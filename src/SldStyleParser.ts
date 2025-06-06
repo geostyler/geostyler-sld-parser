@@ -736,15 +736,14 @@ export class SldStyleParser implements StyleParser<string> {
 
     const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
     args = children.map((child: any, index: number) => {
-
       const operatorName = Object.keys(child)?.[0];
 
       if (ARITHMETIC_OPERATORS.includes(operatorName.toLowerCase() as ArithmeticType)) {
         const arithmeticOperator = child[operatorName];
-        return this.getFilterFromArithmeticOperators(operatorName as ArithmeticType, arithmeticOperator);
+        return this.getFilterArgsFromArithmeticOperators(operatorName as ArithmeticType, arithmeticOperator);
       }
 
-      return this.getFilterFromPropertyName(child, children, index);
+      return this.getFilterArgsFromPropertyName(child, children, index);
     });
 
     if (sldOperatorName === 'PropertyIsNull') {
@@ -757,38 +756,39 @@ export class SldStyleParser implements StyleParser<string> {
     ] as ComparisonFilter;
   }
 
-  getFilterFromArithmeticOperators(
+  /**
+   * Creates a FunctionCall from arithmetic operators in SLD filters.
+   * Handles nested arithmetic operations recursively.
+   */
+  getFilterArgsFromArithmeticOperators(
     arithmeticOperatorName: ArithmeticType,
     arithmeticOperator: any
   ): FunctionCall<number> {
-    // An arithmetic operator has 2 children
-    const leftSide = arithmeticOperator?.[0];
-    const rightSide = arithmeticOperator?.[1];
-
-    const leftOperator = Object.keys(leftSide)?.[0];
-    const rightOperator = Object.keys(rightSide)?.[0];
-
-    let leftArg;
-    if (leftOperator && ARITHMETIC_OPERATORS.includes(leftOperator.toLowerCase() as ArithmeticType)) {
-      leftArg = this.getFilterFromArithmeticOperators(leftOperator as ArithmeticType, leftSide[leftOperator]);
-    } else {
-      leftArg = this.getFilterFromPropertyName(leftSide, arithmeticOperator, 0);
-    }
-
-    let rightArg;
-    if (rightOperator && ARITHMETIC_OPERATORS.includes(rightOperator.toLowerCase() as ArithmeticType)) {
-      rightArg = this.getFilterFromArithmeticOperators(rightOperator as ArithmeticType, rightSide[rightOperator]);
-    } else {
-      rightArg = this.getFilterFromPropertyName(rightSide, arithmeticOperator, 0);
-    }
-
+    const [leftSide, rightSide] = arithmeticOperator;
     return {
       name: arithmeticOperatorName.toLowerCase() as FunctionCall<number>['name'],
-      args: [leftArg, rightArg]
+      args: [
+        this.processArithmeticOperand(leftSide, arithmeticOperator),
+        this.processArithmeticOperand(rightSide, arithmeticOperator)
+      ]
     };
   }
 
-  getFilterFromPropertyName(
+  /**
+   * Processes a single operand in an arithmetic operation.
+   * If the operand is itself an arithmetic operator, processes it recursively.
+   */
+  private processArithmeticOperand(operand: any, parentOperator: any): any {
+    const operatorName = Object.keys(operand)?.[0];
+
+    if (operatorName && ARITHMETIC_OPERATORS.includes(operatorName.toLowerCase() as ArithmeticType)) {
+      return this.getFilterArgsFromArithmeticOperators(operatorName as ArithmeticType, operand[operatorName]);
+    }
+
+    return this.getFilterArgsFromPropertyName(operand, parentOperator, 0);
+  }
+
+  getFilterArgsFromPropertyName(
     child: any,
     children?: any,
     index?: number
