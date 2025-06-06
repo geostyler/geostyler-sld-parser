@@ -1,3 +1,9 @@
+## [8.0.1](https://github.com/geostyler/geostyler-sld-parser/compare/v8.0.0...v8.0.1) (2025-06-06)
+
+### Bug Fixes
+
+* use geostyler-style 10.2 to fix build ([4d5cbdc](https://github.com/geostyler/geostyler-sld-parser/commit/4d5cbdcbc201f5357b2bd624ac8eaf28aaee9413))
+
 ## [8.0.0](https://github.com/geostyler/geostyler-sld-parser/compare/v7.3.0...v8.0.0) (2025-06-06)
 
 ### ⚠ BREAKING CHANGES
