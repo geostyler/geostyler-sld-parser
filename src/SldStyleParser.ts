@@ -11,7 +11,13 @@ import {
   Expression,
   FillSymbolizer,
   Filter,
+  GeoStylerFunction,
   IconSymbolizer,
+  isCombinationFilter,
+  isComparisonFilter,
+  isGeoStylerFunction,
+  isGeoStylerNumberFunction,
+  isNegationFilter,
   LineSymbolizer,
   MarkSymbolizer,
   PointSymbolizer,
@@ -26,9 +32,8 @@ import {
   TextSymbolizer,
   UnsupportedProperties,
   WellKnownName,
-  WriteStyleResult
-} from 'geostyler-style/dist/style';
-import { GeoStylerFunction } from 'geostyler-style/dist/functions';
+  WriteStyleResult,
+} from 'geostyler-style';
 import {
   X2jOptions,
   XMLBuilder,
@@ -49,13 +54,6 @@ import {
   keysByValue,
   numberExpression
 } from './Util/SldUtil';
-import {
-  isCombinationFilter,
-  isComparisonFilter,
-  isGeoStylerFunction,
-  isGeoStylerNumberFunction,
-  isNegationFilter
-} from 'geostyler-style/dist/typeguards';
 
 const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
 
@@ -1221,6 +1219,11 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(strokeOpacity)) {
       markSymbolizer.strokeOpacity = numberExpression(strokeOpacity);
     }
+    const strokeDasharray = getParameterValue(strokeEl, 'stroke-dasharray', this.readingSldVersion);
+    if (!isNil(strokeDasharray)) {
+      const dashStringAsArray = strokeDasharray.split(' ').map(numberExpression);
+      markSymbolizer.strokeDasharray = dashStringAsArray;
+    }
 
     return markSymbolizer;
   }
@@ -1910,6 +1913,26 @@ export class SldStyleParser implements StyleParser<string> {
           });
         }
       }
+      if (!isNil(markSymbolizer.strokeDasharray)) {
+        if (isGeoStylerFunction(markSymbolizer.strokeDasharray)) {
+          const children = geoStylerFunctionToSldFunction(markSymbolizer.strokeDasharray);
+          strokeCssParameters.push({
+            [CssParameter]: children,
+            ':@': {
+              '@_name': 'stroke-dasharray'
+            }
+          });
+        } else {
+          strokeCssParameters.push({
+            [CssParameter]: [{
+              '#text': markSymbolizer.strokeDasharray?.join(' '),
+            }],
+            ':@': {
+              '@_name': 'stroke-dasharray'
+            }
+          });
+        }
+      }
       mark.push({
         [Stroke]: strokeCssParameters
       });
@@ -1950,7 +1973,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (markSymbolizer.offset && this.sldVersion === '1.1.0') {
+    if (markSymbolizer.offset && (this.sldVersion === '1.1.0' || this.isSldEnv(sldEnvGeoServer))) {
       graphic.push({
         [Displacement]: [{
           [DisplacementX]: [{
@@ -2043,6 +2066,7 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': 'image/svg+xml'
           }];
           break;
+        case undefined:
         default:
           break;
       }

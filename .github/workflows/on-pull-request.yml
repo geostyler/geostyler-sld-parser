@@ -4,42 +4,32 @@ on: pull_request
 
 jobs:
   build:
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-        os: [ubuntu-latest, windows-latest]
+    # commented out for now, because on windows linting fails with bun (same error as with older node versions on ubuntu)
+    # strategy:
+    #   matrix:
+    #     os: [ubuntu-latest, windows-latest]
 
-    runs-on: ${{ matrix.os }}
+    # runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: Cache Node.js modules 💾
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.OS }}-node-
-          ${{ runner.OS }}-
+    - name: Set up bun
+      uses: oven-sh/setup-bun@v2
 
     - name: Install dependencies ⏬
-      run: npm install
+      run: bun install
 
     - name: Lint code 💄
-      run: npm run lint
+      run: bun run lint
 
     - name: Test code ✅
-      run: npm run test
+      run: bun test --coverage --coverage-reporter=lcov
 
     - name: Build artifacts 🏗️
-      run: npm run build
+      run: bun run build
 
     - name: Publish to coveralls ⭐
       # coverage/lcov.info was generated in the previous npm run build step

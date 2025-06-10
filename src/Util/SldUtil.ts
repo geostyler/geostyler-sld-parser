@@ -1,7 +1,5 @@
-import { Expression, PropertyType } from 'geostyler-style/dist/style';
+import { Expression, PropertyType, GeoStylerFunction, GeoStylerNumberFunction, isGeoStylerFunction, isGeoStylerNumberFunction } from 'geostyler-style';
 import { SldVersion } from '../SldStyleParser';
-import { GeoStylerFunction, GeoStylerNumberFunction } from 'geostyler-style/dist/functions';
-import { isGeoStylerFunction, isGeoStylerNumberFunction } from 'geostyler-style/dist/typeguards';
 
 /**
  * Cast to Number if it is not a GeoStylerFunction
@@ -86,7 +84,7 @@ export function sldFunctionToGeoStylerFunction(sldFunction: any[]): GeoStylerFun
     }
   });
 
-  const geoStylerFunction: any = { name  };
+  const geoStylerFunction: any = { name };
   if (args.length > 0) {
     geoStylerFunction.args = args;
   }
@@ -224,7 +222,7 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
       return getParameterValue(target, key.substring(1), sldVersion);
     }
     // handle queries with specified indexes
-    if(key.endsWith(']')) {
+    if (key.endsWith(']')) {
       index = Number(key.split('[')[1].split(']')[0]);
       key = key.split('[')[0];
     }
@@ -250,4 +248,3 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
 export function keysByValue(object: any, value: any): string[] {
   return Object.keys(object).filter(key => object[key] === value);
 }
-

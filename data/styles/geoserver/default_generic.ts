@@ -5,6 +5,7 @@ const style: Style = {
   rules: [{
     name: 'Opaque Raster',
     filter: ['==', {
+      // @ts-expect-error
       name: 'isCoverage'
     }, true],
     symbolizers: [{
@@ -15,6 +16,7 @@ const style: Style = {
   {
     name: 'Grey Polygon',
     filter: ['==', {
+      // @ts-expect-error
       name: 'dimension',
       args: [{
         name: 'geometry'
@@ -30,6 +32,7 @@ const style: Style = {
   {
     name: 'Blue Line',
     filter: ['==',{
+      // @ts-expect-error
       name: 'dimension',
       args: [{
         name: 'geometry'

@@ -18,7 +18,11 @@ const style: Style = {
           wellKnownName: 'circle',
           fillOpacity: 1,
           color: '#EDE513',
-          radius: 3.5
+          radius: 3.5,
+          offset: [
+            5,
+            10
+          ],
         }
       ]
     },

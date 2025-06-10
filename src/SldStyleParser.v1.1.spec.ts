@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 /* eslint camelcase: 0 */
 
 import * as fs from 'fs';
@@ -389,7 +389,7 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
     it('is defined', () => {
       expect(styleParser.writeStyle).toBeDefined();
     });
-    
+
     it('can write a SLD 1.1 PointSymbolizer', async () => {
       const { output: sldString } = await styleParser.writeStyle(point_simplepoint);
       expect(sldString).toBeDefined();
