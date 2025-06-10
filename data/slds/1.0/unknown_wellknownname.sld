@@ -15,7 +15,7 @@
               <se:GraphicFill>
                 <se:Graphic>
                   <se:Mark>
-                    <se:WellKnownName>brush://dense5</se:WellKnownName>
+                    <se:WellKnownName>pin</se:WellKnownName>
                     <se:Fill>
                       <se:SvgParameter name="fill">#8d5a99</se:SvgParameter>
                     </se:Fill>
