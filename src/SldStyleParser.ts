@@ -1211,6 +1211,7 @@ export class SldStyleParser implements StyleParser<string> {
       case 'arrow':
       case 'arrowhead':
       case 'asterisk_fill':
+      case 'backslash':
       case 'circle':
       case 'cross':
       case 'cross2':
@@ -1238,6 +1239,7 @@ export class SldStyleParser implements StyleParser<string> {
       case 'rounded_square':
       case 'semi_circle':
       case 'shield':
+      case 'slash':
       case 'square':
       case 'square_with_corners':
       case 'star':
@@ -1256,6 +1258,13 @@ export class SldStyleParser implements StyleParser<string> {
       case 'shape://times':
       case 'shape://oarrow':
       case 'shape://carrow':
+      case 'brush://dense1':
+      case 'brush://dense2':
+      case 'brush://dense3':
+      case 'brush://dense4':
+      case 'brush://dense5':
+      case 'brush://dense6':
+      case 'brush://dense7':
         markSymbolizer.wellKnownName = wellKnownName;
         break;
       default:
