@@ -1,3 +1,15 @@
+## [8.1.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.0.1...v8.1.0) (2025-06-18)
+
+### Features
+
+* add more wellknownnames ([c08a055](https://github.com/geostyler/geostyler-sld-parser/commit/c08a055d589b24fa01df0b2d7d077a56579438b1))
+* add support for arithmetic functions in sld filter ([#981](https://github.com/geostyler/geostyler-sld-parser/issues/981), [#1010](https://github.com/geostyler/geostyler-sld-parser/issues/1010)) ([0b9eda4](https://github.com/geostyler/geostyler-sld-parser/commit/0b9eda48d6ad650cc88a06e6389c04b878af5f41))
+
+### Bug Fixes
+
+* replace dense5 wellknownname that is now supported ([359e5d1](https://github.com/geostyler/geostyler-sld-parser/commit/359e5d16e190b787f3f618eeaceee6f72c6a4279))
+* use geostyler-style 10.3 to fix build ([aaad9e5](https://github.com/geostyler/geostyler-sld-parser/commit/aaad9e5208708109defdd600de142433b453de6e))
+
 ## [8.0.1](https://github.com/geostyler/geostyler-sld-parser/compare/v8.0.0...v8.0.1) (2025-06-06)
 
 ### Bug Fixes
