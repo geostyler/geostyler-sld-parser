@@ -2201,10 +2201,13 @@ export class SldStyleParser implements StyleParser<string> {
     const Rotation = this.getTagName('Rotation');
     const Radius = this.getTagName('Radius');
     const Label = this.getTagName('Label');
+    const PerpendicularOffset = this.getTagName('PerpendicularOffset');
 
     const sldTextSymbolizer: any = [{
       [Label]: textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
     }];
+ 
+    
 
     const fontPropertyMap = {
       font: 'font-family',
@@ -2245,10 +2248,14 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (textSymbolizer.placement === 'line') {
+    if (textSymbolizer.placement === 'line' && !isNil((textSymbolizer as any).perpendicularOffset)) {
       sldTextSymbolizer.push({
         [LabelPlacement]: [{
-          [LinePlacement]: []
+          [LinePlacement]: [{
+            [PerpendicularOffset]: [{
+              '#text': (textSymbolizer as any).perpendicularOffset.toString()
+            }]
+          }]
         }]
       });
     } else if (Number.isFinite(textSymbolizer.offset)
