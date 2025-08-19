@@ -2248,12 +2248,12 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (textSymbolizer.placement === 'line' && !isNil((textSymbolizer as any).perpendicularOffset)) {
+    if (textSymbolizer.placement === 'line') {
       sldTextSymbolizer.push({
         [LabelPlacement]: [{
           [LinePlacement]: [{
             [PerpendicularOffset]: [{
-              '#text': (textSymbolizer as any).perpendicularOffset.toString()
+              '#text': (textSymbolizer as any).perpendicularOffset?.toString()
             }]
           }]
         }]
