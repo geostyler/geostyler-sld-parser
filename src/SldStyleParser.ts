@@ -2253,7 +2253,7 @@ export class SldStyleParser implements StyleParser<string> {
         [LabelPlacement]: [{
           [LinePlacement]: [{
             [PerpendicularOffset]: [{
-              '#text': (textSymbolizer as any).perpendicularOffset?.toString()
+              '#text': textSymbolizer.perpendicularOffset?.toString()
             }]
           }]
         }]
@@ -2888,7 +2888,7 @@ export class SldStyleParser implements StyleParser<string> {
         const key = capitalizeFirstLetter(`${symbolizer.kind}Symbolizer`);
         const value = (this.unsupportedProperties?.Symbolizer as any)?.[key];
         if (value) {
-          if (typeof value === 'string' || value instanceof String) {
+          if (typeof value === 'string' || value instanceof String) {          
             if (!unsupportedProperties.Symbolizer) {
               unsupportedProperties.Symbolizer = {};
             }
@@ -2896,6 +2896,9 @@ export class SldStyleParser implements StyleParser<string> {
           } else {
             Object.keys(symbolizer).forEach(property => {
               if (value[property]) {
+                const propValue = new RegExp(`["']${symbolizer[property as keyof typeof symbolizer]}["']`);
+                if (value[property].support === 'partial' && (propValue.test(value[property].info)))
+                  return;
                 if (!unsupportedProperties.Symbolizer) {
                   unsupportedProperties.Symbolizer = {};
                 }
