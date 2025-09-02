@@ -2886,7 +2886,7 @@ export class SldStyleParser implements StyleParser<string> {
         const key = capitalizeFirstLetter(`${symbolizer.kind}Symbolizer`);
         const value = (this.unsupportedProperties?.Symbolizer as any)?.[key];
         if (value) {
-          if (typeof value === 'string' || value instanceof String) {          
+          if (typeof value === 'string' || value instanceof String) {
             if (!unsupportedProperties.Symbolizer) {
               unsupportedProperties.Symbolizer = {};
             }
@@ -2896,7 +2896,9 @@ export class SldStyleParser implements StyleParser<string> {
               if (value[property]) {
                 const propValue = new RegExp(`["']${symbolizer[property as keyof typeof symbolizer]}["']`);
                 if (value[property].support === 'partial' && (propValue.test(value[property].info)))
+                {
                   return;
+                }
                 if (!unsupportedProperties.Symbolizer) {
                   unsupportedProperties.Symbolizer = {};
                 }
