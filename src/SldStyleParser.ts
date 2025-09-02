@@ -2206,8 +2206,6 @@ export class SldStyleParser implements StyleParser<string> {
     const sldTextSymbolizer: any = [{
       [Label]: textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
     }];
- 
-    
 
     const fontPropertyMap = {
       font: 'font-family',
