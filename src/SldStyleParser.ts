@@ -2201,6 +2201,7 @@ export class SldStyleParser implements StyleParser<string> {
     const Rotation = this.getTagName('Rotation');
     const Radius = this.getTagName('Radius');
     const Label = this.getTagName('Label');
+    const PerpendicularOffset = this.getTagName('PerpendicularOffset');
 
     const sldTextSymbolizer: any = [{
       [Label]: textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
@@ -2248,7 +2249,11 @@ export class SldStyleParser implements StyleParser<string> {
     if (textSymbolizer.placement === 'line') {
       sldTextSymbolizer.push({
         [LabelPlacement]: [{
-          [LinePlacement]: []
+          [LinePlacement]: [{
+            [PerpendicularOffset]: [{
+              '#text': textSymbolizer.perpendicularOffset?.toString()
+            }]
+          }]
         }]
       });
     } else if (Number.isFinite(textSymbolizer.offset)
@@ -2889,6 +2894,11 @@ export class SldStyleParser implements StyleParser<string> {
           } else {
             Object.keys(symbolizer).forEach(property => {
               if (value[property]) {
+                const propValue = new RegExp(`["']${symbolizer[property as keyof typeof symbolizer]}["']`);
+                if (value[property].support === 'partial' && (propValue.test(value[property].info)))
+                {
+                  return;
+                }
                 if (!unsupportedProperties.Symbolizer) {
                   unsupportedProperties.Symbolizer = {};
                 }
