@@ -42,6 +42,7 @@ import point_styledLabel_elementOrder from '../data/styles/point_styledLabel_ele
 import raster_simpleraster from '../data/styles/raster_simpleRaster';
 import raster_complexraster from '../data/styles/raster_complexRaster';
 import text_pointplacement from '../data/styles/text_pointplacement';
+import text_pointplacement_with_anchor from '../data/styles/text_pointplacement_anchor';
 import text_lineplacement from '../data/styles/text_lineplacement';
 import text_lineplacement_offset from '../data/styles/text_lineplacement_offset';
 import unsupported_properties from '../data/styles/unsupported_properties';
@@ -220,6 +221,12 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (reading
       const { output: geoStylerStyle} = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(text_pointplacement);
+    });
+    it('can read a SLD 1.1 TextSymbolizer with a static label with point placement and anchor', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/text_pointplacement_anchor.sld', 'utf8');
+      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(text_pointplacement_with_anchor);
     });
     it('can read a SLD 1.1 TextSymbolizer with a static label and line placement', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/text_lineplacement.sld', 'utf8');
@@ -580,6 +587,14 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(text_pointplacement);
+    });
+    it('can write a SLD 1.1 TextSymbolizer with point placement and anchor', async () => {
+      const { output: sldString } = await styleParser.writeStyle(text_pointplacement_with_anchor);
+      expect(sldString).toBeDefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(text_pointplacement_with_anchor);
     });
     it('can write a SLD 1.1 TextSymbolizer with line placement', async () => {
       const { output: sldString } = await styleParser.writeStyle(text_lineplacement);

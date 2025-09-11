@@ -30,10 +30,6 @@
             </Font>
             <LabelPlacement>
               <PointPlacement>
-                <AnchorPoint>
-                  <AnchorPointX>0.5</AnchorPointX>
-                  <AnchorPointY>0.0</AnchorPointY>
-                </AnchorPoint>
                 <Displacement>
                   <DisplacementX>0</DisplacementX>
                   <DisplacementY>5</DisplacementY>

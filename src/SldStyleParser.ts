@@ -42,7 +42,7 @@ import {
   XMLParser
 } from 'fast-xml-parser';
 
-import { merge } from 'lodash';
+import { isNumber, merge } from 'lodash';
 
 import {
   geoStylerFunctionToSldFunction,
@@ -958,6 +958,12 @@ export class SldStyleParser implements StyleParser<string> {
       const linePlacement = get(placement, 'LinePlacement');
       if (!isNil(pointPlacement)) {
         textSymbolizer.placement = 'point';
+        const anchorPoint = get(pointPlacement, 'AnchorPoint');
+        if (!isNil(anchorPoint)) {
+          const anchorX = get(anchorPoint, 'AnchorPointX.#text');
+          const anchorY = get(anchorPoint, 'AnchorPointY.#text');
+          textSymbolizer.anchor = this.getAnchorFromSldAnchorPoint(anchorX, anchorY);
+        }
         const displacement = get(pointPlacement, 'Displacement');
         if (!isNil(displacement)) {
           const x = get(displacement, 'DisplacementX.#text');
@@ -2182,6 +2188,68 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
+   * Translates an anchor-setting into SLD-anchor-numbers
+   */
+  getSldAnchorPointFromAnchor(anchor: TextSymbolizer['anchor'], dimension: 'x' | 'y'): number {
+    if (!anchor || isGeoStylerFunction(anchor)) {
+      return 0;
+    }
+    // As explained in https://docs.geoserver.org/main/en/user/styling/sld/reference/labeling.html#anchorpoint,
+    // we have the following translation for anchors:
+    // x-dimension
+    //   left -> 0.0
+    //   center -> 0.5
+    //   right -> 1.0
+    // y-dimension
+    //   top -> 1.0
+    //   middle -> 0.5
+    //   bottom -> 0.0
+
+    if (dimension === 'x') {
+      if (anchor.indexOf('left') >= 0) {
+        return 0.0;
+      }
+      else if (anchor.indexOf('right') >= 0) {
+        return 1.0;
+      }
+      else {
+        return 0.5;
+      }
+    }
+    else {
+      if (anchor.indexOf('bottom') >= 0) {
+        return 0.0;
+      }
+      else if (anchor.indexOf('top') >= 0) {
+        return 1.0;
+      }
+      else {
+        return 0.5;
+      }
+    }
+  }
+
+  /**
+   * Translates a SLD-anchor-number into a geostyler anchor-setting
+   */
+  getAnchorFromSldAnchorPoint(anchorX: any, anchorY: any): TextSymbolizer['anchor'] | undefined {
+
+    if (!isNumber(anchorX) || !isNumber(anchorY)) {
+      return undefined;
+    }
+    // see comment in getSldAnchorPointFromAnchor
+
+    const gsAnchorHoriz = anchorX < 0.25 ? 'left' : anchorX > 0.75 ? 'right' : '';
+    const gsAnchorVert = anchorY < 0.25 ? 'bottom' : anchorY > 0.75 ? 'top' : '';
+    const gsAnchor: TextSymbolizer['anchor'] = ((gsAnchorHoriz && gsAnchorVert) ?
+      (gsAnchorVert + '-' +gsAnchorHoriz) : (gsAnchorVert + gsAnchorHoriz)) as TextSymbolizer['anchor'];
+
+    // for not breaking existing tests like "can read the geoserver popshade.sld", we treat
+    // a center anchor as the default and deliver undefined in this case (instead of 'center')
+    return gsAnchor ? gsAnchor : undefined;
+  }
+
+  /**
    * Get the SLD Object (readable with fast-xml-parser) from a geostyler-style TextSymbolizer.
    *
    * @param textSymbolizer A geostyler-style TextSymbolizer.
@@ -2195,6 +2263,9 @@ export class SldStyleParser implements StyleParser<string> {
     const Displacement = this.getTagName('Displacement');
     const DisplacementX = this.getTagName('DisplacementX');
     const DisplacementY = this.getTagName('DisplacementY');
+    const AnchorPoint = this.getTagName('AnchorPoint');
+    const AnchorPointX = this.getTagName('AnchorPointX');
+    const AnchorPointY = this.getTagName('AnchorPointY');
     const LabelPlacement = this.getTagName('LabelPlacement');
     const PointPlacement = this.getTagName('PointPlacement');
     const LinePlacement = this.getTagName('LinePlacement');
@@ -2257,6 +2328,7 @@ export class SldStyleParser implements StyleParser<string> {
         }]
       });
     } else if (Number.isFinite(textSymbolizer.offset)
+      || textSymbolizer.anchor
       || textSymbolizer.rotate !== undefined
       || textSymbolizer.placement === 'point'
     ) {
@@ -2270,6 +2342,19 @@ export class SldStyleParser implements StyleParser<string> {
           }, {
             [DisplacementY]: [{
               '#text': (-textSymbolizer.offset[1]).toString()
+            }]
+          }]
+        });
+      }
+      if (textSymbolizer.anchor) {
+        pointPlacement.push({
+          [AnchorPoint]: [{
+            [AnchorPointX]: [{
+              '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor,'x').toString()
+            }]
+          }, {
+            [AnchorPointY]: [{
+              '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor,'y').toString()
             }]
           }]
         });
