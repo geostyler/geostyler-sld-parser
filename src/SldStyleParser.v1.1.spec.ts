@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
 import { beforeEach, expect, it, describe } from 'vitest';
 import { XMLParser } from 'fast-xml-parser';
+import { LineSymbolizer } from 'geostyler-style';
 
 import empty_filter from '../data/styles/empty_filter';
 import point_simplepoint from '../data/styles/point_simplepoint';
@@ -14,6 +15,7 @@ import line_graphicStroke from '../data/styles/line_graphicStroke';
 import line_graphicStroke_externalGraphic from '../data/styles/line_graphicStroke_externalGraphic';
 import line_graphicFill from '../data/styles/line_graphicFill';
 import line_graphicFill_externalGraphic from '../data/styles/line_graphicFill_externalGraphic';
+import line_groundUnitWidth from '../data/styles/line_groundUnitWidth';
 import polygon_transparentpolygon from '../data/styles/polygon_transparentpolygon';
 import polygon_graphicFill from '../data/styles/polygon_graphicFill';
 import polygon_graphicFill_externalGraphic from '../data/styles/polygon_graphicFill_externalGraphic';
@@ -181,6 +183,16 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (reading
       const { output: geoStylerStyle} = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(line_graphicFill);
+    });
+    it('can read a SLD 1.1 LineSymbolizer with Unit-Of-Measure in Ground-Units', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/line_groundUnitWidth.sld', 'utf8');
+      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle?.rules.length).toBe(1);
+      expect(geoStylerStyle?.rules[0].symbolizers.length).toBe(1);
+      expect(geoStylerStyle?.rules[0].symbolizers[0].kind).toBe('Line');
+      expect((geoStylerStyle?.rules[0].symbolizers[0] as LineSymbolizer).width).toBe(3500);
+      expect((geoStylerStyle?.rules[0].symbolizers[0] as LineSymbolizer).widthUnit).toBe('m');
     });
     it('can read a SLD 1.1 LineSymbolizer with GraphicFill and ExternalGraphic', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/line_graphicFill_externalGraphic.sld', 'utf8');
@@ -563,6 +575,14 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(line_graphicFill_externalGraphic);
+    });
+    it('can write a SLD 1.1 LineSymbolizer with Unit-Of-Measure in Ground-Units', async () => {
+      const { output: sldString } = await styleParser.writeStyle(line_groundUnitWidth);
+      expect(sldString).toBeDefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(line_groundUnitWidth);
     });
     it('can write a SLD 1.1 PolygonSymbolizer', async () => {
       const { output: sldString } = await styleParser.writeStyle(polygon_transparentpolygon);
