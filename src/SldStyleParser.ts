@@ -125,6 +125,7 @@ const COMBINATION_MAP = {
 type CombinationType = keyof typeof COMBINATION_MAP;
 
 const unitSldMetre: string = 'http://www.opengeospatial.org/se/units/metre';
+const unitSldPixel: string = 'http://www.opengeospatial.org/se/units/pixel';
 
 const ARITHMETIC_OPERATORS = [
   'add',
@@ -1864,8 +1865,11 @@ export class SldStyleParser implements StyleParser<string> {
    * Later, we will move to an attribute within function 'moveUomEntryToAttributes'
    */
   addUomEntry(sldSymbolizerProperties: any[], unit: DistanceUnit | undefined) {
-    if (unit==='m') {
+    if (unit === 'm') {
       sldSymbolizerProperties.push({uom: unitSldMetre});
+    }
+    if (unit === 'px') {
+      sldSymbolizerProperties.push({uom: unitSldPixel});
     }
   }
 
@@ -1883,6 +1887,9 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (uomAttribute === unitSldMetre) {
       return 'm';
+    }
+    if (uomAttribute === unitSldPixel) {
+      return 'px';
     }
     return undefined;
   }
