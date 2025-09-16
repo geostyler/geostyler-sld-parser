@@ -184,6 +184,16 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (reading
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(line_graphicFill);
     });
+    it('can read a SLD 1.1 LineSymbolizer with Unit-Of-Measure in Pixels', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/line_pixelWidth.sld', 'utf8');
+      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle?.rules.length).toBe(1);
+      expect(geoStylerStyle?.rules[0].symbolizers.length).toBe(1);
+      expect(geoStylerStyle?.rules[0].symbolizers[0].kind).toBe('Line');
+      expect((geoStylerStyle?.rules[0].symbolizers[0] as LineSymbolizer).width).toBe(4);
+      expect((geoStylerStyle?.rules[0].symbolizers[0] as LineSymbolizer).widthUnit).toBe('px');
+    });
     it('can read a SLD 1.1 LineSymbolizer with Unit-Of-Measure in Ground-Units', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/line_groundUnitWidth.sld', 'utf8');
       const { output: geoStylerStyle} = await styleParser.readStyle(sld);

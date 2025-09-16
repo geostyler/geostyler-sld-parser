@@ -7,7 +7,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Small populated New Yorks</se:Name>
-          <se:RasterSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:RasterSymbolizer>
             <se:Opacity>0.5</se:Opacity>
             <se:ColorMap type="ramp">
               <se:ColorMapEntry color="#323232" quantity="-300" label="label1" opacity="1"/>

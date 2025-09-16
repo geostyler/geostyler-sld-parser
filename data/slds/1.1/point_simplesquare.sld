@@ -7,7 +7,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Small populated New Yorks</se:Name>
-          <se:PointSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:PointSymbolizer>
             <se:Graphic>
               <se:Mark>
                 <se:WellKnownName>square</se:WellKnownName>

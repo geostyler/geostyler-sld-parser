@@ -7,7 +7,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name/>
-          <se:TextSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:TextSymbolizer>
             <se:Label>
               <ogc:PropertyName>name</ogc:PropertyName>
             </se:Label>
