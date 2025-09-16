@@ -8,7 +8,7 @@
         <se:Rule>
           <se:Name>Cities &amp; Towns</se:Name>
           <se:Filter xmlns="http://www.opengis.net/ogc"/>
-          <se:PolygonSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:PolygonSymbolizer>
             <se:Fill>
               <se:SvgParameter name="fill">#FFE15A</se:SvgParameter>
             </se:Fill>
