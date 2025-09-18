@@ -640,15 +640,15 @@ export class SldStyleParser implements StyleParser<string> {
         const sldSymbolizerName: string = Object.keys(sldSymbolizer)[0];
         switch (sldSymbolizerName) {
           case 'PointSymbolizer':
-            return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer.PointSymbolizer);
+            return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer);
           case 'LineSymbolizer':
-            return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer.LineSymbolizer);
+            return this.getLineSymbolizerFromSldSymbolizer(sldSymbolizer);
           case 'TextSymbolizer':
-            return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer.TextSymbolizer);
+            return this.getTextSymbolizerFromSldSymbolizer(sldSymbolizer);
           case 'PolygonSymbolizer':
-            return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer.PolygonSymbolizer);
+            return this.getFillSymbolizerFromSldSymbolizer(sldSymbolizer);
           case 'RasterSymbolizer':
-            return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer.RasterSymbolizer);
+            return this.getRasterSymbolizerFromSldSymbolizer(sldSymbolizer);
           default:
             throw new Error(this.translate('symbolizerKindParseFailed', { sldSymbolizerName: sldSymbolizerName }));
         }
@@ -820,9 +820,10 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The geostyler-style PointSymbolizer
    */
   getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
+    const sldPointSymbolizer = sldSymbolizer.PointSymbolizer;
     let pointSymbolizer: PointSymbolizer;
-    const wellKnownName: string = get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text');
-    const externalGraphic: any = get(sldSymbolizer, 'Graphic.ExternalGraphic');
+    const wellKnownName: string = get(sldPointSymbolizer, 'Graphic.Mark.WellKnownName.#text');
+    const externalGraphic: any = get(sldPointSymbolizer, 'Graphic.ExternalGraphic');
     if (externalGraphic) {
       pointSymbolizer = this.getIconSymbolizerFromSldSymbolizer(sldSymbolizer);
     } else {
@@ -846,10 +847,11 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The geostyler-style LineSymbolizer
    */
   getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any): LineSymbolizer {
+    const sldLineSymbolizer = sldSymbolizer.LineSymbolizer;
     const lineSymbolizer: LineSymbolizer = {
       kind: 'Line'
     };
-    const strokeEl = get(sldSymbolizer, 'Stroke', this.readingSldVersion);
+    const strokeEl = get(sldLineSymbolizer, 'Stroke', this.readingSldVersion);
     const color = getParameterValue(strokeEl, 'stroke', this.readingSldVersion);
     const width = getParameterValue(strokeEl, 'stroke-width', this.readingSldVersion);
     const opacity = getParameterValue(strokeEl, 'stroke-opacity', this.readingSldVersion);
@@ -889,15 +891,15 @@ export class SldStyleParser implements StyleParser<string> {
 
     const graphicStroke = get(strokeEl, 'GraphicStroke');
     if (!isNil(graphicStroke)) {
-      lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(graphicStroke);
+      lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer({PointSymbolizer: graphicStroke});
     }
 
     const graphicFill = get(strokeEl, 'GraphicFill');
     if (!isNil(graphicFill)) {
-      lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(graphicFill);
+      lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer({PointSymbolizer: graphicFill});
     }
 
-    const perpendicularOffset = get(sldSymbolizer, 'PerpendicularOffset.#text');
+    const perpendicularOffset = get(sldLineSymbolizer, 'PerpendicularOffset.#text');
     if (!isNil(perpendicularOffset)) {
       lineSymbolizer.perpendicularOffset = numberExpression(perpendicularOffset);
     }
@@ -912,13 +914,14 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The geostyler-style TextSymbolizer
    */
   getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): TextSymbolizer {
+    const sldTextSymbolizer = sldSymbolizer.TextSymbolizer;
     const textSymbolizer: TextSymbolizer = {
       kind: 'Text'
     };
-    const fontEl = get(sldSymbolizer, 'Font');
-    const fillEl = get(sldSymbolizer, 'Fill');
-    const labelEl = get(sldSymbolizer, 'Label');
-    const haloEl = get(sldSymbolizer, 'Halo');
+    const fontEl = get(sldTextSymbolizer, 'Font');
+    const fillEl = get(sldTextSymbolizer, 'Fill');
+    const labelEl = get(sldTextSymbolizer, 'Label');
+    const haloEl = get(sldTextSymbolizer, 'Halo');
     const haloFillEl = get(haloEl, 'Fill');
 
     const color = getParameterValue(fillEl, 'fill', this.readingSldVersion);
@@ -941,7 +944,7 @@ export class SldStyleParser implements StyleParser<string> {
       textSymbolizer.opacity = numberExpression(opacity);
     }
 
-    const haloRadius = get(sldSymbolizer, 'Halo.Radius.#text');
+    const haloRadius = get(sldTextSymbolizer, 'Halo.Radius.#text');
     if (!isNil(haloRadius)) {
       textSymbolizer.haloWidth = numberExpression(haloRadius);
     }
@@ -952,7 +955,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(haloColor)) {
       textSymbolizer.haloColor = haloColor;
     }
-    const placement = get(sldSymbolizer, 'LabelPlacement');
+    const placement = get(sldTextSymbolizer, 'LabelPlacement');
     if (!isNil(placement)) {
       const pointPlacement = get(placement, 'PointPlacement');
       const linePlacement = get(placement, 'LinePlacement');
@@ -1066,11 +1069,12 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The geostyler-style FillSymbolizer
    */
   getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): FillSymbolizer {
+    const sldFillSymbolizer = sldSymbolizer.PolygonSymbolizer;
     const fillSymbolizer: FillSymbolizer = {
       kind: 'Fill'
     };
-    const strokeEl = get(sldSymbolizer, 'Stroke');
-    const fillEl = get(sldSymbolizer, 'Fill');
+    const strokeEl = get(sldFillSymbolizer, 'Stroke');
+    const fillEl = get(sldFillSymbolizer, 'Fill');
 
     const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.readingSldVersion);
     const color = getParameterValue(fillEl, 'fill', this.readingSldVersion);
@@ -1083,14 +1087,14 @@ export class SldStyleParser implements StyleParser<string> {
     const outlineJoin = getParameterValue(strokeEl, 'stroke-linejoin', this.readingSldVersion);
     // const outlineDashOffset = getParameterValue(strokeEl, 'stroke-dashoffset', this.readingSldVersion);
 
-    const graphicFill = get(sldSymbolizer, 'Fill.GraphicFill');
+    const graphicFill = get(sldFillSymbolizer, 'Fill.GraphicFill');
     if (!isNil(graphicFill)) {
       fillSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
-        graphicFill
+        {PointSymbolizer: graphicFill}
       );
     }
     if (this.isSldEnv(sldEnvGeoServer)) {
-      const graphicFillPadding = getVendorOptionValue(sldSymbolizer, 'graphic-margin');
+      const graphicFillPadding = getVendorOptionValue(sldFillSymbolizer, 'graphic-margin');
       if (!isNil(graphicFillPadding)) {
         fillSymbolizer.graphicFillPadding = graphicFillPadding.split(/\s/).map(numberExpression);
       }
@@ -1133,31 +1137,32 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    */
   getRasterSymbolizerFromSldSymbolizer(sldSymbolizer: any): RasterSymbolizer {
+    const sldRasterSymbolizer = sldSymbolizer.RasterSymbolizer;
     const rasterSymbolizer: RasterSymbolizer = {
       kind: 'Raster'
     };
     // parse Opacity
-    let opacity = get(sldSymbolizer, 'Opacity.#text');
+    let opacity = get(sldRasterSymbolizer, 'Opacity.#text');
     if (!isNil(opacity)) {
       opacity = numberExpression(opacity);
       rasterSymbolizer.opacity = opacity;
     }
     // parse ColorMap
-    const sldColorMap = get(sldSymbolizer, 'ColorMap');
-    const sldColorMapType = get(sldSymbolizer, 'ColorMap.@type');
-    const extended = get(sldSymbolizer, 'ColorMap.@extended');
+    const sldColorMap = get(sldRasterSymbolizer, 'ColorMap');
+    const sldColorMapType = get(sldRasterSymbolizer, 'ColorMap.@type');
+    const extended = get(sldRasterSymbolizer, 'ColorMap.@extended');
     if (!isNil(sldColorMap)) {
       const colormap = this.getColorMapFromSldColorMap(sldColorMap, sldColorMapType, extended);
       rasterSymbolizer.colorMap = colormap;
     }
     // parse ChannelSelection
-    const sldChannelSelection = get(sldSymbolizer, 'ChannelSelection');
+    const sldChannelSelection = get(sldRasterSymbolizer, 'ChannelSelection');
     if (!isNil(sldChannelSelection)) {
       const channelSelection = this.getChannelSelectionFromSldChannelSelection(sldChannelSelection);
       rasterSymbolizer.channelSelection = channelSelection;
     }
     // parse ContrastEnhancement
-    const sldContrastEnhancement = get(sldSymbolizer, 'ContrastEnhancement');
+    const sldContrastEnhancement = get(sldRasterSymbolizer, 'ContrastEnhancement');
     if (!isNil(sldContrastEnhancement)) {
       const contrastEnhancement = this.getContrastEnhancementFromSldContrastEnhancement(sldContrastEnhancement);
       rasterSymbolizer.contrastEnhancement = contrastEnhancement;
@@ -1172,16 +1177,17 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The geostyler-style MarkSymbolizer
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
-    const wellKnownName: WellKnownName = get(sldSymbolizer, 'Graphic.Mark.WellKnownName.#text');
-    const strokeEl = get(sldSymbolizer, 'Graphic.Mark.Stroke');
-    const fillEl = get(sldSymbolizer, 'Graphic.Mark.Fill');
+    const sldMarkSymbolizer = sldSymbolizer.PointSymbolizer;
+    const wellKnownName: WellKnownName = get(sldMarkSymbolizer, 'Graphic.Mark.WellKnownName.#text');
+    const strokeEl = get(sldMarkSymbolizer, 'Graphic.Mark.Stroke');
+    const fillEl = get(sldMarkSymbolizer, 'Graphic.Mark.Fill');
 
-    const opacity = get(sldSymbolizer, 'Graphic.Opacity.#text');
-    const size = get(sldSymbolizer, 'Graphic.Size.#text');
-    const rotation = get(sldSymbolizer, 'Graphic.Rotation.#text');
+    const opacity = get(sldMarkSymbolizer, 'Graphic.Opacity.#text');
+    const size = get(sldMarkSymbolizer, 'Graphic.Size.#text');
+    const rotation = get(sldMarkSymbolizer, 'Graphic.Rotation.#text');
     const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.readingSldVersion);
     const color = getParameterValue(fillEl, 'fill', this.readingSldVersion);
-    const displacement = get(sldSymbolizer, 'Graphic.Displacement');
+    const displacement = get(sldMarkSymbolizer, 'Graphic.Displacement');
 
     const markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
@@ -1311,15 +1317,16 @@ export class SldStyleParser implements StyleParser<string> {
    * @return The geostyler-style IconSymbolizer
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
-    const image = get(sldSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
+    const sldIconSymbolizer = sldSymbolizer.PointSymbolizer;
+    const image = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
     const iconSymbolizer: IconSymbolizer = <IconSymbolizer>{
       kind: 'Icon',
       image
     };
-    const opacity: string = get(sldSymbolizer, 'Graphic.Opacity.#text');
-    const size: string = get(sldSymbolizer, 'Graphic.Size.#text');
-    const rotation: string = get(sldSymbolizer, 'Graphic.Rotation.#text');
-    const displacement = get(sldSymbolizer, 'Graphic.Displacement');
+    const opacity: string = get(sldIconSymbolizer, 'Graphic.Opacity.#text');
+    const size: string = get(sldIconSymbolizer, 'Graphic.Size.#text');
+    const rotation: string = get(sldIconSymbolizer, 'Graphic.Rotation.#text');
+    const displacement = get(sldIconSymbolizer, 'Graphic.Displacement');
     if (!isNil(opacity)) {
       iconSymbolizer.opacity = numberExpression(opacity);
     }
