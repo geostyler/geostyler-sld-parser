@@ -7,7 +7,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name/>
-          <se:PolygonSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:PolygonSymbolizer>
             <se:Fill>
               <se:SvgParameter name="fill">#000080</se:SvgParameter>
               <se:SvgParameter name="fill-opacity">0</se:SvgParameter>

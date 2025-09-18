@@ -14,7 +14,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name />
-          <se:PointSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:PointSymbolizer>
             <se:Graphic>
               <se:Mark>
                 <se:WellKnownName>circle</se:WellKnownName>
