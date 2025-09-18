@@ -1009,7 +1009,7 @@ export class SldStyleParser implements StyleParser<string> {
       textSymbolizer.size = numberExpression(fontSize);
     }
     if (!isNil(distanceUnit)) {
-      (textSymbolizer as any).sizeUnit = distanceUnit; // Why isn't there a sizeUnit property??
+      textSymbolizer.sizeUnit = distanceUnit;
     }
     return textSymbolizer;
   }
@@ -2578,7 +2578,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    this.addUomEntry(sldTextSymbolizer, (textSymbolizer as any).sizeUnit);
+    this.addUomEntry(sldTextSymbolizer, textSymbolizer.sizeUnit);
 
     return sldTextSymbolizer;
   }
