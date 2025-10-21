@@ -643,7 +643,6 @@ export class SldStyleParser implements StyleParser<string> {
       .filter(isSymbolizer)
       .map((sldSymbolizer: any) => {
         const sldSymbolizerName: string = Object.keys(sldSymbolizer)[0];
-        const distanceUnit: DistanceUnit | undefined = this.getDistanceUnit(sldSymbolizer);
         switch (sldSymbolizerName) {
           case 'PointSymbolizer':
             return this.getPointSymbolizerFromSldSymbolizer(sldSymbolizer);
@@ -831,7 +830,7 @@ export class SldStyleParser implements StyleParser<string> {
     const wellKnownName: string = get(sldPointSymbolizer, 'Graphic.Mark.WellKnownName.#text');
     const externalGraphic: any = get(sldPointSymbolizer, 'Graphic.ExternalGraphic');
     if (externalGraphic) {
-      pointSymbolizer = this.getIconSymbolizerFromSldSymbolizer(sldSymbolizer, distanceUnit);
+      pointSymbolizer = this.getIconSymbolizerFromSldSymbolizer(sldSymbolizer);
     } else {
       // geoserver does not set a wellKnownName for square explicitly since it is the default value.
       // Therefore, we have to set the wellKnownName to square if no wellKownName is given.
@@ -839,7 +838,7 @@ export class SldStyleParser implements StyleParser<string> {
         // TODO: Fix this. Idealy without lodash
         // _set(sldSymbolizer, 'Graphic[0].Mark[0].WellKnownName[0]._', 'square');
       }
-      pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer, distanceUnit);
+      pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer);
     }
     return pointSymbolizer;
   }
@@ -854,6 +853,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getLineSymbolizerFromSldSymbolizer(sldSymbolizer: any): LineSymbolizer {
     const sldLineSymbolizer = sldSymbolizer.LineSymbolizer;
+    const distanceUnit: DistanceUnit | undefined = this.getDistanceUnit(sldSymbolizer);
     const lineSymbolizer: LineSymbolizer = {
       kind: 'Line'
     };
@@ -900,12 +900,20 @@ export class SldStyleParser implements StyleParser<string> {
 
     const graphicStroke = get(strokeEl, 'GraphicStroke');
     if (!isNil(graphicStroke)) {
-      lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer({PointSymbolizer: graphicStroke});
+      lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(
+        {
+          PointSymbolizer: graphicStroke,
+          distanceUnit: distanceUnit
+        });
     }
 
     const graphicFill = get(strokeEl, 'GraphicFill');
     if (!isNil(graphicFill)) {
-      lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer({PointSymbolizer: graphicFill});
+      lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
+        {
+          PointSymbolizer: graphicFill,
+          distanceUnit: distanceUnit
+        });
     }
 
     const perpendicularOffset = get(sldLineSymbolizer, 'PerpendicularOffset.#text');
@@ -924,6 +932,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getTextSymbolizerFromSldSymbolizer(sldSymbolizer: any): TextSymbolizer {
     const sldTextSymbolizer = sldSymbolizer.TextSymbolizer;
+    const distanceUnit: DistanceUnit | undefined = this.getDistanceUnit(sldSymbolizer);
     const textSymbolizer: TextSymbolizer = {
       kind: 'Text'
     };
@@ -1085,6 +1094,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getFillSymbolizerFromSldSymbolizer(sldSymbolizer: any): FillSymbolizer {
     const sldFillSymbolizer = sldSymbolizer.PolygonSymbolizer;
+    const distanceUnit: DistanceUnit | undefined = this.getDistanceUnit(sldSymbolizer);
     const fillSymbolizer: FillSymbolizer = {
       kind: 'Fill'
     };
@@ -1196,6 +1206,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getMarkSymbolizerFromSldSymbolizer(sldSymbolizer: any): MarkSymbolizer {
     const sldMarkSymbolizer = sldSymbolizer.PointSymbolizer;
+    const distanceUnit: DistanceUnit | undefined = this.getDistanceUnit(sldSymbolizer);
     const wellKnownName: WellKnownName = get(sldMarkSymbolizer, 'Graphic.Mark.WellKnownName.#text');
     const strokeEl = get(sldMarkSymbolizer, 'Graphic.Mark.Stroke');
     const fillEl = get(sldMarkSymbolizer, 'Graphic.Mark.Fill');
@@ -1342,6 +1353,7 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
     const sldIconSymbolizer = sldSymbolizer.PointSymbolizer;
+    const distanceUnit: DistanceUnit | undefined = this.getDistanceUnit(sldSymbolizer);
     let image = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
     if (!image && this.sldVersion === '1.1.0') {
       const encoding = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.InlineContent.@encoding');
@@ -1880,6 +1892,9 @@ export class SldStyleParser implements StyleParser<string> {
   getDistanceUnit(sldSymbolizer: any): DistanceUnit | undefined {
     if (!sldSymbolizer) {
       return undefined;
+    }
+    if (sldSymbolizer.distanceUnit) {
+      return sldSymbolizer.distanceUnit; // for cases where we construct an intermediate object ourselves
     }
     const uomAttribute = getAttribute(sldSymbolizer,'uom');
     if (!uomAttribute) {
