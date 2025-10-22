@@ -45,15 +45,16 @@ import {
 import { isNumber, merge } from 'lodash';
 
 import {
-  geoStylerFunctionToSldFunction,
-  get,
-  getAttribute,
-  getChildren,
-  getParameterValue,
-  getVendorOptionValue,
-  isSymbolizer,
-  keysByValue,
-  numberExpression
+    Base64ImageObject,
+    geoStylerFunctionToSldFunction,
+    get,
+    getAttribute, getBase64Object,
+    getChildren,
+    getParameterValue,
+    getVendorOptionValue,
+    isSymbolizer,
+    keysByValue,
+    numberExpression
 } from './Util/SldUtil';
 
 const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
@@ -1318,7 +1319,15 @@ export class SldStyleParser implements StyleParser<string> {
    */
   getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
     const sldIconSymbolizer = sldSymbolizer.PointSymbolizer;
-    const image = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
+    let image = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
+    if (!image && this.sldVersion === '1.1.0') {
+        const encoding = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.InlineContent.@encoding');
+        if (encoding === 'base64') {
+            const extension = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.Format.#text');
+            const base64String = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.InlineContent.#text');
+            image = `data:${extension};base64,${base64String}`;
+        }
+    }
     const iconSymbolizer: IconSymbolizer = <IconSymbolizer>{
       kind: 'Icon',
       image
@@ -2107,9 +2116,6 @@ export class SldStyleParser implements StyleParser<string> {
    * an "ExternalGraphic" (readable with fast-xml-parser)
    */
   getSldPointSymbolizerFromIconSymbolizer(iconSymbolizer: IconSymbolizer): any {
-    const ExternalGraphic = this.getTagName('ExternalGraphic');
-    const Format = this.getTagName('Format');
-    const OnlineResource = this.getTagName('OnlineResource');
     const Opacity = this.getTagName('Opacity');
     const Rotation = this.getTagName('Rotation');
     const Size = this.getTagName('Size');
@@ -2118,41 +2124,14 @@ export class SldStyleParser implements StyleParser<string> {
     const DisplacementX = this.getTagName('DisplacementX');
     const DisplacementY = this.getTagName('DisplacementY');
 
-    const graphic: any[] = [{
-      [ExternalGraphic]: [{
-        [OnlineResource]: [],
-        ':@': {
-          '@_xlink:type': 'simple',
-          '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
-          '@_xlink:href': iconSymbolizer.image
-        }
-      }, {[Format]: []}]
-    }];
-
+    const graphic: any[] = [];
     if (typeof iconSymbolizer.image === 'string' || iconSymbolizer.image instanceof String) {
-      const iconExt = iconSymbolizer.image.split('.').pop();
-      switch (iconExt) {
-        case 'png':
-        case 'jpeg':
-        case 'gif':
-          graphic[0][ExternalGraphic][1][Format] = [{
-            '#text': `image/${iconExt}`
-          }];
-          break;
-        case 'jpg':
-          graphic[0][ExternalGraphic][1][Format] = [{
-            '#text': 'image/jpeg'
-          }];
-          break;
-        case 'svg':
-          graphic[0][ExternalGraphic][1][Format] = [{
-            '#text': 'image/svg+xml'
-          }];
-          break;
-        case undefined:
-        default:
-          break;
-      }
+        const base64Object = getBase64Object(iconSymbolizer.image as string);
+        if (base64Object) {
+            graphic.push(this.getSldExternalResourceInlineContent(base64Object))
+        } else {
+            graphic.push(this.getSldExternalResourceOnlineResource(iconSymbolizer.image as string))
+        }
     }
 
     if (!isNil(iconSymbolizer.opacity)) {
@@ -2192,6 +2171,76 @@ export class SldStyleParser implements StyleParser<string> {
     return [{
       [Graphic]: graphic
     }];
+  }
+
+  /**
+   * From a Base64ImageObject, create a SLD ExternalGraphic.
+   * @return a base64 InlineContent in an ExternalGraphic (readable with fast-xml-parser).
+   */
+  getSldExternalResourceInlineContent(image: Base64ImageObject): any {
+      const ExternalGraphic = this.getTagName('ExternalGraphic');
+      const Format = this.getTagName('Format');
+      const InlineContent = this.getTagName('InlineContent');
+      return {
+          [ExternalGraphic]: [{
+              [InlineContent]: [{
+                  '#text': image.data
+              }],
+              ':@': {
+                  '@_encoding': 'base64',
+              }
+          }, {
+              [Format]: [{
+                  '#text': `image/${image.extension}`
+              }],
+          }]
+      };
+  }
+
+  /**
+   * From a URL, create a SLD ExternalGraphic.
+   * @return an OnlineResource in an ExternalGraphic (readable with fast-xml-parser).
+   */
+  getSldExternalResourceOnlineResource(image: string): any {
+      const ExternalGraphic = this.getTagName('ExternalGraphic');
+      const Format = this.getTagName('Format');
+      const OnlineResource = this.getTagName('OnlineResource');
+
+      const graphic: any = {
+          [ExternalGraphic]: [{
+              [OnlineResource]: [],
+              ':@': {
+                  '@_xlink:type': 'simple',
+                  '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
+                  '@_xlink:href': image
+              }
+          }, {[Format]: []}]
+      };
+
+      const iconExt = image.split('.').pop();
+      switch (iconExt) {
+          case 'png':
+          case 'jpeg':
+          case 'gif':
+              graphic[ExternalGraphic][1][Format] = [{
+                  '#text': `image/${iconExt}`
+              }];
+              break;
+          case 'jpg':
+              graphic[ExternalGraphic][1][Format] = [{
+                  '#text': 'image/jpeg'
+              }];
+              break;
+          case 'svg':
+              graphic[ExternalGraphic][1][Format] = [{
+                  '#text': 'image/svg+xml'
+              }];
+              break;
+          case undefined:
+          default:
+              break;
+      }
+      return graphic;
   }
 
   /**
