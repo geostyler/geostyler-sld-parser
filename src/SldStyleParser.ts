@@ -13,6 +13,7 @@ import {
   Filter,
   FunctionCall,
   GeoStylerFunction,
+  GeoStylerStringFunction,
   IconSymbolizer,
   isCombinationFilter,
   isComparisonFilter,
@@ -42,7 +43,7 @@ import {
   XMLParser
 } from 'fast-xml-parser';
 
-import { isNumber, merge } from 'lodash';
+import { isNumber, isString, merge } from 'lodash';
 
 import {
   geoStylerFunctionToSldFunction,
@@ -1040,7 +1041,45 @@ export class SldStyleParser implements StyleParser<string> {
    *
    * @param sldLabel
    */
-  getTextSymbolizerLabelFromSldSymbolizer = (sldLabel: any): string => {
+  getTextSymbolizerLabelFromSldSymbolizer = (
+    sldLabel: any
+  ): string | Expression<string> => {
+    if (
+      Array.isArray(sldLabel) &&
+      sldLabel[0] &&
+      typeof sldLabel[0] === 'object' &&
+      (sldLabel[0].Function || sldLabel[0]['ogc:Function'])
+    ) {
+      const funcObj = sldLabel[0];
+      const funcArgs = funcObj.Function || funcObj['ogc:Function'];
+      const funcName = funcObj[':@']?.['@_name'];
+      const convertSldArgToGeoStyler = (arg: any): any => {
+        if (arg.PropertyName || arg['ogc:PropertyName']) {
+          const prop = arg.PropertyName?.[0]?.['#text'] ?? arg['ogc:PropertyName']?.[0]?.['#text'];
+          return {
+            name: 'property',
+            args: [prop]
+          };
+        }
+        if (arg.Literal || arg['ogc:Literal']) {
+          return arg.Literal?.[0]?.['#text'] !== undefined
+            ? arg.Literal[0]['#text']
+            : arg['ogc:Literal']?.[0]?.['#text'] ?? '';
+        }
+        if (arg.Function || arg['ogc:Function']) {
+          // Recursively handle nested functions
+          return this.getTextSymbolizerLabelFromSldSymbolizer([arg]);
+        }
+        return arg;
+      };
+
+      const args = funcArgs.map(convertSldArgToGeoStyler);
+      return {
+        name: funcName,
+        args
+      } as GeoStylerStringFunction;
+    }
+
     const label: string = sldLabel
       .map((labelEl: any) => {
         const labelName = Object.keys(labelEl)[0];
@@ -2452,13 +2491,10 @@ export class SldStyleParser implements StyleParser<string> {
    * @param template The Expression<string> representing the label
    */
   getSldLabelFromTextSymbolizer = (template: Expression<string>): any => {
-    // TODO: parse GeoStylerFunction
-    if (!(typeof template === 'string' || template instanceof String)) {
-      return undefined;
-    }
-
-    const openingBraces = '{{';
-    const closingBraces = '}}';
+    if (isString(template)) 
+    {    
+      const openingBraces = '{{';
+      const closingBraces = '}}';
 
     const tokens = [];
     let templateReducer = template;
@@ -2537,8 +2573,85 @@ export class SldStyleParser implements StyleParser<string> {
       templateReducer = tmpTemplateReducer;
     }
 
-    return tokens;
+      return tokens;
+    }
+    // parse other GeoStylerFunction
+    return this.geoStylerFunctionToSldFunctionRecursive(template); 
   };
+
+  /**
+ * Recursively converts a GeoStylerFunction (including nested) to SLD function structure.
+ */
+private geoStylerFunctionToSldFunctionRecursive(func: any): any {
+  if (
+    typeof func === 'object' &&
+    func !== null &&
+    typeof func.name === 'string' &&
+    Array.isArray(func.args)
+    ) {
+    const sldArgs = func.args.map((arg: any) => {
+      // Property function
+      if (
+        typeof arg === 'object' &&
+        arg !== null &&
+        arg.name === 'property' &&
+        Array.isArray(arg.args)
+      ) {
+        return {
+          'ogc:PropertyName': [
+            { '#text': arg.args[0] }
+          ]
+        };
+      }
+      // Nested function
+      if (
+        typeof arg === 'object' &&
+        arg !== null &&
+        typeof arg.name === 'string' &&
+        Array.isArray(arg.args)
+      ) {
+        return this.geoStylerFunctionToSldFunctionRecursive(arg)[0];
+      }
+      // Literal value
+      if (typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+        return {
+          'ogc:Literal': [
+            { '#text': arg }
+          ]
+        };
+      }
+      // Already SLD or unknown
+      return arg;
+    });
+    return [{
+      'ogc:Function': sldArgs,
+      ':@': { '@_name': func.name }
+    }];
+  }
+  // Property function at root
+  if (
+    typeof func === 'object' &&
+    func !== null &&
+    func.name === 'property' &&
+    Array.isArray(func.args)
+  ) {
+    return {
+      'ogc:PropertyName': [
+        { '#text': func.args[0] }
+      ]
+    };
+  }
+  // Literal at root
+  if (typeof func === 'string' || typeof func === 'number' || typeof func === 'boolean') {
+    return {
+      'ogc:Literal': [
+        { '#text': func }
+      ]
+    };
+  }
+  // Already SLD or unknown
+  return func;
+}
 
   /**
    * Get the SLD Object (readable with fast-xml-parser) from a geostyler-style LineSymbolizer.
