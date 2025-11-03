@@ -6,7 +6,6 @@
       <se:Name>Polygon Graphic Fill</se:Name>
       <se:FeatureTypeStyle>
         <se:Rule>
-          <se:Name/>
           <se:PolygonSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
             <se:Fill>
               <se:GraphicFill>

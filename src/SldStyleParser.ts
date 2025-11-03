@@ -2829,7 +2829,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
       polygonSymbolizer.push({ [Fill]: fillArray });
       if (graphicFill) {
-        fillArray.push({ GraphicFill: graphicFill });
+        fillArray.push({ [this.getTagName('GraphicFill')]: graphicFill });
       }
       if (fillCssParameters.length > 0) {
         fillArray.push(...fillCssParameters);

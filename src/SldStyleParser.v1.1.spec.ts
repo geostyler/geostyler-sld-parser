@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
 import { beforeEach, expect, it, describe } from 'vitest';
+import { XMLParser } from 'fast-xml-parser';
 
 import empty_filter from '../data/styles/empty_filter';
 import point_simplepoint from '../data/styles/point_simplepoint';
@@ -578,6 +579,10 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(polygon_graphicFill);
+
+      const sld = fs.readFileSync('./data/slds/1.1/polygon_graphicFill.sld', 'utf8');
+      const xmlParser = new XMLParser({ preserveOrder: true });
+      expect(xmlParser.parse(sld)).toEqual(xmlParser.parse(sldString!));
     });
     it('can write a SLD 1.1 PolygonSymbolizer with GraphicFill and ExternalGraphic', async () => {
       const { output: sldString } = await styleParser.writeStyle(polygon_graphicFill_externalGraphic);
