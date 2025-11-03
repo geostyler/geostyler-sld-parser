@@ -47,8 +47,8 @@ import function_filter from '../data/styles/function_filter';
 import function_nested from '../data/styles/function_nested';
 import functionFilterPropertyToProperty from '../data/styles/function_filter_property_to_property';
 import functionFilterOgcArithmetic from '../data/styles/function_filter_ogc_arithmetic';
-import point_externalgraphic_inlineContent from "../data/styles/point_externalgraphic_inlineContent";
-import {IconSymbolizer} from "geostyler-style";
+import point_externalgraphic_inlineContent from '../data/styles/point_externalgraphic_inlineContent';
+import {IconSymbolizer} from 'geostyler-style';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -475,10 +475,10 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
     });
     it('can write a SLD PointSymbolizer with ExternalGraphic but ignore inlineContent', async () => {
       const {
-          output: sldString,
-          errors,
-          warnings,
-          unsupportedProperties
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
       } = await styleParser.writeStyle(point_externalgraphic_inlineContent);
       expect(sldString).toBeDefined();
       expect(errors).toBeUndefined();

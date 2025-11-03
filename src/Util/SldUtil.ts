@@ -1,4 +1,11 @@
-import { Expression, PropertyType, GeoStylerFunction, GeoStylerNumberFunction, isGeoStylerFunction, isGeoStylerNumberFunction } from 'geostyler-style';
+import {
+  Expression,
+  PropertyType,
+  GeoStylerFunction,
+  GeoStylerNumberFunction,
+  isGeoStylerFunction,
+  isGeoStylerNumberFunction
+} from 'geostyler-style';
 import { SldVersion } from '../SldStyleParser';
 
 /**
@@ -264,13 +271,13 @@ export function getBase64Object (
 ): Base64ImageObject | undefined {
   const baseTokens = base64String.split(',');
   if (baseTokens.length !== 2 || !baseTokens[0].startsWith('data:image/') || !baseTokens[0].endsWith(';base64')) {
-      return undefined;
+    return undefined;
   }
-  const metaTokens = baseTokens[0].split(";");
+  const metaTokens = baseTokens[0].split(';');
   if (metaTokens.length !== 2) {
     return undefined;
   }
-  const ext = metaTokens[0].split("/").pop();
+  const ext = metaTokens[0].split('/').pop();
   if (!ext) {
     return undefined;
   }
