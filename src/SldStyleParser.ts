@@ -2828,11 +2828,11 @@ export class SldStyleParser implements StyleParser<string> {
         this.pushGeoServerVendorOption(polygonSymbolizer, 'graphic-margin', graphicFillPadding.join(' '));
       }
       polygonSymbolizer.push({ [Fill]: fillArray });
+      if (graphicFill) {
+        fillArray.push({ [this.getTagName('GraphicFill')]: graphicFill });
+      }
       if (fillCssParameters.length > 0) {
         fillArray.push(...fillCssParameters);
-      }
-      if (graphicFill) {
-        fillArray.push({ GraphicFill: graphicFill });
       }
     }
 
