@@ -1,6 +1,6 @@
 {
   "name": "geostyler-sld-parser",
-  "version": "8.1.0",
+  "version": "8.2.0",
   "description": "GeoStyler Style Parser implementation for SLD",
   "type": "module",
   "main": "dist/SldStyleParser.js",

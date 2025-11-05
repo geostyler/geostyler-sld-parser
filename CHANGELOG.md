@@ -1,3 +1,21 @@
+## [8.2.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.1.0...v8.2.0) (2025-11-05)
+
+### Features
+
+* **#1020:** add PerpendicularOffset as LinePlacement ([33d68b9](https://github.com/geostyler/geostyler-sld-parser/commit/33d68b9b4811ba24526be91bb7fb4bc0855d8848)), closes [#1020](https://github.com/geostyler/geostyler-sld-parser/issues/1020)
+* **#1020:** direct assignment to TextSymbolizer, added test ([c39b8ba](https://github.com/geostyler/geostyler-sld-parser/commit/c39b8baba4f9556d253f8142f886519d29a33a06)), closes [#1020](https://github.com/geostyler/geostyler-sld-parser/issues/1020)
+* **#1020:** fix failing check ([d652da0](https://github.com/geostyler/geostyler-sld-parser/commit/d652da054d11702ee90c57c4b48b5abede7a79e0))
+* **#1020:** perpendicularOffset can be undefined ([626438f](https://github.com/geostyler/geostyler-sld-parser/commit/626438f72b3883b761a7530baa93b8025731589e)), closes [#1020](https://github.com/geostyler/geostyler-sld-parser/issues/1020)
+* **#1020:** remove spaces, add curly brackets ([b140533](https://github.com/geostyler/geostyler-sld-parser/commit/b140533117177a90291c6af4e5b0fc720799ad61)), closes [#1020](https://github.com/geostyler/geostyler-sld-parser/issues/1020)
+* **#1020:** update package ([daf0881](https://github.com/geostyler/geostyler-sld-parser/commit/daf088126f8aab53bfcfff18c0176304d0d7f354)), closes [#1020](https://github.com/geostyler/geostyler-sld-parser/issues/1020)
+* **#1033:** add external graphic inline content base64 ([7616aa5](https://github.com/geostyler/geostyler-sld-parser/commit/7616aa5ffd93059041e19c1525cecaf30d90d46d)), closes [#1033](https://github.com/geostyler/geostyler-sld-parser/issues/1033)
+* **#1033:** fix lint manually ([17c814c](https://github.com/geostyler/geostyler-sld-parser/commit/17c814c9dcec9a819da83ceaff9a022c360b97be))
+* handle anchorpoints (reading and writing) ([#1022](https://github.com/geostyler/geostyler-sld-parser/issues/1022)) ([868511c](https://github.com/geostyler/geostyler-sld-parser/commit/868511c402f6e8f2c46501f528484574128c775a))
+
+### Bug Fixes
+
+* make sure GraphicFill appears before Css/SvgParameter in output SLD [#1030](https://github.com/geostyler/geostyler-sld-parser/issues/1030) ([#1040](https://github.com/geostyler/geostyler-sld-parser/issues/1040)) ([aab239b](https://github.com/geostyler/geostyler-sld-parser/commit/aab239bdb1c4f68896dfff96fc047c010b630877))
+
 ## [8.1.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.0.1...v8.1.0) (2025-06-18)
 
 ### Features
