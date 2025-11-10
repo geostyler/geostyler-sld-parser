@@ -2632,13 +2632,23 @@ export class SldStyleParser implements StyleParser<string> {
  * Recursively converts a GeoStylerFunction (including nested) to SLD function structure.
  */
 private geoStylerFunctionToSldFunctionRecursive(func: any): any {
-  if (
-    typeof func === 'object' &&
-    func !== null &&
-    typeof func.name === 'string' &&
-    Array.isArray(func.args)
-    ) {
-    const sldArgs = func.args.map((arg: any) => {
+  if (func === null) {
+    return func;
+  }
+
+   // Literal at root
+  if (typeof func === 'string' || typeof func === 'number' || typeof func === 'boolean') {
+    return {
+      'ogc:Literal': [
+        { '#text': func }
+      ]
+    };
+  }
+
+  if (typeof func === 'object') {
+    // Finding functions such as 'greaterThan', 'numberFormat', 'if_then_else' etc.
+      if (typeof func.name === 'string' || Array.isArray(func.args)) {
+      const sldArgs = func.args.map((arg: any) => {
       // Property function
       if (
         typeof arg === 'object' &&
@@ -2659,6 +2669,7 @@ private geoStylerFunctionToSldFunctionRecursive(func: any): any {
         typeof arg.name === 'string' &&
         Array.isArray(arg.args)
       ) {
+        //  Another function such as 'greaterThan', 'numberFormat' in the above function such as 'if_then_else'
         return this.geoStylerFunctionToSldFunctionRecursive(arg)[0];
       }
       // Literal value
@@ -2671,33 +2682,25 @@ private geoStylerFunctionToSldFunctionRecursive(func: any): any {
       }
       // Already SLD or unknown
       return arg;
-    });
-    return [{
-      'ogc:Function': sldArgs,
-      ':@': { '@_name': func.name }
-    }];
+      });
+      return [{
+        'ogc:Function': sldArgs,
+        ':@': { '@_name': func.name }
+      }];
+    }
+    // Property function at root
+    if (
+      func.name === 'property' &&
+      Array.isArray(func.args)
+    ) {
+      return {
+        'ogc:PropertyName': [
+          { '#text': func.args[0] }
+          ]
+      };
+    }
   }
-  // Property function at root
-  if (
-    typeof func === 'object' &&
-    func !== null &&
-    func.name === 'property' &&
-    Array.isArray(func.args)
-  ) {
-    return {
-      'ogc:PropertyName': [
-        { '#text': func.args[0] }
-      ]
-    };
-  }
-  // Literal at root
-  if (typeof func === 'string' || typeof func === 'number' || typeof func === 'boolean') {
-    return {
-      'ogc:Literal': [
-        { '#text': func }
-      ]
-    };
-  }
+ 
   // Already SLD or unknown
   return func;
 }
