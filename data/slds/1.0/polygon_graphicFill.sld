@@ -8,12 +8,12 @@
   <NamedLayer>
     <Name>Polygon Graphic Fill</Name>
     <UserStyle>
+      <Name>Polygon Graphic Fill</Name>
       <Title>Polygon Graphic Fill</Title>
       <FeatureTypeStyle>
         <Rule>
           <PolygonSymbolizer>
             <Fill>
-              <CssParameter name="fill">#000080</CssParameter>
               <GraphicFill>
                 <Graphic>
                   <Mark>
@@ -24,6 +24,7 @@
                   </Mark>
                 </Graphic>
               </GraphicFill>
+              <CssParameter name="fill">#000080</CssParameter>
             </Fill>
             <Stroke>
               <CssParameter name="stroke">#FFFFFF</CssParameter>

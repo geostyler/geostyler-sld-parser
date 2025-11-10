@@ -3,6 +3,7 @@
 import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
 import { beforeEach, expect, it, describe } from 'vitest';
+import { XMLParser } from 'fast-xml-parser';
 
 import point_simplepoint from '../data/styles/point_simplepoint';
 import empty_filter from '../data/styles/empty_filter';
@@ -48,6 +49,8 @@ import function_nested from '../data/styles/function_nested';
 import functionFilterPropertyToProperty from '../data/styles/function_filter_property_to_property';
 import functionFilterOgcArithmetic from '../data/styles/function_filter_ogc_arithmetic';
 import functionLabelRound from '../data/styles/function_label_round';
+import point_externalgraphic_inlineContent from '../data/styles/point_externalgraphic_inlineContent';
+import {IconSymbolizer} from 'geostyler-style';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -57,7 +60,7 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
   let styleParser: SldStyleParser;
 
   beforeEach(() => {
-    styleParser = new SldStyleParser();
+    styleParser = new SldStyleParser({sldVersion: '1.0.0'});
   });
 
   describe('#readStyle', () => {
@@ -462,7 +465,6 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_simplepoint);
     });
-
     it('can write a SLD PointSymbolizer with ExternalGraphic', async () => {
       const {
         output: sldString,
@@ -478,6 +480,25 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_externalgraphic);
+    });
+    it('can write a SLD PointSymbolizer with ExternalGraphic but ignore inlineContent', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(point_externalgraphic_inlineContent);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toHaveLength(1);
+      expect(unsupportedProperties).toBeDefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      // Check the image is not included in the output.
+      const symbolizer = readStyle?.rules[0]?.symbolizers[0] as IconSymbolizer|undefined;
+      expect(symbolizer).toBeDefined();
+      expect(symbolizer?.image).toBeUndefined();
     });
     it('can write a SLD PointSymbolizer with ExternalGraphic svg', async () => {
       const {
@@ -734,6 +755,10 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(polygon_graphicFill);
+
+      const sld = fs.readFileSync('./data/slds/1.0/polygon_graphicFill.sld', 'utf8');
+      const xmlParser = new XMLParser({ preserveOrder: true });
+      expect(xmlParser.parse(sld)).toEqual(xmlParser.parse(sldString!));
     });
     it('can write a SLD PolygonSymbolizer with GraphicFill and ExternalGraphic', async () => {
       const {

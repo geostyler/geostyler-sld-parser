@@ -1,6 +1,6 @@
 {
   "name": "geostyler-sld-parser",
-  "version": "8.1.0",
+  "version": "8.2.0",
   "description": "GeoStyler Style Parser implementation for SLD",
   "type": "module",
   "main": "dist/SldStyleParser.js",
@@ -47,7 +47,7 @@
     "@stylistic/eslint-plugin": "^4.4.1",
     "@terrestris/eslint-config-typescript": "^9.0.0",
     "@types/lodash": "^4.17.17",
-    "@types/node": "^22.15.29",
+    "@types/node": "^24.0.0",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
     "@vitest/coverage-v8": "^3.2.4",

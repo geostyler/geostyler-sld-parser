@@ -1,4 +1,11 @@
-import { Expression, PropertyType, GeoStylerFunction, GeoStylerNumberFunction, isGeoStylerFunction, isGeoStylerNumberFunction } from 'geostyler-style';
+import {
+  Expression,
+  PropertyType,
+  GeoStylerFunction,
+  GeoStylerNumberFunction,
+  isGeoStylerFunction,
+  isGeoStylerNumberFunction
+} from 'geostyler-style';
 import { SldVersion } from '../SldStyleParser';
 
 /**
@@ -248,3 +255,34 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
 export function keysByValue(object: any, value: any): string[] {
   return Object.keys(object).filter(key => object[key] === value);
 }
+
+/** Split base64 string */
+export interface Base64ImageObject {
+  data: string;
+  extension: string;
+}
+
+/**
+ * Get the data and extension from a base64 string.
+ * @returns The data and extension or undefined if the string is not a base64 string.
+ */
+export function getBase64Object (
+  base64String: string,
+): Base64ImageObject | undefined {
+  const baseTokens = base64String.split(',');
+  if (baseTokens.length !== 2 || !baseTokens[0].startsWith('data:image/') || !baseTokens[0].endsWith(';base64')) {
+    return undefined;
+  }
+  const metaTokens = baseTokens[0].split(';');
+  if (metaTokens.length !== 2) {
+    return undefined;
+  }
+  const ext = metaTokens[0].split('/').pop();
+  if (!ext) {
+    return undefined;
+  }
+  return {
+    data: baseTokens[1],
+    extension: ext,
+  };
+};
