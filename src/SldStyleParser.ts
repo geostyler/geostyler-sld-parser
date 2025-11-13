@@ -2540,170 +2540,170 @@ export class SldStyleParser implements StyleParser<string> {
    * @param template The Expression<string> representing the label
    */
   getSldLabelFromTextSymbolizer = (template: Expression<string>): any => {
-    if (isString(template)) 
-    {    
+    if (isString(template))
+    {
       const openingBraces = '{{';
       const closingBraces = '}}';
 
-    const tokens = [];
-    let templateReducer = template;
+      const tokens = [];
+      let templateReducer = template;
 
-    while (templateReducer.length) {
-      let tmpTemplateReducer = templateReducer;
-      let tmpPreTemplateLiteral;
-      const openingBracesIdx = tmpTemplateReducer.indexOf(openingBraces);
-      if (openingBracesIdx === -1) {
-        if (templateReducer.includes(' ')) {
-          tokens.push({
-            'ogc:Literal': [{
-              '#cdata': [{
+      while (templateReducer.length) {
+        let tmpTemplateReducer = templateReducer;
+        let tmpPreTemplateLiteral;
+        const openingBracesIdx = tmpTemplateReducer.indexOf(openingBraces);
+        if (openingBracesIdx === -1) {
+          if (templateReducer.includes(' ')) {
+            tokens.push({
+              'ogc:Literal': [{
+                '#cdata': [{
+                  '#text': templateReducer
+                }]
+              }]
+            });
+          } else {
+            tokens.push({
+              'ogc:Literal': [{
                 '#text': templateReducer
               }]
-            }]
-          });
-        } else {
-          tokens.push({
-            'ogc:Literal': [{
-              '#text': templateReducer
-            }]
-          });
+            });
+          }
+          break;
         }
-        break;
-      }
 
-      if (openingBracesIdx > 0) {
-        tmpPreTemplateLiteral = tmpTemplateReducer.slice(0, openingBracesIdx);
-      }
-      tmpTemplateReducer = tmpTemplateReducer.slice(openingBracesIdx + openingBraces.length);
+        if (openingBracesIdx > 0) {
+          tmpPreTemplateLiteral = tmpTemplateReducer.slice(0, openingBracesIdx);
+        }
+        tmpTemplateReducer = tmpTemplateReducer.slice(openingBracesIdx + openingBraces.length);
 
-      const closingBracesIdx = tmpTemplateReducer.indexOf(closingBraces);
-      if (closingBracesIdx === -1) {
-        if (templateReducer.includes(' ')) {
-          tokens.push({
-            'ogc:Literal': [{
-              '#cdata': [{
+        const closingBracesIdx = tmpTemplateReducer.indexOf(closingBraces);
+        if (closingBracesIdx === -1) {
+          if (templateReducer.includes(' ')) {
+            tokens.push({
+              'ogc:Literal': [{
+                '#cdata': [{
+                  '#text': templateReducer
+                }]
+              }]
+            });
+          } else {
+            tokens.push({
+              'ogc:Literal': [{
                 '#text': templateReducer
               }]
-            }]
-          });
-        } else {
-          tokens.push({
-            'ogc:Literal': [{
-              '#text': templateReducer
-            }]
-          });
+            });
+          }
+          break;
         }
-        break;
-      }
-      const propertyName = tmpTemplateReducer.slice(0, closingBracesIdx);
-      tmpTemplateReducer = tmpTemplateReducer.slice(closingBracesIdx + closingBraces.length);
-      if (tmpPreTemplateLiteral) {
-        if (tmpPreTemplateLiteral.includes(' ')) {
-          tokens.push({
-            'ogc:Literal': [{
-              '#cdata': [{
+        const propertyName = tmpTemplateReducer.slice(0, closingBracesIdx);
+        tmpTemplateReducer = tmpTemplateReducer.slice(closingBracesIdx + closingBraces.length);
+        if (tmpPreTemplateLiteral) {
+          if (tmpPreTemplateLiteral.includes(' ')) {
+            tokens.push({
+              'ogc:Literal': [{
+                '#cdata': [{
+                  '#text': tmpPreTemplateLiteral
+                }]
+              }]
+            });
+          } else {
+            tokens.push({
+              'ogc:Literal': [{
                 '#text': tmpPreTemplateLiteral
               }]
-            }]
-          });
-        } else {
-          tokens.push({
-            'ogc:Literal': [{
-              '#text': tmpPreTemplateLiteral
-            }]
-          });
+            });
+          }
         }
+        tokens.push({
+          'ogc:PropertyName': [{
+            '#text': propertyName
+          }]
+        });
+        templateReducer = tmpTemplateReducer;
       }
-      tokens.push({
-        'ogc:PropertyName': [{
-          '#text': propertyName
-        }]
-      });
-      templateReducer = tmpTemplateReducer;
-    }
 
       return tokens;
     }
     // parse other GeoStylerFunction
-    return this.geoStylerFunctionToSldFunctionRecursive(template); 
+    return this.geoStylerFunctionToSldFunctionRecursive(template);
   };
 
   /**
  * Recursively converts a GeoStylerFunction (including nested) to SLD function structure.
  */
-private geoStylerFunctionToSldFunctionRecursive(func: any): any {
-  if (func === null) {
-    return func;
-  }
+  private geoStylerFunctionToSldFunctionRecursive(func: any): any {
+    if (func === null) {
+      return func;
+    }
 
-   // Literal at root
-  if (typeof func === 'string' || typeof func === 'number' || typeof func === 'boolean') {
-    return {
-      'ogc:Literal': [
-        { '#text': func }
-      ]
-    };
-  }
+    // Literal at root
+    if (typeof func === 'string' || typeof func === 'number' || typeof func === 'boolean') {
+      return {
+        'ogc:Literal': [
+          { '#text': func }
+        ]
+      };
+    }
 
-  if (typeof func === 'object') {
+    if (typeof func === 'object') {
     // Finding functions such as 'greaterThan', 'numberFormat', 'if_then_else' etc.
       if (typeof func.name === 'string' || Array.isArray(func.args)) {
-      const sldArgs = func.args.map((arg: any) => {
-      // Property function
-      if (
-        typeof arg === 'object' &&
+        const sldArgs = func.args.map((arg: any) => {
+          // Property function
+          if (
+            typeof arg === 'object' &&
         arg !== null &&
         arg.name === 'property' &&
         Array.isArray(arg.args)
-      ) {
-        return {
-          'ogc:PropertyName': [
-            { '#text': arg.args[0] }
-          ]
-        };
-      }
-      // Nested function
-      if (
-        typeof arg === 'object' &&
+          ) {
+            return {
+              'ogc:PropertyName': [
+                { '#text': arg.args[0] }
+              ]
+            };
+          }
+          // Nested function
+          if (
+            typeof arg === 'object' &&
         arg !== null &&
         typeof arg.name === 'string' &&
         Array.isArray(arg.args)
-      ) {
-        //  Another function such as 'greaterThan', 'numberFormat' in the above function such as 'if_then_else'
-        return this.geoStylerFunctionToSldFunctionRecursive(arg)[0];
+          ) {
+            //  Another function such as 'greaterThan', 'numberFormat' in the above function such as 'if_then_else'
+            return this.geoStylerFunctionToSldFunctionRecursive(arg)[0];
+          }
+          // Literal value
+          if (typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+            return {
+              'ogc:Literal': [
+                { '#text': arg }
+              ]
+            };
+          }
+          // Already SLD or unknown
+          return arg;
+        });
+        return [{
+          'ogc:Function': sldArgs,
+          ':@': { '@_name': func.name }
+        }];
       }
-      // Literal value
-      if (typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+      // Property function at root
+      if (
+        func.name === 'property' &&
+      Array.isArray(func.args)
+      ) {
         return {
-          'ogc:Literal': [
-            { '#text': arg }
+          'ogc:PropertyName': [
+            { '#text': func.args[0] }
           ]
         };
       }
-      // Already SLD or unknown
-      return arg;
-      });
-      return [{
-        'ogc:Function': sldArgs,
-        ':@': { '@_name': func.name }
-      }];
     }
-    // Property function at root
-    if (
-      func.name === 'property' &&
-      Array.isArray(func.args)
-    ) {
-      return {
-        'ogc:PropertyName': [
-          { '#text': func.args[0] }
-          ]
-      };
-    }
+
+    // Already SLD or unknown
+    return func;
   }
- 
-  // Already SLD or unknown
-  return func;
-}
 
   /**
    * Get the SLD Object (readable with fast-xml-parser) from a geostyler-style LineSymbolizer.
