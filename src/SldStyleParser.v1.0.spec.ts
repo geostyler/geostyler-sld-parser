@@ -48,6 +48,7 @@ import function_filter from '../data/styles/function_filter';
 import function_nested from '../data/styles/function_nested';
 import functionFilterPropertyToProperty from '../data/styles/function_filter_property_to_property';
 import functionFilterOgcArithmetic from '../data/styles/function_filter_ogc_arithmetic';
+import functionLabelRound from '../data/styles/function_label_round';
 import point_externalgraphic_inlineContent from '../data/styles/point_externalgraphic_inlineContent';
 import {IconSymbolizer} from 'geostyler-style';
 
@@ -215,6 +216,12 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_simpleLabel2);
+    });
+    it('can read a SLD with a function label with rounded value', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/function_label_round.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(functionLabelRound);
     });
     it('can read a simple SLD RasterSymbolizer', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/raster_simpleRaster.sld', 'utf8');
@@ -983,6 +990,22 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_styledLabel_literalPlaceholder);
+    });
+    it('can write a SLD with a function label with rounded value', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(functionLabelRound);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle?.rules[0].symbolizers).toEqual(functionLabelRound.rules[0].symbolizers);
     });
 
     it('can write a SLD with a simple function', async () => {
