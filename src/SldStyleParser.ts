@@ -824,7 +824,10 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    * @return The geostyler-style PointSymbolizer
    */
-  getPointSymbolizerFromSldSymbolizer(sldSymbolizer: any): PointSymbolizer {
+  getPointSymbolizerFromSldSymbolizer(
+    sldSymbolizer: any,
+    distanceUnit: DistanceUnit | undefined = undefined
+  ): PointSymbolizer {
     const sldPointSymbolizer = sldSymbolizer.PointSymbolizer;
     let pointSymbolizer: PointSymbolizer;
     const wellKnownName: string = get(sldPointSymbolizer, 'Graphic.Mark.WellKnownName.#text');
@@ -902,18 +905,16 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(graphicStroke)) {
       lineSymbolizer.graphicStroke = this.getPointSymbolizerFromSldSymbolizer(
         {
-          PointSymbolizer: graphicStroke,
-          distanceUnit: distanceUnit
-        });
+          PointSymbolizer: graphicStroke
+        }, distanceUnit);
     }
 
     const graphicFill = get(strokeEl, 'GraphicFill');
     if (!isNil(graphicFill)) {
       lineSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
         {
-          PointSymbolizer: graphicFill,
-          distanceUnit: distanceUnit
-        });
+          PointSymbolizer: graphicFill
+        }, distanceUnit);
     }
 
     const perpendicularOffset = get(sldLineSymbolizer, 'PerpendicularOffset.#text');
@@ -1351,9 +1352,12 @@ export class SldStyleParser implements StyleParser<string> {
    * @param sldSymbolizer The SLD Symbolizer
    * @return The geostyler-style IconSymbolizer
    */
-  getIconSymbolizerFromSldSymbolizer(sldSymbolizer: any): IconSymbolizer {
+  getIconSymbolizerFromSldSymbolizer(
+    sldSymbolizer: any,
+    forcedDistanceUnit: DistanceUnit | undefined = undefined
+  ): IconSymbolizer {
     const sldIconSymbolizer = sldSymbolizer.PointSymbolizer;
-    const distanceUnit: DistanceUnit | undefined = this.getDistanceUnit(sldSymbolizer);
+    const distanceUnit: DistanceUnit | undefined = forcedDistanceUnit || this.getDistanceUnit(sldSymbolizer);
     let image = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.OnlineResource.@href');
     if (!image && this.sldVersion === '1.1.0') {
       const encoding = get(sldIconSymbolizer, 'Graphic.ExternalGraphic.InlineContent.@encoding');
@@ -1892,9 +1896,6 @@ export class SldStyleParser implements StyleParser<string> {
   getDistanceUnit(sldSymbolizer: any): DistanceUnit | undefined {
     if (!sldSymbolizer) {
       return undefined;
-    }
-    if (sldSymbolizer.distanceUnit) {
-      return sldSymbolizer.distanceUnit; // for cases where we construct an intermediate object ourselves
     }
     const uomAttribute = getAttribute(sldSymbolizer,'uom');
     if (!uomAttribute) {
