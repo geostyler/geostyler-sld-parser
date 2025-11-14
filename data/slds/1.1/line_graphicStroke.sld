@@ -7,7 +7,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name/>
-          <se:LineSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:LineSymbolizer>
             <se:Stroke>
               <se:GraphicStroke>
                 <se:Graphic>
