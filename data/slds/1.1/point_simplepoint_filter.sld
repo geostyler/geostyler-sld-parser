@@ -57,7 +57,7 @@
           </Filter>
           <se:MinScaleDenominator>10000</se:MinScaleDenominator>
           <se:MaxScaleDenominator>20000</se:MaxScaleDenominator>
-          <se:PointSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:PointSymbolizer>
             <se:Graphic>
               <se:Mark>
                 <se:WellKnownName>circle</se:WellKnownName>

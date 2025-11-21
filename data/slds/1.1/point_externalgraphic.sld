@@ -7,7 +7,7 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name/>
-          <se:PointSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <se:PointSymbolizer>
             <se:Graphic>
               <se:ExternalGraphic>
                 <se:OnlineResource xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://geoserver.org/img/geoserver-logo.png"/>

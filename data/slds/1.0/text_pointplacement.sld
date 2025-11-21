@@ -7,7 +7,7 @@
       <FeatureTypeStyle>
         <Rule>
           <Name/>
-          <TextSymbolizer uom="http://www.opengeospatial.org/se/units/pixel">
+          <TextSymbolizer>
             <Label>myText</Label>
             <LabelPlacement>
               <PointPlacement />
