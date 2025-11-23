@@ -57,7 +57,7 @@ import {
   isSymbolizer,
   keysByValue,
   numberExpression
-} from './Util/SldUtil';
+} from './Util/SldUtil.js';
 
 const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
 

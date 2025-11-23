@@ -6,7 +6,7 @@ import {
   isGeoStylerFunction,
   isGeoStylerNumberFunction
 } from 'geostyler-style';
-import { SldVersion } from '../SldStyleParser';
+import { SldVersion } from '../SldStyleParser.js';
 
 /**
  * Cast to Number if it is not a GeoStylerFunction

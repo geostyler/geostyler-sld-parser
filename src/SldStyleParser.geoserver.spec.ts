@@ -1,32 +1,32 @@
 /* eslint camelcase: 0 */
 import fs from 'fs';
-import SldStyleParser, {sldEnvGeoServer} from './SldStyleParser';
+import SldStyleParser, {sldEnvGeoServer} from './SldStyleParser.js';
 import {beforeEach, describe, expect, it} from 'vitest';
 
-import burg from '../data/styles/geoserver/burg';
-import capitals from '../data/styles/geoserver/capitals';
-import default_generic from '../data/styles/geoserver/default_generic';
-import default_line from '../data/styles/geoserver/default_line';
-import default_line2 from '../data/styles/geoserver/default_line2';
-import default_point from '../data/styles/geoserver/default_point';
-import default_polygon from '../data/styles/geoserver/default_polygon';
-import dem from '../data/styles/geoserver/dem';
-import giant_polygon from '../data/styles/geoserver/giant_polygon';
-import grass_poly from '../data/styles/geoserver/grass_poly';
-import green from '../data/styles/geoserver/green';
-import Lakes from '../data/styles/geoserver/Lakes';
-import NamedPlaces from '../data/styles/geoserver/NamedPlaces';
-import poi from '../data/styles/geoserver/poi';
-import poly_landmarks from '../data/styles/geoserver/poly_landmarks';
-import pophatch from '../data/styles/geoserver/pophatch';
-import popshade from '../data/styles/geoserver/popshade';
-import rain from '../data/styles/geoserver/rain';
-import raster from '../data/styles/geoserver/raster';
-import restricted from '../data/styles/geoserver/restricted';
-import simple_streams from '../data/styles/geoserver/simple_streams';
-import simpleRoads from '../data/styles/geoserver/simpleRoads';
-import tiger_roads from '../data/styles/geoserver/tiger_roads';
-import pattern_polygon from '../data/styles/geoserver/pattern_polygon';
+import burg from '../data/styles/geoserver/burg.js';
+import capitals from '../data/styles/geoserver/capitals.js';
+import default_generic from '../data/styles/geoserver/default_generic.js';
+import default_line from '../data/styles/geoserver/default_line.js';
+import default_line2 from '../data/styles/geoserver/default_line2.js';
+import default_point from '../data/styles/geoserver/default_point.js';
+import default_polygon from '../data/styles/geoserver/default_polygon.js';
+import dem from '../data/styles/geoserver/dem.js';
+import giant_polygon from '../data/styles/geoserver/giant_polygon.js';
+import grass_poly from '../data/styles/geoserver/grass_poly.js';
+import green from '../data/styles/geoserver/green.js';
+import Lakes from '../data/styles/geoserver/Lakes.js';
+import NamedPlaces from '../data/styles/geoserver/NamedPlaces.js';
+import poi from '../data/styles/geoserver/poi.js';
+import poly_landmarks from '../data/styles/geoserver/poly_landmarks.js';
+import pophatch from '../data/styles/geoserver/pophatch.js';
+import popshade from '../data/styles/geoserver/popshade.js';
+import rain from '../data/styles/geoserver/rain.js';
+import raster from '../data/styles/geoserver/raster.js';
+import restricted from '../data/styles/geoserver/restricted.js';
+import simple_streams from '../data/styles/geoserver/simple_streams.js';
+import simpleRoads from '../data/styles/geoserver/simpleRoads.js';
+import tiger_roads from '../data/styles/geoserver/tiger_roads.js';
+import pattern_polygon from '../data/styles/geoserver/pattern_polygon.js';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();

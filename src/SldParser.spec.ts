@@ -1,13 +1,13 @@
 /* eslint camelcase: 0 */
 
 import * as fs from 'fs';
-import SldStyleParser from './SldStyleParser';
+import SldStyleParser from './SldStyleParser.js';
 import { expect, it, describe } from 'vitest';
 
 // @ts-ignore
-import point_simplepoint from '../data/styles/point_simplepoint';
+import point_simplepoint from '../data/styles/point_simplepoint.js';
 // @ts-ignore
-import cdata from '../data/styles/cdata';
+import cdata from '../data/styles/cdata.js';
 
 describe('SldStyleParser implements StyleParser (reading from one version and writing to another version)', () => {
   it('can read and write a SLD PointSymbolizer (from 1.0.0 version to 1.1.0 version)', async () => {
