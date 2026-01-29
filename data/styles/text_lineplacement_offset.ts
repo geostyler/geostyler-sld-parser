@@ -8,7 +8,7 @@ const pointStyledLabel: Style = {
       color: '#000000',
       kind: 'Text',
       label: 'myText',
-      placement: 'line',    
+      placement: 'line',
     },
     {
       kind: 'Line',

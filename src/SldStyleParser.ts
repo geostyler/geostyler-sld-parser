@@ -2515,13 +2515,26 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (textSymbolizer.placement === 'line') {
+      const linePlacement: any = [];
+
+      if (textSymbolizer.perpendicularOffset !== undefined) {
+        if (isGeoStylerFunction(textSymbolizer.perpendicularOffset)) {
+          const children = geoStylerFunctionToSldFunction(textSymbolizer.perpendicularOffset);
+          linePlacement.push({
+            [PerpendicularOffset]: children
+          });
+        } else {
+          linePlacement.push({
+            [PerpendicularOffset]: [{
+              '#text': textSymbolizer.perpendicularOffset.toString()
+            }]
+          });
+        }
+      }
+
       sldTextSymbolizer.push({
         [LabelPlacement]: [{
-          [LinePlacement]: [{
-            [PerpendicularOffset]: [{
-              '#text': textSymbolizer.perpendicularOffset?.toString()
-            }]
-          }]
+          [LinePlacement]: linePlacement
         }]
       });
     } else if (Number.isFinite(textSymbolizer.offset)
