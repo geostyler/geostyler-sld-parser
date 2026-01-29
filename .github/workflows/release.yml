@@ -8,16 +8,21 @@ on:
 
 jobs:
   release:
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
     name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources 🔰
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Setup Node.js 20 👷🏻
-        uses: actions/setup-node@v4
+      - name: Set up node
+        uses: actions/setup-node@v6
         with:
-          node-version: 24
+          node-version: '24'
 
       - name: Install dependencies ⏬
         run: npm ci
@@ -25,9 +30,8 @@ jobs:
       - name: Build artifacts 🏗️
         run: npm run build
 
-      - name: Release 🚀
-        uses: cycjimmy/semantic-release-action@v4.2.0
-        id: semantic
+      - id: semantic-release-step
+        name: Release with Semantic Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
