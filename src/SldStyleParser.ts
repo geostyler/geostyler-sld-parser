@@ -1005,6 +1005,16 @@ export class SldStyleParser implements StyleParser<string> {
         }
       } else if (!isNil(linePlacement)) {
         textSymbolizer.placement = 'line';
+        if (this.readingSldVersion === '1.1.0') {
+          // According to SLD 1.1 specification, isRepeated does not
+          // support expressions, whereas Gap does.
+          const isRepeated: boolean = get(linePlacement, 'IsRepeated.#text');
+          // Only set gap when isRepeated is true
+          const gap = get(linePlacement, 'Gap.#text');
+          if (isRepeated && !isNil(gap)) {
+            textSymbolizer.repeat = numberExpression(gap);
+          }
+        }
       }
     }
     if (!isNil(fontFamily)) {
@@ -2470,6 +2480,8 @@ export class SldStyleParser implements StyleParser<string> {
     const Radius = this.getTagName('Radius');
     const Label = this.getTagName('Label');
     const PerpendicularOffset = this.getTagName('PerpendicularOffset');
+    const IsRepeated = this.getTagName('IsRepeated');
+    const Gap = this.getTagName('Gap');
 
     const sldTextSymbolizer: any = [{
       [Label]: textSymbolizer.label ? this.getSldLabelFromTextSymbolizer(textSymbolizer.label) : undefined
@@ -2527,6 +2539,28 @@ export class SldStyleParser implements StyleParser<string> {
           linePlacement.push({
             [PerpendicularOffset]: [{
               '#text': textSymbolizer.perpendicularOffset.toString()
+            }]
+          });
+        }
+      }
+
+      // According to SLD 1.1 specification, isRepeated does not
+      // support expressions, whereas Gap does.
+      if (this.sldVersion === '1.1.0' && textSymbolizer.repeat !== undefined) {
+        linePlacement.push({
+          [IsRepeated]: [{
+            '#text': true
+          }]
+        });
+        if (isGeoStylerFunction(textSymbolizer.repeat)) {
+          const children = geoStylerFunctionToSldFunction(textSymbolizer.repeat);
+          linePlacement.push({
+            [Gap]: children
+          });
+        } else {
+          linePlacement.push({
+            [Gap]: [{
+              '#text': textSymbolizer.repeat.toString()
             }]
           });
         }
