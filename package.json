@@ -36,12 +36,12 @@
   },
   "dependencies": {
     "fast-xml-parser": "^5.2.3",
-    "geostyler-style": "^10.5.0",
+    "geostyler-style": "^11.0.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.1",
-    "@commitlint/config-conventional": "^19.8.1",
+    "@commitlint/cli": "^20.3.1",
+    "@commitlint/config-conventional": "^20.3.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@stylistic/eslint-plugin": "^4.4.1",
@@ -51,10 +51,10 @@
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "@typescript-eslint/parser": "^8.33.1",
     "@vitest/coverage-v8": "^3.2.4",
-    "conventional-changelog-conventionalcommits": "^9.0.0",
+    "conventional-changelog-conventionalcommits": "^9.1.0",
     "coveralls": "^3.1.1",
     "eslint": "^9.33.0",
-    "semantic-release": "^24.2.5",
+    "semantic-release": "^25.0.2",
     "typescript": "^5.8.3",
     "vite": "6.3.6",
     "vitest": "3.2.4"
