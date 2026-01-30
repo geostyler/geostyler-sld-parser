@@ -1,3 +1,13 @@
+## [8.3.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.2.0...v8.3.0) (2026-01-30)
+
+### Features
+
+* **#1035:** change request ([7e06826](https://github.com/geostyler/geostyler-sld-parser/commit/7e068267f9db6551b5a2aeaf47d0410c9ddd3d7c)), closes [#1035](https://github.com/geostyler/geostyler-sld-parser/issues/1035)
+* **#1035:** fix linting ([ebdd20e](https://github.com/geostyler/geostyler-sld-parser/commit/ebdd20e5b0035630267a1e1d224f36a3a5c472d4))
+* **#1035:** implementing functions for textsymbolizers ([698669a](https://github.com/geostyler/geostyler-sld-parser/commit/698669a873a8225374b2ac0438fbafef5ef2c4c2)), closes [#1035](https://github.com/geostyler/geostyler-sld-parser/issues/1035)
+* support reading/writing TextSymbolizer repeat ([8524e6b](https://github.com/geostyler/geostyler-sld-parser/commit/8524e6baacc1a43a3aae6463e948ebd2d427405e))
+* support writing TextSymbolizer perpendicularOffset expression ([24343dd](https://github.com/geostyler/geostyler-sld-parser/commit/24343dd4aad44772202d75a3c74eda6377dfcb73))
+
 ## [8.2.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.1.0...v8.2.0) (2025-11-05)
 
 ### Features
