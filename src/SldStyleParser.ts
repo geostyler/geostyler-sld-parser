@@ -2704,7 +2704,7 @@ export class SldStyleParser implements StyleParser<string> {
         let tmpPreTemplateLiteral;
         const openingBracesIdx = tmpTemplateReducer.indexOf(openingBraces);
         if (openingBracesIdx === -1) {
-          if (templateReducer.includes(' ')) {
+          if (templateReducer.includes(' ') || templateReducer.includes('\n')) {
             tokens.push({
               'ogc:Literal': [{
                 '#cdata': [{
@@ -2729,7 +2729,7 @@ export class SldStyleParser implements StyleParser<string> {
 
         const closingBracesIdx = tmpTemplateReducer.indexOf(closingBraces);
         if (closingBracesIdx === -1) {
-          if (templateReducer.includes(' ')) {
+          if (templateReducer.includes(' ') || templateReducer.includes('\n')) {
             tokens.push({
               'ogc:Literal': [{
                 '#cdata': [{
@@ -2749,7 +2749,7 @@ export class SldStyleParser implements StyleParser<string> {
         const propertyName = tmpTemplateReducer.slice(0, closingBracesIdx);
         tmpTemplateReducer = tmpTemplateReducer.slice(closingBracesIdx + closingBraces.length);
         if (tmpPreTemplateLiteral) {
-          if (tmpPreTemplateLiteral.includes(' ')) {
+          if (tmpPreTemplateLiteral.includes(' ') || tmpPreTemplateLiteral.includes('\n')) {
             tokens.push({
               'ogc:Literal': [{
                 '#cdata': [{
