@@ -50,6 +50,7 @@ import text_pointplacement_with_anchor from '../data/styles/text_pointplacement_
 import text_lineplacement from '../data/styles/text_lineplacement';
 import text_lineplacement_offset from '../data/styles/text_lineplacement_offset';
 import text_lineplacement_repeat from '../data/styles/text_lineplacement_repeat';
+import text_newLine_expression from '../data/styles/text_newLine_expression';
 import unsupported_properties from '../data/styles/unsupported_properties';
 import function_markSymbolizer from '../data/styles/function_markSymbolizer';
 import function_filter from '../data/styles/function_filter';
@@ -795,6 +796,30 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       // we read it again and compare the json input with the parser output
       const { output: readStyle} = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_styledLabel_literalPlaceholder);
+    });
+    it('can write a SLD 1.1 style with a styled label containing newline expression', async () => {
+      // This test validates that the writeStyle() method correctly converts a GeoStyler Style
+      // with a newline character in a label (e.g., "{{fokr}}\n{{fokrname}}") into a properly
+      // formatted SLD XML with a CDATA section containing the newline.
+      // 
+      // We use a parser with format: true to ensure consistent XML formatting with proper
+      // indentation and line breaks, matching the expected SLD file format.
+      const styleParserWithFormat = new SldStyleParser({
+        sldVersion: '1.1.0',
+        builderOptions: {
+          format: true
+        }
+      });
+      const expectedSld = fs.readFileSync('./data/slds/1.1/text_newLine_expression.sld', 'utf8');
+      const expectedStyle = text_newLine_expression;
+      const { output: generatedSld } = await styleParserWithFormat.writeStyle(expectedStyle);
+      
+      // We only compare the generated SLD string with the expected SLD string (not JSON objects)
+      // because this is a write test verifying the XML output is correct. 
+      // We use trim() to remove any trailing whitespace from the file content that might cause
+      // false negatives in the comparison due to editor settings or file system differences.
+      expect(generatedSld).toBeDefined();
+      expect(generatedSld).toEqual(expectedSld.trim());
     });
 
     it('can write a SLD 1.1 with a simple function filter', async () => {
