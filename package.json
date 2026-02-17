@@ -45,7 +45,7 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@stylistic/eslint-plugin": "^4.4.1",
-    "@terrestris/eslint-config-typescript": "^9.0.0",
+    "@terrestris/eslint-config-typescript": "^10.0.0",
     "@types/lodash": "^4.17.17",
     "@types/node": "^24.0.0",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
