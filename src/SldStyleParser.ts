@@ -2042,18 +2042,18 @@ export class SldStyleParser implements StyleParser<string> {
     }];
 
     if (markSymbolizer.color || !isNil(markSymbolizer.fillOpacity)) {
-      const fillCssParamaters = [];
+      const fillCssParameters = [];
       if (markSymbolizer.color) {
         if (isGeoStylerFunction(markSymbolizer.color)) {
           const children = geoStylerFunctionToSldFunction(markSymbolizer.color);
-          fillCssParamaters.push({
+          fillCssParameters.push({
             [CssParameter]: children,
             ':@': {
               '@_name': 'fill'
             }
           });
         } else {
-          fillCssParamaters.push({
+          fillCssParameters.push({
             [CssParameter]: [{
               '#text': markSymbolizer.color,
             }],
@@ -2066,14 +2066,14 @@ export class SldStyleParser implements StyleParser<string> {
       if (!isNil(markSymbolizer.fillOpacity)) {
         if (isGeoStylerFunction(markSymbolizer.fillOpacity)) {
           const children = geoStylerFunctionToSldFunction(markSymbolizer.fillOpacity);
-          fillCssParamaters.push({
+          fillCssParameters.push({
             [CssParameter]: children,
             ':@': {
               '@_name': 'fill-opacity'
             }
           });
         } else {
-          fillCssParamaters.push({
+          fillCssParameters.push({
             [CssParameter]: [{
               '#text': markSymbolizer.fillOpacity,
             }],
@@ -2084,7 +2084,7 @@ export class SldStyleParser implements StyleParser<string> {
         }
       }
       mark.push({
-        [Fill]: fillCssParamaters
+        [Fill]: fillCssParameters
       });
     }
 
@@ -3306,7 +3306,9 @@ export class SldStyleParser implements StyleParser<string> {
           } else {
             Object.keys(symbolizer).forEach(property => {
               if (value[property]) {
-                const propValue = new RegExp(`["']${symbolizer[property as keyof typeof symbolizer]}["']`);
+                // Escape special regex characters
+                const escapedValue = String(symbolizer[property as keyof typeof symbolizer]).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const propValue = new RegExp(`["']${escapedValue}["']`);
                 if (value[property].support === 'partial' && (propValue.test(value[property].info)))
                 {
                   return;
