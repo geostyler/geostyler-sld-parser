@@ -12,7 +12,7 @@ const pointSimplePointDisplacement: Style = {
       fillOpacity: 0.5,
       strokeColor: '#0000FF',
       strokeOpacity: 0.7,
-      offset: [13, 37]
+      offset: [13, -37]
     }]
   }]
 };

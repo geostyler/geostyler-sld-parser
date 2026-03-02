@@ -35,7 +35,8 @@ import {
   UnsupportedProperties,
   WellKnownName,
   WriteStyleResult,
-  DistanceUnit
+  DistanceUnit,
+  BasePointSymbolizer
 } from 'geostyler-style';
 import {
   X2jOptions,
@@ -70,18 +71,18 @@ const SLD_ENVIRONMENTS = [sldEnvGeoServer] as const;
 export type SldEnvironment = (typeof SLD_ENVIRONMENTS)[number];
 
 export type ParserOptions = Omit<X2jOptions,
-'ignoreDeclaration' |
-'removeNSPrefix' |
-'ignoreAttributes' |
-'preserveOrder' |
-'trimValues'
+  'ignoreDeclaration' |
+  'removeNSPrefix' |
+  'ignoreAttributes' |
+  'preserveOrder' |
+  'trimValues'
 >;
 
 export type BuilderOptions = Omit<XmlBuilderOptions,
-'cdataPropName' |
-'ignoreAttributes' |
-'suppressEmptyNode' |
-'preserveOrder'
+  'cdataPropName' |
+  'ignoreAttributes' |
+  'suppressEmptyNode' |
+  'preserveOrder'
 >;
 
 export type ConstructorParams = {
@@ -138,9 +139,9 @@ const ARITHMETIC_OPERATORS = [
 type ArithmeticType = typeof ARITHMETIC_OPERATORS[number];
 
 export type SldStyleParserTranslationKeys = {
-  marksymbolizerParseFailedUnknownWellknownName?: (params: {wellKnownName: string}) => string;
+  marksymbolizerParseFailedUnknownWellknownName?: (params: { wellKnownName: string }) => string;
   noFilterDetected?: string;
-  symbolizerKindParseFailed?: (params: {sldSymbolizerName: string}) => string;
+  symbolizerKindParseFailed?: (params: { sldSymbolizerName: string }) => string;
   colorMapEntriesParseFailedColorUndefined?: string;
   contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive?: string;
   channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive?: string;
@@ -151,10 +152,10 @@ export type SldStyleParserTranslations = Record<string, SldStyleParserTranslatio
 
 export const defaultTranslations: SldStyleParserTranslations = {
   en: {
-    marksymbolizerParseFailedUnknownWellknownName: ({wellKnownName}) =>
+    marksymbolizerParseFailedUnknownWellknownName: ({ wellKnownName }) =>
       `MarkSymbolizer cannot be parsed. WellKnownName ${wellKnownName} is not supported.`,
     noFilterDetected: 'No Filter detected.',
-    symbolizerKindParseFailed: ({sldSymbolizerName}) =>
+    symbolizerKindParseFailed: ({ sldSymbolizerName }) =>
       `Failed to parse SymbolizerKind ${sldSymbolizerName} from SldRule.`,
     colorMapEntriesParseFailedColorUndefined: 'Cannot parse ColorMapEntries. color is undefined.',
     contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
@@ -166,21 +167,21 @@ export const defaultTranslations: SldStyleParserTranslations = {
   },
   de: {},
   fr: {
-    marksymbolizerParseFailedUnknownWellknownName: ({wellKnownName}) =>
+    marksymbolizerParseFailedUnknownWellknownName: ({ wellKnownName }) =>
       `Échec de lecture du symbole de type MarkSymbolizer. Le WellKnownName ${wellKnownName} n'est pas supporté.`,
     noFilterDetected: 'Aucun filtre détecté.',
-    symbolizerKindParseFailed: ({sldSymbolizerName}) =>
+    symbolizerKindParseFailed: ({ sldSymbolizerName }) =>
       `Échec de lecture du type de symbole ${sldSymbolizerName} à partir de SldRule.`,
     colorMapEntriesParseFailedColorUndefined: 'Lecture de ColorMapEntries échoué. color n\'est pas défini.',
     contrastEnhancParseFailedHistoAndNormalizeMutuallyExclusive:
       'Échec de lecture des propriétés de contraste ContrastEnhancement échoué. '
-      +'Histogram et Normalize sont mutuellement exclusifs.',
+      + 'Histogram et Normalize sont mutuellement exclusifs.',
     channelSelectionParseFailedRGBAndGrayscaleMutuallyExclusive:
       'Échec de lecture de la sélection de canaux ChannelSelection. '
-      +'RGB et Grayscale sont mutuellement exclusifs.',
+      + 'RGB et Grayscale sont mutuellement exclusifs.',
     channelSelectionParseFailedRGBChannelsUndefined:
       'Échec de lecture de la sélection de canaux ChannelSelection. '
-      +'Les canaux Rouge, Vert et Bleu doivent être définis.',
+      + 'Les canaux Rouge, Vert et Bleu doivent être définis.',
 
   },
 } as const;
@@ -319,7 +320,7 @@ export class SldStyleParser implements StyleParser<string> {
       this.locale = opts.locale;
     }
 
-    if (opts?.translations){
+    if (opts?.translations) {
       this.translations = merge(this.translations, opts.translations);
     }
 
@@ -738,7 +739,7 @@ export class SldStyleParser implements StyleParser<string> {
 
     const comparisonOperator: ComparisonOperator = COMPARISON_MAP[sldOperatorName] as ComparisonOperator;
     const filterIsFunction = !!get(sldFilter, 'Function');
-    let args: (FunctionCall<unknown>|null)[] = [];
+    let args: (FunctionCall<unknown> | null)[] = [];
 
     const children = get(sldFilter, filterIsFunction ? 'Function' : sldOperatorName) || [];
     args = children.map((child: any, index: number) => {
@@ -815,6 +816,29 @@ export class SldStyleParser implements StyleParser<string> {
     } else {
       return get([child], '#text');
     }
+  }
+
+  /**
+   * Get offset from Displacement.
+   * In SLD positive y values mean a displacement to the top.
+   * In geostyler-style positive y values mean a displacement to the bottom.
+   * Thus the y value is inverted.
+   *
+   * @param displacement The SLD Displacement object as written by fast-xml-parser
+   * @returns The offset as tuple or undefined if displacement is undefined
+   */
+  getOffsetFromDisplacement(displacement: any): BasePointSymbolizer['offset'] | undefined {
+    if (isNil(displacement)) {
+      return;
+    };
+
+    const x = Number(get(displacement, 'DisplacementX.#text'));
+    const y = Number(get(displacement, 'DisplacementY.#text'));
+
+    return [
+      Number.isFinite(x) ? numberExpression(x) : 0,
+      Number.isFinite(y) && y !== 0 ? -numberExpression(y) : 0,
+    ];
   }
 
   /**
@@ -991,13 +1015,9 @@ export class SldStyleParser implements StyleParser<string> {
           textSymbolizer.anchor = this.getAnchorFromSldAnchorPoint(anchorX, anchorY);
         }
         const displacement = get(pointPlacement, 'Displacement');
-        if (!isNil(displacement)) {
-          const x = get(displacement, 'DisplacementX.#text');
-          const y = get(displacement, 'DisplacementY.#text');
-          textSymbolizer.offset = [
-            Number.isFinite(x) ? numberExpression(x) : 0,
-            Number.isFinite(y) ? -numberExpression(y) : 0,
-          ];
+        const offset = this.getOffsetFromDisplacement(displacement);
+        if (!isNil(offset)) {
+          textSymbolizer.offset = offset;
         }
         const rotation = get(pointPlacement, 'Rotation.#text');
         if (!isNil(rotation)) {
@@ -1165,7 +1185,7 @@ export class SldStyleParser implements StyleParser<string> {
     const graphicFill = get(sldFillSymbolizer, 'Fill.GraphicFill');
     if (!isNil(graphicFill)) {
       fillSymbolizer.graphicFill = this.getPointSymbolizerFromSldSymbolizer(
-        {PointSymbolizer: graphicFill}
+        { PointSymbolizer: graphicFill }
       );
     }
     if (this.isSldEnv(sldEnvGeoServer)) {
@@ -1292,13 +1312,9 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(distanceUnit)) {
       markSymbolizer.radiusUnit = distanceUnit;
     }
-    if (displacement) {
-      const x = get(displacement, 'DisplacementX.#text');
-      const y = get(displacement, 'DisplacementY.#text');
-      markSymbolizer.offset = [
-        Number.isFinite(x) ? numberExpression(x) : 0,
-        Number.isFinite(y) ? numberExpression(y) : 0,
-      ];
+    const offset = this.getOffsetFromDisplacement(displacement);
+    if (!isNil(offset)) {
+      markSymbolizer.offset = offset;
     }
 
     switch (wellKnownName) {
@@ -1436,13 +1452,9 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(rotation)) {
       iconSymbolizer.rotate = numberExpression(rotation);
     }
-    if (displacement) {
-      const x = get(displacement, 'DisplacementX.#text');
-      const y = get(displacement, 'DisplacementY.#text');
-      iconSymbolizer.offset = [
-        Number.isFinite(x) ? numberExpression(x) : 0,
-        Number.isFinite(y) ? numberExpression(y) : 0,
-      ];
+    const offset = this.getOffsetFromDisplacement(displacement);
+    if (!isNil(offset)) {
+      iconSymbolizer.offset = offset;
     }
     return iconSymbolizer;
   }
@@ -1912,13 +1924,13 @@ export class SldStyleParser implements StyleParser<string> {
    * an uom-attribute. Do it only for SLD 1.1.0, ignore it otherwise.
    */
   moveUomEntryToAttributes(sldSymbolizer: any, sldSymbolizerProperties: any[]) {
-    const uomValue = sldSymbolizerProperties[sldSymbolizerProperties.length-1].uom;
+    const uomValue = sldSymbolizerProperties[sldSymbolizerProperties.length - 1].uom;
     if (!uomValue) {
       return;
     }
     // put uom as attribute of symbolizer-node
     if (this.sldVersion === '1.1.0') {
-      sldSymbolizer[':@'] = {'@_uom': uomValue};
+      sldSymbolizer[':@'] = { '@_uom': uomValue };
     }
     // and remove this entry from symbolizer-properties because it isn't a valid property
     sldSymbolizerProperties.pop();
@@ -1931,10 +1943,10 @@ export class SldStyleParser implements StyleParser<string> {
    */
   addUomEntry(sldSymbolizerProperties: any[], unit: DistanceUnit | undefined) {
     if (unit === 'm') {
-      sldSymbolizerProperties.push({uom: unitSldMetre});
+      sldSymbolizerProperties.push({ uom: unitSldMetre });
     }
     if (unit === 'px') {
-      sldSymbolizerProperties.push({uom: unitSldPixel});
+      sldSymbolizerProperties.push({ uom: unitSldPixel });
     }
   }
 
@@ -1946,7 +1958,7 @@ export class SldStyleParser implements StyleParser<string> {
     if (!sldSymbolizer) {
       return undefined;
     }
-    const uomAttribute = getAttribute(sldSymbolizer,'uom');
+    const uomAttribute = getAttribute(sldSymbolizer, 'uom');
     if (!uomAttribute) {
       return undefined;
     }
@@ -2015,6 +2027,38 @@ export class SldStyleParser implements StyleParser<string> {
   }
 
   /**
+   * Get the SLD Displacement Object (readable with fast-xml-parser) from a geostyler-style offset.
+   * In SLD positive y values mean a displacement to the top.
+   * In geostyler-style positive y values mean a displacement to the bottom.
+   * Thus the y value is inverted.
+   *
+   * @param offset A geostyler-style offset as a tuple of two numbers or two functions.
+   * @returns The object representation of a SLD Displacement (readable with fast-xml-parser)
+   */
+  getDisplacementFromOffset(offset: [Expression<number>, Expression<number>]): any {
+    const Displacement = this.getTagName('Displacement');
+    const DisplacementX = this.getTagName('DisplacementX');
+    const DisplacementY = this.getTagName('DisplacementY');
+    const displacementX = isGeoStylerFunction(offset[0])
+      ? geoStylerFunctionToSldFunction(offset[0])
+      : [{
+        '#text': offset[0].toString()
+      }];
+    const displacementY = isGeoStylerFunction(offset[1])
+      ? geoStylerFunctionToSldFunction(offset[1])
+      : [{
+        '#text': (offset[1] * -1).toString()
+      }];
+    return {
+      [Displacement]: [{
+        [DisplacementX]: displacementX
+      }, {
+        [DisplacementY]: displacementY
+      }]
+    };
+  }
+
+  /**
    * Get the SLD Object (readable with fast-xml-parser) from a geostyler-style MarkSymbolizer.
    *
    * @param markSymbolizer A geostyler-style MarkSymbolizer.
@@ -2030,9 +2074,6 @@ export class SldStyleParser implements StyleParser<string> {
     const Rotation = this.getTagName('Rotation');
     const Size = this.getTagName('Size');
     const Graphic = this.getTagName('Graphic');
-    const Displacement = this.getTagName('Displacement');
-    const DisplacementX = this.getTagName('DisplacementX');
-    const DisplacementY = this.getTagName('DisplacementY');
 
     const isFontSymbol = WELLKNOWNNAME_TTF_REGEXP.test(markSymbolizer.wellKnownName);
     const mark: any[] = [{
@@ -2214,17 +2255,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (markSymbolizer.offset && (this.sldVersion === '1.1.0' || this.isSldEnv(sldEnvGeoServer))) {
-      graphic.push({
-        [Displacement]: [{
-          [DisplacementX]: [{
-            '#text': markSymbolizer.offset[0].toString()
-          }]
-        }, {
-          [DisplacementY]: [{
-            '#text': markSymbolizer.offset[1].toString()
-          }]
-        }]
-      });
+      graphic.push(this.getDisplacementFromOffset(markSymbolizer.offset));
     }
 
     const result = [{
@@ -2365,7 +2396,7 @@ export class SldStyleParser implements StyleParser<string> {
           '@_xmlns:xlink': 'http://www.w3.org/1999/xlink',
           '@_xlink:href': image,
         }
-      }, {[Format]: []}]
+      }, { [Format]: [] }]
     };
 
     const iconExt = image.split('.').pop();
@@ -2449,7 +2480,7 @@ export class SldStyleParser implements StyleParser<string> {
     const gsAnchorHoriz = anchorX < 0.25 ? 'left' : anchorX > 0.75 ? 'right' : '';
     const gsAnchorVert = anchorY < 0.25 ? 'bottom' : anchorY > 0.75 ? 'top' : '';
     const gsAnchor: TextSymbolizer['anchor'] = ((gsAnchorHoriz && gsAnchorVert) ?
-      (gsAnchorVert + '-' +gsAnchorHoriz) : (gsAnchorVert + gsAnchorHoriz)) as TextSymbolizer['anchor'];
+      (gsAnchorVert + '-' + gsAnchorHoriz) : (gsAnchorVert + gsAnchorHoriz)) as TextSymbolizer['anchor'];
 
     // for not breaking existing tests like "can read the geoserver popshade.sld", we treat
     // a center anchor as the default and deliver undefined in this case (instead of 'center')
@@ -2594,11 +2625,11 @@ export class SldStyleParser implements StyleParser<string> {
         pointPlacement.push({
           [AnchorPoint]: [{
             [AnchorPointX]: [{
-              '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor,'x').toString()
+              '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor, 'x').toString()
             }]
           }, {
             [AnchorPointY]: [{
-              '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor,'y').toString()
+              '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor, 'y').toString()
             }]
           }]
         });
@@ -2691,8 +2722,7 @@ export class SldStyleParser implements StyleParser<string> {
    * @param template The Expression<string> representing the label
    */
   getSldLabelFromTextSymbolizer = (template: Expression<string>): any => {
-    if (isString(template))
-    {
+    if (isString(template)) {
       const openingBraces = '{{';
       const closingBraces = '}}';
 
@@ -2797,15 +2827,15 @@ export class SldStyleParser implements StyleParser<string> {
     }
 
     if (typeof func === 'object') {
-    // Finding functions such as 'greaterThan', 'numberFormat', 'if_then_else' etc.
+      // Finding functions such as 'greaterThan', 'numberFormat', 'if_then_else' etc.
       if (typeof func.name === 'string' || Array.isArray(func.args)) {
         const sldArgs = func.args.map((arg: any) => {
           // Property function
           if (
             typeof arg === 'object' &&
-        arg !== null &&
-        arg.name === 'property' &&
-        Array.isArray(arg.args)
+            arg !== null &&
+            arg.name === 'property' &&
+            Array.isArray(arg.args)
           ) {
             return {
               'ogc:PropertyName': [
@@ -2816,9 +2846,9 @@ export class SldStyleParser implements StyleParser<string> {
           // Nested function
           if (
             typeof arg === 'object' &&
-        arg !== null &&
-        typeof arg.name === 'string' &&
-        Array.isArray(arg.args)
+            arg !== null &&
+            typeof arg.name === 'string' &&
+            Array.isArray(arg.args)
           ) {
             //  Another function such as 'greaterThan', 'numberFormat' in the above function such as 'if_then_else'
             return this.geoStylerFunctionToSldFunctionRecursive(arg)[0];
@@ -2842,7 +2872,7 @@ export class SldStyleParser implements StyleParser<string> {
       // Property function at root
       if (
         func.name === 'property' &&
-      Array.isArray(func.args)
+        Array.isArray(func.args)
       ) {
         return {
           'ogc:PropertyName': [
@@ -3306,11 +3336,11 @@ export class SldStyleParser implements StyleParser<string> {
           } else {
             Object.keys(symbolizer).forEach(property => {
               if (value[property]) {
-                // Escape special regex characters
-                const escapedValue = String(symbolizer[property as keyof typeof symbolizer]).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                // Escape special regex characters in the symbolizer property value
+                const val = symbolizer[property as keyof typeof symbolizer];
+                const escapedValue = String(val).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const propValue = new RegExp(`["']${escapedValue}["']`);
-                if (value[property].support === 'partial' && (propValue.test(value[property].info)))
-                {
+                if (value[property].support === 'partial' && (propValue.test(value[property].info))) {
                   return;
                 }
                 if (!unsupportedProperties.Symbolizer) {

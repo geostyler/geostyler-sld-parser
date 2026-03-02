@@ -21,7 +21,7 @@ const style: Style = {
           radius: 3.5,
           offset: [
             5,
-            10
+            -10
           ],
         }
       ]
