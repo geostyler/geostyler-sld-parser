@@ -1,3 +1,15 @@
+## [8.4.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.3.0...v8.4.0) (2026-03-04)
+
+### Features
+
+* **#1065:** add newLine support and test ([117eedc](https://github.com/geostyler/geostyler-sld-parser/commit/117eedc045e5be3a6a027de64d184823d0af622e)), closes [#1065](https://github.com/geostyler/geostyler-sld-parser/issues/1065)
+* **#1065:** fix lint Commit Message ([9071354](https://github.com/geostyler/geostyler-sld-parser/commit/90713543c02a933ecbaa13a92426d8c2da4df3d6))
+
+### Bug Fixes
+
+* **#1051:** escape special characters, fix typo ([b7795f4](https://github.com/geostyler/geostyler-sld-parser/commit/b7795f4a3da99f95b6c7059484cef963c9bd7265))
+* update displacement-offset conversion ([48fbc28](https://github.com/geostyler/geostyler-sld-parser/commit/48fbc283ab1cd0bbd4d7b60f4cc03dbfa24f10e2))
+
 ## [8.3.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.2.0...v8.3.0) (2026-01-30)
 
 ### Features
