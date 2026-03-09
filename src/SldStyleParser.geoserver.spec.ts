@@ -1,7 +1,7 @@
 /* eslint camelcase: 0 */
 import fs from 'fs';
-import SldStyleParser, {sldEnvGeoServer} from './SldStyleParser';
-import {beforeEach, describe, expect, it} from 'vitest';
+import SldStyleParser, { sldEnvGeoServer } from './SldStyleParser';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import burg from '../data/styles/geoserver/burg';
 import capitals from '../data/styles/geoserver/capitals';
@@ -36,97 +36,97 @@ describe('SldStyleParser implements StyleParser', () => {
   let styleParser: SldStyleParser;
 
   beforeEach(() => {
-    styleParser = new SldStyleParser({sldEnvironment: sldEnvGeoServer});
+    styleParser = new SldStyleParser({ sldEnvironment: sldEnvGeoServer });
   });
 
   describe('#readStyle', () => {
     it('can read the geoserver burg.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/burg.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(burg);
     });
     it('can read the geoserver captials.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/capitals.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(capitals);
     });
     it('can read the geoserver default_generic.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/default_generic.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(default_generic);
     });
     it('can read the geoserver default_line.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/default_line.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(default_line);
     });
     it('can read the geoserver default_line2.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/default_line2.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(default_line2);
     });
     it('can read the geoserver default_point.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/default_point.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(default_point);
     });
     it('can read the geoserver default_polygon.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/default_polygon.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(default_polygon);
     });
     it('can read the geoserver dem.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/dem.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(dem);
     });
     it('can read the geoserver giant_polygon.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/giant_polygon.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(giant_polygon);
     });
     it('can read the geoserver grass_poly.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/grass_poly.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(grass_poly);
     });
     it('can read the geoserver green.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/green.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(green);
     });
     it('can read the geoserver Lakes.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/Lakes.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(Lakes);
     });
     it('can read the geoserver NamedPlaces.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/NamedPlaces.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(NamedPlaces);
     });
     it('can read the geoserver poi.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/poi.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(poi);
     });
     it('can read the geoserver poly_landmarks.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/poly_landmarks.sld', 'utf8');
-      const { output: geoStylerStyle} = await styleParser.readStyle(sld);
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(poly_landmarks);
     });
@@ -204,7 +204,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeDefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(burg);
     });
     it('can write the geoserver capitals.sld', async () => {
@@ -220,7 +220,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(capitals);
     });
     // The SLD makes use of functions that are not supported by the geostyler-style
@@ -255,7 +255,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(default_line);
     });
     it('can write the geoserver default_line2.sld', async () => {
@@ -271,7 +271,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(default_line2);
     });
     it('can write the geoserver default_point.sld', async () => {
@@ -287,7 +287,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(default_point);
     });
     it('can write the geoserver default_polygon.sld', async () => {
@@ -303,7 +303,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(default_polygon);
     });
     it('can write the geoserver dem.sld', async () => {
@@ -319,7 +319,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(dem);
     });
     it('can write the geoserver giant_polygon.sld', async () => {
@@ -335,7 +335,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(giant_polygon);
     });
     it('can write the geoserver grass_poly.sld', async () => {
@@ -351,7 +351,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(grass_poly);
     });
     it('can write the geoserver green.sld', async () => {
@@ -367,7 +367,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(green);
     });
     it('can write the geoserver Lakes.sld', async () => {
@@ -383,7 +383,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(Lakes);
     });
     it('can write the geoserver NamedPlaces.sld', async () => {
@@ -399,7 +399,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(NamedPlaces);
     });
     it('can write the geoserver poi.sld', async () => {
@@ -411,7 +411,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(errors).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(poi);
     });
     it('can write the geoserver poly_landmarks.sld', async () => {
@@ -423,7 +423,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(errors).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(poly_landmarks);
     });
     it('can write the geoserver pophatch.sld', async () => {
@@ -435,7 +435,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(errors).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(pophatch);
     });
     it('can write the geoserver popshade.sld', async () => {
@@ -447,7 +447,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(errors).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(popshade);
     });
     it('can write the geoserver rain.sld', async () => {
@@ -463,7 +463,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(rain);
     });
     it('can write the geoserver raster.sld', async () => {
@@ -479,7 +479,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(raster);
     });
     it('can write the geoserver restricted.sld', async () => {
@@ -495,7 +495,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(restricted);
     });
     it('can write the geoserver simple_streams.sld', async () => {
@@ -511,7 +511,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(simple_streams);
     });
     it('can write the geoserver simpleRoads.sld', async () => {
@@ -527,7 +527,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(unsupportedProperties).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(simpleRoads);
     });
     it('can write the geoserver tiger_roads.sld', async () => {
@@ -539,7 +539,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(errors).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(tiger_roads);
     });
     it('can write the geoserver pattern_polygon.sld', async () => {
@@ -551,7 +551,7 @@ describe('SldStyleParser implements StyleParser', () => {
       expect(errors).toBeUndefined();
       // As string comparison between two XML-Strings is awkward and nonsens
       // we read it again and compare the json input with the parser output
-      const { output: readStyle} = await styleParser.readStyle(sldString!);
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(pattern_polygon);
     });
   });

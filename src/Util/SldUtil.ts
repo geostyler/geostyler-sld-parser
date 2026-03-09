@@ -8,6 +8,7 @@ import {
 } from 'geostyler-style';
 import { SldVersion } from '../SldStyleParser';
 
+
 /**
  * Cast to Number if it is not a GeoStylerFunction
  *
@@ -266,7 +267,7 @@ export interface Base64ImageObject {
  * Get the data and extension from a base64 string.
  * @returns The data and extension or undefined if the string is not a base64 string.
  */
-export function getBase64Object (
+export function getBase64Object(
   base64String: string,
 ): Base64ImageObject | undefined {
   const baseTokens = base64String.split(',');
@@ -286,3 +287,47 @@ export function getBase64Object (
     extension: ext,
   };
 };
+
+
+/**
+ * Native replacement for lodash-es.
+ * https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore
+ *
+ * @param value The value to check.
+ * @returns Whether the value is a number or not.
+ */
+export function isNumber(value: unknown): value is number {
+  return typeof value === 'number' && !isNaN(value);
+}
+
+/**
+ * Native replacement for lodash-es.
+ * https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore
+ *
+ * @param value The value to check.
+ * @returns Whether the value is a string or not.
+ */
+export function isString(value: unknown): value is string {
+  if (value != null && typeof value.valueOf() === "string") {
+    return true
+  }
+  return false
+}
+
+/**
+ * Native replacement for lodash-es.
+ * https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore
+ *
+ * @param target The target object.
+ * @param source The source object.
+ * @returns The merged object.
+ */
+export function merge<T extends Record<string, any>, S extends Record<string, any>>(target: T, source: S): T & S {
+  for (const key in source as any) {
+    if (source[key] instanceof Object) {
+      Object.assign(source[key], merge(target[key] ?? {}, source[key]));
+    }
+  }
+  Object.assign(target || {}, source);
+  return target as T & S;
+}
