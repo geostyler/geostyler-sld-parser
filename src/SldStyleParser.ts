@@ -45,8 +45,6 @@ import {
   XMLParser
 } from 'fast-xml-parser';
 
-import { isNumber, isString, merge } from 'lodash';
-
 import {
   Base64ImageObject,
   geoStylerFunctionToSldFunction,
@@ -55,8 +53,11 @@ import {
   getChildren,
   getParameterValue,
   getVendorOptionValue,
+  isNumber,
+  isString,
   isSymbolizer,
   keysByValue,
+  merge,
   numberExpression
 } from './Util/SldUtil';
 

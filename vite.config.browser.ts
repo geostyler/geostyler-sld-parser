@@ -17,9 +17,9 @@ export default defineConfig({
         exports: 'named',
         generatedCode: 'es5',
         format: 'iife',
-        sourcemap: true
       },
-    }
+    },
+    sourcemap: true
   },
   define: {
     appName: 'GeoStyler'
