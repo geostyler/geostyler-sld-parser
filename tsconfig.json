@@ -16,7 +16,7 @@
     "rootDir": ".",
     "sourceMap": true,
     "strictNullChecks": true,
-    "target": "ES2022",
+    "target": "ES2022"
   },
   "exclude": [
     "node_modules",
@@ -29,7 +29,8 @@
     "data",
     "browser",
     "browser-build.config.js",
-    "vite.config.ts",
+    "vite.config.browser.ts",
+    "vite.config.dist.ts",
     "vitest.config.ts"
   ]
 }
