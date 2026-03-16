@@ -1,3 +1,9 @@
+## [8.4.1](https://github.com/geostyler/geostyler-sld-parser/compare/v8.4.0...v8.4.1) (2026-03-16)
+
+### Bug Fixes
+
+* use vite for the build ([218d94b](https://github.com/geostyler/geostyler-sld-parser/commit/218d94bffec6698fc7cc30786d6f600ad6ece7d9))
+
 ## [8.4.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.3.0...v8.4.0) (2026-03-04)
 
 ### Features
