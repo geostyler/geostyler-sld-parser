@@ -23,6 +23,7 @@ import point_simplepoint_filter from '../data/styles/point_simplepoint_filter';
 import point_simplepoint_filter_forceBools from '../data/styles/point_simplepoint_filter_forceBools';
 import point_simplepoint_filter_forceNumerics from '../data/styles/point_simplepoint_filter_forceNumerics';
 import point_simplepoint_nestedLogicalFilters from '../data/styles/point_simplepoint_nestedLogicalFilters';
+import point_base64_image from '../data/styles/point_base64_image';
 import point_externalgraphic from '../data/styles/point_externalgraphic';
 import point_externalgraphic_floatingPoint from '../data/styles/point_externalgraphic_floatingPoint';
 import point_externalgraphic_svg from '../data/styles/point_externalgraphic_svg';
@@ -465,6 +466,13 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_simplepoint);
     });
+    it('can write a SLD PointSymbolizer with base64 image', async () => {
+      const {
+        output: sldString
+      } = await styleParser.writeStyle(point_base64_image);
+      expect(sldString).toBeDefined();
+    });
+
     it('can write a SLD PointSymbolizer with ExternalGraphic', async () => {
       const {
         output: sldString,
