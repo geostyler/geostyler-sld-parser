@@ -16,6 +16,7 @@ import line_graphicFill_externalGraphic from '../data/styles/line_graphicFill_ex
 import polygon_transparentpolygon from '../data/styles/polygon_transparentpolygon';
 import polygon_graphicFill from '../data/styles/polygon_graphicFill';
 import polygon_graphicFill_externalGraphic from '../data/styles/polygon_graphicFill_externalGraphic';
+import point_geometry from '../data/styles/point_geometry';
 import point_styledlabel from '../data/styles/point_styledlabel';
 import point_simpleLabel from '../data/styles/point_simpleLabel';
 import point_simpleLabel2 from '../data/styles/point_simpleLabel2';
@@ -193,6 +194,12 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(polygon_graphicFill_externalGraphic);
+    });
+    it('can read a SLD Symbolizer with a geometry', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/point_geometry.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(point_geometry);
     });
     it('can read a SLD TextSymbolizer', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/point_styledlabel.sld', 'utf8');
@@ -798,6 +805,18 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(polygon_graphicFill_externalGraphic);
+    });
+    it('can write a geometry of a Symbolizer', async () => {
+      const {
+        output: sldString,
+        errors
+      } = await styleParser.writeStyle(point_geometry);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(point_geometry);
     });
     it('can write a SLD TextSymbolizer', async () => {
       const {

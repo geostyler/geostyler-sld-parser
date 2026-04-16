@@ -5,8 +5,9 @@ const style: Style = {
   rules: [{
     name: 'Opaque Raster',
     filter: ['==', {
-      // @ts-expect-error
-      name: 'isCoverage'
+      name: 'custom',
+      fnName: 'isCoverage',
+      args: [],
     }, true],
     symbolizers: [{
       kind: 'Raster',
@@ -16,10 +17,12 @@ const style: Style = {
   {
     name: 'Grey Polygon',
     filter: ['==', {
-      // @ts-expect-error
-      name: 'dimension',
+      name: 'custom',
+      fnName: 'dimension',
       args: [{
-        name: 'geometry'
+        name: 'custom',
+        fnName: 'geometry',
+        args: []
       }]
     }, 2],
     symbolizers: [{
@@ -32,10 +35,12 @@ const style: Style = {
   {
     name: 'Blue Line',
     filter: ['==',{
-      // @ts-expect-error
-      name: 'dimension',
+      name: 'custom',
+      fnName: 'dimension',
       args: [{
-        name: 'geometry'
+        name: 'custom',
+        fnName: 'geometry',
+        args: []
       }]
     }, 1],
     symbolizers: [{
