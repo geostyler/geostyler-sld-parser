@@ -1,3 +1,9 @@
+## [8.4.2](https://github.com/geostyler/geostyler-sld-parser/compare/v8.4.1...v8.4.2) (2026-04-16)
+
+### Bug Fixes
+
+* fix handling of top level/singe node negated filters ([3191d2b](https://github.com/geostyler/geostyler-sld-parser/commit/3191d2b292d70c3efb5572ffd0cda123fa448725))
+
 ## [8.4.1](https://github.com/geostyler/geostyler-sld-parser/compare/v8.4.0...v8.4.1) (2026-03-16)
 
 ### Bug Fixes
