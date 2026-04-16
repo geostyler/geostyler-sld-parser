@@ -50,6 +50,7 @@ import functionFilterPropertyToProperty from '../data/styles/function_filter_pro
 import functionFilterOgcArithmetic from '../data/styles/function_filter_ogc_arithmetic';
 import functionLabelRound from '../data/styles/function_label_round';
 import point_externalgraphic_inlineContent from '../data/styles/point_externalgraphic_inlineContent';
+import negatedFilter from '../data/styles/negated_filter';
 import { IconSymbolizer } from 'geostyler-style';
 
 it('SldStyleParser is defined', () => {
@@ -72,6 +73,12 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_simplepoint);
+    });
+    it('can read a SLD with simple negated filters', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/negated_filter.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(negatedFilter);
     });
     it('can read a SLD PointSymbolizer with ExternalGraphic', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/point_externalgraphic.sld', 'utf8');
@@ -464,6 +471,22 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_simplepoint);
+    });
+    it('can write a SLD with simple negated filters', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(negatedFilter);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(negatedFilter);
     });
     it('can write a SLD PointSymbolizer with ExternalGraphic', async () => {
       const {

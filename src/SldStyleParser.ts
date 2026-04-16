@@ -712,8 +712,12 @@ export class SldStyleParser implements StyleParser<string> {
       ];
     } else if (Object.keys(NEGATION_OPERATOR_MAP).includes(sldOperatorName)) {
       const negationOperator = NEGATION_OPERATOR_MAP[sldOperatorName as 'Not'];
-      const negatedOperator = Object.keys(sldFilter[sldOperatorName][0])[0];
-      const negatedComparison = sldFilter[sldOperatorName][0];
+      const negatedOperator = sldFilter.length ?
+        Object.keys(sldFilter[0][sldOperatorName][0])[0] :
+        Object.keys(sldFilter[sldOperatorName][0])[0];
+      const negatedComparison = sldFilter.length ?
+        sldFilter[0][sldOperatorName][0] :
+        sldFilter[sldOperatorName][0];
       const negatedFilter: Filter = this.getFilterFromOperatorAndComparison(
         negatedOperator as any,
         negatedComparison
