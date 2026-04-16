@@ -36,7 +36,7 @@ import {
   WellKnownName,
   WriteStyleResult,
   DistanceUnit,
-  BasePointSymbolizer
+  BasePointSymbolizer, BaseSymbolizer
 } from 'geostyler-style';
 import {
   X2jOptions,
@@ -58,7 +58,7 @@ import {
   isSymbolizer,
   keysByValue,
   merge,
-  numberExpression
+  numberExpression, sldFunctionToGeoStylerFunction
 } from './Util/SldUtil';
 
 const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
@@ -869,6 +869,8 @@ export class SldStyleParser implements StyleParser<string> {
       }
       pointSymbolizer = this.getMarkSymbolizerFromSldSymbolizer(sldSymbolizer);
     }
+
+    this.addGeometrySymbolizerFromSld(pointSymbolizer, sldPointSymbolizer);
     return pointSymbolizer;
   }
 
@@ -948,6 +950,7 @@ export class SldStyleParser implements StyleParser<string> {
       lineSymbolizer.perpendicularOffset = numberExpression(perpendicularOffset);
     }
 
+    this.addGeometrySymbolizerFromSld(lineSymbolizer, sldLineSymbolizer);
     return lineSymbolizer;
   }
 
@@ -1053,6 +1056,8 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(distanceUnit)) {
       textSymbolizer.sizeUnit = distanceUnit;
     }
+
+    this.addGeometrySymbolizerFromSld(textSymbolizer, sldTextSymbolizer);
     return textSymbolizer;
   }
 
@@ -1227,6 +1232,7 @@ export class SldStyleParser implements StyleParser<string> {
     // if (outlineDashOffset) {
     //   fillSymbolizer.outlineDashOffset = Number(outlineDashOffset);
     // }
+    this.addGeometrySymbolizerFromSld(fillSymbolizer, sldFillSymbolizer);
     return fillSymbolizer;
   }
 
@@ -1266,6 +1272,8 @@ export class SldStyleParser implements StyleParser<string> {
       const contrastEnhancement = this.getContrastEnhancementFromSldContrastEnhancement(sldContrastEnhancement);
       rasterSymbolizer.contrastEnhancement = contrastEnhancement;
     }
+
+    this.addGeometrySymbolizerFromSld(rasterSymbolizer, sldRasterSymbolizer);
     return rasterSymbolizer;
   }
 
@@ -1457,7 +1465,22 @@ export class SldStyleParser implements StyleParser<string> {
     if (!isNil(offset)) {
       iconSymbolizer.offset = offset;
     }
+
     return iconSymbolizer;
+  }
+
+  /**
+   * Add a "Geometry" function or text from a Sld Symbolizer Geometry nested value.
+   */
+  addGeometrySymbolizerFromSld(symbolizer: BaseSymbolizer, sldSymbolizer: any) {
+    const geometrySld = get(sldSymbolizer, 'Geometry');
+    if (!geometrySld) {
+      return;
+    }
+    const geometry = sldFunctionToGeoStylerFunction(geometrySld);
+    if (geometry) {
+      symbolizer.geometry = geometry as Expression<string>;
+    }
   }
 
   /**
@@ -2259,12 +2282,14 @@ export class SldStyleParser implements StyleParser<string> {
       graphic.push(this.getDisplacementFromOffset(markSymbolizer.offset));
     }
 
-    const result = [{
+    const sldMarkSymbolizer = [{
       [Graphic]: graphic
     }];
 
-    this.addUomEntry(result, markSymbolizer.radiusUnit);
-    return result;
+    this.addSldGeometrySymbolizer(sldMarkSymbolizer, markSymbolizer);
+    this.addUomEntry(sldMarkSymbolizer, markSymbolizer.radiusUnit);
+
+    return sldMarkSymbolizer;
   }
 
   /**
@@ -2351,9 +2376,14 @@ export class SldStyleParser implements StyleParser<string> {
         }]
       });
     }
-    return [{
+
+    const sldIconSymbolizer = [{
       [Graphic]: graphic
     }];
+
+    this.addSldGeometrySymbolizer(sldIconSymbolizer, iconSymbolizer);
+
+    return sldIconSymbolizer;
   }
 
   /**
@@ -2712,6 +2742,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    this.addSldGeometrySymbolizer(sldTextSymbolizer, textSymbolizer);
     this.addUomEntry(sldTextSymbolizer, textSymbolizer.sizeUnit);
 
     return sldTextSymbolizer;
@@ -3013,6 +3044,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    this.addSldGeometrySymbolizer(sldLineSymbolizer, lineSymbolizer);
     this.addUomEntry(sldLineSymbolizer, lineSymbolizer.widthUnit);
 
     return sldLineSymbolizer;
@@ -3142,6 +3174,7 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    this.addSldGeometrySymbolizer(polygonSymbolizer, fillSymbolizer);
     this.addUomEntry(polygonSymbolizer, fillSymbolizer.outlineWidthUnit);
 
     return polygonSymbolizer;
@@ -3192,7 +3225,33 @@ export class SldStyleParser implements StyleParser<string> {
       }
     }
 
+    this.addSldGeometrySymbolizer(sldRasterSymbolizer, rasterSymbolizer);
+
     return sldRasterSymbolizer;
+  }
+
+  /**
+   * Add a sld "Geometry" function or text into a Sld Symbolizer.
+   */
+  addSldGeometrySymbolizer(sldSymbolizerProperties: any[], symbolizer: BaseSymbolizer) {
+    const geometry = symbolizer.geometry;
+    if (!geometry) {
+      return;
+    }
+    const Geometry = this.getTagName('Geometry');
+    if (geometry) {
+      if (isGeoStylerFunction(geometry)) {
+        sldSymbolizerProperties.unshift({
+          [Geometry]: geoStylerFunctionToSldFunction(geometry)
+        });
+      } else {
+        sldSymbolizerProperties.unshift({
+          [Geometry]: [{
+            '#text': geometry
+          }]
+        });
+      }
+    }
   }
 
   /**
