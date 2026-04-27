@@ -4,7 +4,7 @@ import {
   GeoStylerFunction,
   GeoStylerNumberFunction,
   isGeoStylerFunction,
-  isGeoStylerNumberFunction
+  isGeoStylerNumberFunction, Fcustom
 } from 'geostyler-style';
 import { SldVersion } from '../SldStyleParser';
 
@@ -65,7 +65,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   return [{
     Function: sldFunctionArgs,
     ':@': {
-      '@_name': name
+      '@_name': name === 'custom' ? (geostylerFunction as Fcustom).fnName : name
     }
   }];
 }
@@ -93,6 +93,11 @@ export function sldFunctionToGeoStylerFunction(sldFunction: any[]): GeoStylerFun
   });
 
   const geoStylerFunction: any = { name };
+  if (!isGeoStylerFunction(geoStylerFunction)) {
+    geoStylerFunction.fnName = name;
+    geoStylerFunction.name = 'custom';
+    geoStylerFunction.args = [];
+  }
   if (args.length > 0) {
     geoStylerFunction.args = args;
   }
@@ -308,10 +313,10 @@ export function isNumber(value: unknown): value is number {
  * @returns Whether the value is a string or not.
  */
 export function isString(value: unknown): value is string {
-  if (value != null && typeof value.valueOf() === "string") {
-    return true
+  if (value != null && typeof value.valueOf() === 'string') {
+    return true;
   }
-  return false
+  return false;
 }
 
 /**
