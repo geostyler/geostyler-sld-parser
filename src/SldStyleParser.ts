@@ -2592,18 +2592,9 @@ export class SldStyleParser implements StyleParser<string> {
       const linePlacement: any = [];
 
       if (textSymbolizer.perpendicularOffset !== undefined) {
-        if (isGeoStylerFunction(textSymbolizer.perpendicularOffset)) {
-          const children = geoStylerFunctionToSldFunction(textSymbolizer.perpendicularOffset);
-          linePlacement.push({
-            [PerpendicularOffset]: children
-          });
-        } else {
-          linePlacement.push({
-            [PerpendicularOffset]: [{
-              '#text': textSymbolizer.perpendicularOffset.toString()
-            }]
-          });
-        }
+        linePlacement.push({
+          [PerpendicularOffset]: geoStylerFunctionOrTextToSld(textSymbolizer.perpendicularOffset)
+        });
       }
 
       // According to SLD 1.1 specification, isRepeated does not
@@ -2614,18 +2605,10 @@ export class SldStyleParser implements StyleParser<string> {
             '#text': true
           }]
         });
-        if (isGeoStylerFunction(textSymbolizer.repeat)) {
-          const children = geoStylerFunctionToSldFunction(textSymbolizer.repeat);
-          linePlacement.push({
-            [Gap]: children
-          });
-        } else {
-          linePlacement.push({
-            [Gap]: [{
-              '#text': textSymbolizer.repeat.toString()
-            }]
-          });
-        }
+
+        linePlacement.push({
+          [Gap]: geoStylerFunctionOrTextToSld(textSymbolizer.repeat)
+        });
       }
 
       sldTextSymbolizer.push({
@@ -3238,17 +3221,9 @@ export class SldStyleParser implements StyleParser<string> {
     }
     const Geometry = this.getTagName('Geometry');
     if (geometry) {
-      if (isGeoStylerFunction(geometry)) {
-        sldSymbolizerProperties.unshift({
-          [Geometry]: geoStylerFunctionToSldFunction(geometry)
-        });
-      } else {
-        sldSymbolizerProperties.unshift({
-          [Geometry]: [{
-            '#text': geometry
-          }]
-        });
-      }
+      sldSymbolizerProperties.unshift({
+        [Geometry]: geoStylerFunctionOrTextToSld(geometry)
+      });
     }
   }
 
