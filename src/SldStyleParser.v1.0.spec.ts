@@ -981,6 +981,27 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(functionFilterPropertyToProperty);
     });
+
+    it('can write a SLD with OGC arithmetic functions in a filter', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(functionFilterOgcArithmetic);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(functionFilterOgcArithmetic);
+      // Additional check that the arithmetic sld operator is not a "<Function name="mul">" but a SLD "<Mul>".
+      expect(sldString).toContain('</Mul>');
+      expect(sldString).toContain('</Div>');
+    });
+
     // it('can write a SLD style with functionfilters', async () => {
     //   const {
     //     output: sldString,

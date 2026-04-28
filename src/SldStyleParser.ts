@@ -130,14 +130,14 @@ type CombinationType = keyof typeof COMBINATION_MAP;
 const unitSldMetre: string = 'http://www.opengeospatial.org/se/units/metre';
 const unitSldPixel: string = 'http://www.opengeospatial.org/se/units/pixel';
 
-const ARITHMETIC_OPERATORS = [
+export const ARITHMETIC_OPERATORS = [
   'add',
   'sub',
   'mul',
   'div',
 ] as const;
 
-type ArithmeticType = typeof ARITHMETIC_OPERATORS[number];
+export type ArithmeticType = typeof ARITHMETIC_OPERATORS[number];
 
 export type SldStyleParserTranslationKeys = {
   marksymbolizerParseFailedUnknownWellknownName?: (params: { wellKnownName: string }) => string;

@@ -6,7 +6,7 @@ import {
   isGeoStylerFunction,
   isGeoStylerNumberFunction, Fcustom
 } from 'geostyler-style';
-import { SldVersion } from '../SldStyleParser';
+import { SldVersion, ARITHMETIC_OPERATORS, type ArithmeticType } from '../SldStyleParser';
 
 
 /**
@@ -61,6 +61,13 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
       };
     }
   });
+
+  if (ARITHMETIC_OPERATORS.includes(name.toLowerCase() as ArithmeticType)) {
+    const operatorSldName = name[0].toUpperCase() + name.slice(1).toLowerCase();
+    return [{
+      [operatorSldName]: sldFunctionArgs
+    }];
+  }
 
   return [{
     Function: sldFunctionArgs,
