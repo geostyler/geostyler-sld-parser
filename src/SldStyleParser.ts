@@ -46,7 +46,7 @@ import {
 } from 'fast-xml-parser';
 
 import {
-  Base64ImageObject,
+  Base64ImageObject, geoStylerFunctionOrTextToSld,
   geoStylerFunctionToSldFunction,
   get,
   getAttribute, getBase64Object,
@@ -58,7 +58,7 @@ import {
   isSymbolizer,
   keysByValue,
   merge,
-  numberExpression, sldFunctionToGeoStylerFunction
+  numberExpression, sldFunctionToGeoStylerFunction, sldNumberOperatorOrFunctionOrTextToGeostyler
 } from './Util/SldUtil';
 
 const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
@@ -1027,9 +1027,9 @@ export class SldStyleParser implements StyleParser<string> {
         if (!isNil(offset)) {
           textSymbolizer.offset = offset;
         }
-        const rotation = get(pointPlacement, 'Rotation.#text');
+        const rotation = get(pointPlacement, 'Rotation');
         if (!isNil(rotation)) {
-          textSymbolizer.rotate = numberExpression(rotation);
+          textSymbolizer.rotate = sldNumberOperatorOrFunctionOrTextToGeostyler(rotation[0]);
         }
       } else if (!isNil(linePlacement)) {
         textSymbolizer.placement = 'line';
@@ -1296,7 +1296,7 @@ export class SldStyleParser implements StyleParser<string> {
 
     const opacity = get(sldMarkSymbolizer, 'Graphic.Opacity.#text');
     const size = get(sldMarkSymbolizer, 'Graphic.Size.#text');
-    const rotation = get(sldMarkSymbolizer, 'Graphic.Rotation.#text');
+    const rotation = get(sldMarkSymbolizer, 'Graphic.Rotation');
     const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.readingSldVersion);
     const color = getParameterValue(fillEl, 'fill', this.readingSldVersion);
     const displacement = get(sldMarkSymbolizer, 'Graphic.Displacement');
@@ -1316,7 +1316,7 @@ export class SldStyleParser implements StyleParser<string> {
       markSymbolizer.color = color;
     }
     if (!isNil(rotation)) {
-      markSymbolizer.rotate = numberExpression(rotation);
+      markSymbolizer.rotate = sldNumberOperatorOrFunctionOrTextToGeostyler(rotation[0]);
     }
     if (!isNil(size)) {
       // edge case where the value has to be divided by 2 which has to be considered in the function
@@ -1451,7 +1451,7 @@ export class SldStyleParser implements StyleParser<string> {
     };
     const opacity: string = get(sldIconSymbolizer, 'Graphic.Opacity.#text');
     const size: string = get(sldIconSymbolizer, 'Graphic.Size.#text');
-    const rotation: string = get(sldIconSymbolizer, 'Graphic.Rotation.#text');
+    const rotation = get(sldIconSymbolizer, 'Graphic.Rotation');
     const displacement = get(sldIconSymbolizer, 'Graphic.Displacement');
     if (!isNil(opacity)) {
       iconSymbolizer.opacity = numberExpression(opacity);
@@ -1463,7 +1463,7 @@ export class SldStyleParser implements StyleParser<string> {
       iconSymbolizer.sizeUnit = distanceUnit;
     }
     if (!isNil(rotation)) {
-      iconSymbolizer.rotate = numberExpression(rotation);
+      iconSymbolizer.rotate = sldNumberOperatorOrFunctionOrTextToGeostyler(rotation[0]);
     }
     const offset = this.getOffsetFromDisplacement(displacement);
     if (!isNil(offset)) {
@@ -2276,9 +2276,7 @@ export class SldStyleParser implements StyleParser<string> {
 
     if (markSymbolizer.rotate) {
       graphic.push({
-        [Rotation]: [{
-          '#text': markSymbolizer.rotate.toString()
-        }]
+        [Rotation]: geoStylerFunctionOrTextToSld(markSymbolizer.rotate)
       });
     }
 
@@ -2362,9 +2360,7 @@ export class SldStyleParser implements StyleParser<string> {
     }
     if (iconSymbolizer.rotate) {
       graphic.push({
-        [Rotation]: [{
-          '#text': iconSymbolizer.rotate,
-        }]
+        [Rotation]: geoStylerFunctionOrTextToSld(iconSymbolizer.rotate)
       });
     }
     if (iconSymbolizer.offset && this.sldVersion === '1.1.0') {
@@ -2671,9 +2667,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
       if (textSymbolizer.rotate !== undefined) {
         pointPlacement.push({
-          [Rotation]: [{
-            '#text': textSymbolizer.rotate.toString()
-          }]
+          [Rotation]: geoStylerFunctionOrTextToSld(textSymbolizer.rotate)
         });
       }
       sldTextSymbolizer.push({

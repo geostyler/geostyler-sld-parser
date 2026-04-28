@@ -28,6 +28,14 @@
                                 </Fill>
                             </Mark>
                             <Size>6</Size>
+                            <Rotation>
+                              <Add>
+                                <Function name="endAngle">
+                                  <PropertyName>shape</PropertyName>
+                                </Function>
+                                <Literal>180</Literal>
+                              </Add>
+                            </Rotation>
                         </Graphic>
                     </PointSymbolizer>
                 </Rule>
