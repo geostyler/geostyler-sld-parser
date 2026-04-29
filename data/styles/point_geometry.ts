@@ -11,6 +11,17 @@ const style: Style = {
           wellKnownName: 'square',
           color: '#FF0000',
           radius: 3,
+          rotate: {
+              name: 'add',
+              args: [{
+                name: 'custom',
+                fnName: 'endAngle',
+                args: [{
+                  name: 'property',
+                  args: ['shape']
+                }],
+            }, 180]
+          },
           geometry: {
              name: 'custom',
              fnName: 'endPoint',

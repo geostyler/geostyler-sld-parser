@@ -817,6 +817,8 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_geometry);
+      // Additional check that the arithmetic sld operator is not a "<Function name="add">" but a SLD "<Add>".
+      expect(sldString).toContain('</Add>');
     });
     it('can write a SLD TextSymbolizer', async () => {
       const {

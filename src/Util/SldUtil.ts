@@ -20,6 +20,15 @@ export function numberExpression(exp: Expression<PropertyType>): GeoStylerNumber
 }
 
 /**
+ * This converts a GeoStylerFunction or a value (toString) into a fast-xml-parser representation.
+ * @param value A GeoStylerFunction or a value that will ends as a text.
+ * @returns a a fast-xml-parser representation of the given value.
+ */
+export function geoStylerFunctionOrTextToSld(value: any): any {
+  return isGeoStylerFunction(value) ? geoStylerFunctionToSldFunction(value) : [{ '#text': value.toString() }];
+}
+
+/**
  * This converts a GeoStylerFunction into a fast-xml-parser representation
  * of a sld function.
  *
@@ -75,6 +84,37 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
       '@_name': name === 'custom' ? (geostylerFunction as Fcustom).fnName : name
     }
   }];
+}
+
+/**
+ * This converts an expected number-like sldElement (text, literal, function a or operator resulting
+ * in a number) into a geostyler number or number Expression.
+ * @param sldElement an single objects as created by the fast-xml-parser
+ * @returns The number, number Expression<number> or undefined.
+ */
+export function sldNumberOperatorOrFunctionOrTextToGeostyler(sldElement: any):
+    number |
+    GeoStylerNumberFunction |
+    undefined
+{
+  if (sldElement?.['#text']) {
+    return numberExpression(sldElement['#text']);
+  }
+  if (sldElement?.Literal?.[0]?.['#text']) {
+    return sldElement?.Literal?.[0]?.['#text'];
+  }
+  if (sldElement?.[':@']?.['@_name']) {
+    return sldFunctionToGeoStylerFunction([sldElement]) as GeoStylerNumberFunction;
+  }
+  const operator = Object.keys(sldElement)[0];
+  const operatorName = operator.toLowerCase() as ArithmeticType;
+  if (ARITHMETIC_OPERATORS.includes(operatorName)) {
+    return {
+      name: operatorName,
+      args: sldElement[operator]?.map((sldEle: any) => sldNumberOperatorOrFunctionOrTextToGeostyler(sldEle)) ?? []
+    };
+  }
+  return undefined;
 }
 
 /**
