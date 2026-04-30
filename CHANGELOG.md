@@ -1,3 +1,15 @@
+## [8.5.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.4.2...v8.5.0) (2026-04-30)
+
+### Features
+
+* add support for geometry in symbolizers ([#1106](https://github.com/geostyler/geostyler-sld-parser/issues/1106)) ([918eb5a](https://github.com/geostyler/geostyler-sld-parser/commit/918eb5aee9aaf048d37dae2f59564c2939b608f6))
+* support expression in rotation ([#1104](https://github.com/geostyler/geostyler-sld-parser/issues/1104)) ([bccc2ad](https://github.com/geostyler/geostyler-sld-parser/commit/bccc2ad4c7bbd5457bafd8db11545ee57fbdcd0a))
+
+### Bug Fixes
+
+* less redundancy using geoStylerFunctionOrTextToSld ([00d9df6](https://github.com/geostyler/geostyler-sld-parser/commit/00d9df6372c17e8b803dd7d0481146458c020f92))
+* write sld arithmetic operators ([#1109](https://github.com/geostyler/geostyler-sld-parser/issues/1109)) ([b032dbc](https://github.com/geostyler/geostyler-sld-parser/commit/b032dbc48b6f24182136fa28c9405ebc3b12fc9b))
+
 ## [8.4.2](https://github.com/geostyler/geostyler-sld-parser/compare/v8.4.1...v8.4.2) (2026-04-16)
 
 ### Bug Fixes
