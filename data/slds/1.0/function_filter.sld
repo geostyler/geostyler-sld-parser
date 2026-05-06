@@ -8,16 +8,16 @@
       <FeatureTypeStyle>
         <Rule>
           <Name>Function Property Rule 0</Name>
-          <Filter xmlns="http://www.opengis.net/ogc">
-            <Function name="equalTo">
-              <Function name="between">
-                <PropertyName>testprop</PropertyName>
-                <Literal>0</Literal>
-                <Literal>1</Literal>
-              </Function>
-              <Literal>true</Literal>
-            </Function>
-          </Filter>
+          <ogc:Filter xmlns="http://www.opengis.net/ogc">
+            <ogc:Function name="equalTo">
+              <ogc:Function name="between">
+                <ogc:PropertyName>testprop</ogc:PropertyName>
+                <ogc:Literal>0</ogc:Literal>
+                <ogc:Literal>1</ogc:Literal>
+              </ogc:Function>
+              <ogc:Literal>true</ogc:Literal>
+            </ogc:Function>
+          </ogc:Filter>
           <PointSymbolizer>
             <Graphic>
               <Mark>

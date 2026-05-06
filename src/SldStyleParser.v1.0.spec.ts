@@ -817,8 +817,8 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_geometry);
-      // Additional check that the arithmetic sld operator is not a "<Function name="add">" but a SLD "<Add>".
-      expect(sldString).toContain('</Add>');
+      // Additional check that the arithmetic sld operator is not a "<Function name="add">" but a SLD "<ogc:Add>".
+      expect(sldString).toContain('</ogc:Add>');
     });
     it('can write a SLD TextSymbolizer', async () => {
       const {
@@ -999,9 +999,9 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(functionFilterOgcArithmetic);
-      // Additional check that the arithmetic sld operator is not a "<Function name="mul">" but a SLD "<Mul>".
-      expect(sldString).toContain('</Mul>');
-      expect(sldString).toContain('</Div>');
+      // Additional check that the arithmetic sld operator is not a "<Function name="mul">" but a SLD "<ogc:Mul>".
+      expect(sldString).toContain('</ogc:Mul>');
+      expect(sldString).toContain('</ogc:Div>');
     });
 
     // it('can write a SLD style with functionfilters', async () => {

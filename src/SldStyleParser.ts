@@ -1813,7 +1813,10 @@ export class SldStyleParser implements StyleParser<string> {
     const sldOperator: string = (sldOperators.length > 1 && value === null)
       ? sldOperators[1] : sldOperators[0];
 
-    const propertyKey = 'PropertyName';
+    const sldOperatorElement = `ogc:${sldOperator}`;
+    const functionElement = 'ogc:Function';
+    const propertyKeyElement = 'ogc:PropertyName';
+    const literalElement = 'ogc:Literal';
 
     if (isGeoStylerFunction(key) || isGeoStylerFunction(value)) {
       const tempOperator = sldOperator.replace('PropertyIs', '');
@@ -1827,7 +1830,7 @@ export class SldStyleParser implements StyleParser<string> {
         functionChildren.unshift(Array.isArray(keyResult) ? keyResult?.[0] : keyResult);
       } else {
         functionChildren.unshift({
-          Literal: [{
+          [literalElement]: [{
             '#text': keyResult
           }]
         });
@@ -1837,14 +1840,14 @@ export class SldStyleParser implements StyleParser<string> {
         functionChildren.push(Array.isArray(valueResult) ? valueResult?.[0] : valueResult);
       } else {
         functionChildren.push({
-          Literal: [{
+          [literalElement]: [{
             '#text': valueResult
           }]
         });
       }
 
       return [{
-        Function: functionChildren,
+        [functionElement]: functionChildren,
         ':@': {
           '@_name': sldFunctionOperator
         }
@@ -1854,20 +1857,20 @@ export class SldStyleParser implements StyleParser<string> {
     if (sldOperator === 'PropertyIsNull') {
       // empty, selfclosing Literals are not valid in a propertyIsNull filter
       sldComparisonFilter.push({
-        [sldOperator]: [{
-          [propertyKey]: [{
+        [sldOperatorElement]: [{
+          [propertyKeyElement]: [{
             '#text': key
           }]
         }]
       });
     } else if (sldOperator === 'PropertyIsLike') {
       sldComparisonFilter.push({
-        [sldOperator]: [{
-          [propertyKey]: [{
+        [sldOperatorElement]: [{
+          [propertyKeyElement]: [{
             '#text': key
           }]
         }, {
-          Literal: [{
+          [literalElement]: [{
             '#text': value
           }]
         }],
@@ -1881,19 +1884,19 @@ export class SldStyleParser implements StyleParser<string> {
       // Currently we only support Literals as values.
       const betweenFilter = comparisonFilter as RangeFilter;
       sldComparisonFilter.push({
-        [sldOperator]: [{
-          [propertyKey]: [{
+        [sldOperatorElement]: [{
+          [propertyKeyElement]: [{
             '#text': key
           }]
         }, {
-          LowerBoundary: [{
-            Literal: [{
+          'ogc:LowerBoundary': [{
+            [literalElement]: [{
               '#text': betweenFilter[2]
             }]
           }]
         }, {
-          UpperBoundary: [{
-            Literal: [{
+          'ogc:UpperBoundary': [{
+            [literalElement]: [{
               '#text': betweenFilter[3]
             }]
           }]
@@ -1901,12 +1904,12 @@ export class SldStyleParser implements StyleParser<string> {
       });
     } else {
       sldComparisonFilter.push({
-        [sldOperator]: [{
-          [propertyKey]: [{
+        [sldOperatorElement]: [{
+          [propertyKeyElement]: [{
             '#text': key
           }]
         }, {
-          Literal: [{
+          [literalElement]: [{
             '#text': value
           }]
         }]
@@ -1930,7 +1933,7 @@ export class SldStyleParser implements StyleParser<string> {
       sldFilter = this.getSldComparisonFilterFromComparisonFilter(filter);
     } else if (isNegationFilter(filter)) {
       sldFilter.push({
-        Not: this.getSldFilterFromFilter(filter[1])
+        'ogc:Not': this.getSldFilterFromFilter(filter[1])
       });
     } else if (isCombinationFilter(filter)) {
       const [
@@ -1941,7 +1944,7 @@ export class SldStyleParser implements StyleParser<string> {
       const combinator = sldOperators[0];
       const sldSubFilters = args.map(subFilter => this.getSldFilterFromFilter(subFilter)[0]);
       sldFilter.push({
-        [combinator]: sldSubFilters
+        [`ogc:${combinator}`]: sldSubFilters
       });
     }
     return sldFilter;

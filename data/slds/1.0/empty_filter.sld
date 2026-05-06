@@ -8,7 +8,7 @@
       <FeatureTypeStyle>
         <Rule>
           <Name>Cities &amp; Towns</Name>
-          <Filter xmlns="http://www.opengis.net/ogc"/>
+          <ogc:Filter xmlns="http://www.opengis.net/ogc"/>
           <PolygonSymbolizer>
             <Fill>
               <CssParameter name="fill">#FFE15A</CssParameter>

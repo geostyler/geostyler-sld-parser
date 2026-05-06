@@ -43,7 +43,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   // TODO: Typing of functions without args should be refactored in geostyler-style
   if (name === 'pi' || name === 'random') {
     return [{
-      Function: [],
+      'ogc:Function': [],
       ':@': {
         '@_name': name
       }
@@ -52,7 +52,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
 
   if (name === 'property') {
     return {
-      PropertyName: [{
+      'ogc:PropertyName': [{
         '#text': geostylerFunction.args[0]
       }]
     };
@@ -64,7 +64,7 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
       return Array.isArray(argAsFunction) ? argAsFunction[0] : argAsFunction;
     } else {
       return {
-        Literal: [{
+        'ogc:Literal': [{
           '#text': arg
         }]
       };
@@ -72,14 +72,14 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   });
 
   if (ARITHMETIC_OPERATORS.includes(name.toLowerCase() as ArithmeticType)) {
-    const operatorSldName = name[0].toUpperCase() + name.slice(1).toLowerCase();
+    const operatorSldElement = 'ogc:' + name[0].toUpperCase() + name.slice(1).toLowerCase();
     return [{
-      [operatorSldName]: sldFunctionArgs
+      [operatorSldElement]: sldFunctionArgs
     }];
   }
 
   return [{
-    Function: sldFunctionArgs,
+    'ogc:Function': sldFunctionArgs,
     ':@': {
       '@_name': name === 'custom' ? (geostylerFunction as Fcustom).fnName : name
     }
