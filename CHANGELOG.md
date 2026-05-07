@@ -1,3 +1,16 @@
+## [9.0.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.5.0...v9.0.0) (2026-05-07)
+
+### ⚠ BREAKING CHANGES
+
+* All expressions, filters and operators are now
+prefixed with the ogc namespace. If your code previously expected these
+elements to not have a prefix (e.g. <Add> instead of <ogc:Add>), you
+now have to adjust it accordingly.
+
+### Bug Fixes
+
+* prefix filter and expression with the ogc namespace ([#1112](https://github.com/geostyler/geostyler-sld-parser/issues/1112)) ([#1113](https://github.com/geostyler/geostyler-sld-parser/issues/1113)) ([8b8032d](https://github.com/geostyler/geostyler-sld-parser/commit/8b8032d96f97913d4f6197b469a8b5216981a9a1))
+
 ## [8.5.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.4.2...v8.5.0) (2026-04-30)
 
 ### Features
