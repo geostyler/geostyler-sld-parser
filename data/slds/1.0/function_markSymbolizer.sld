@@ -20,7 +20,7 @@
                 </Fill>
               </Mark>
               <Size>
-                <Function name="pi" />
+                <ogc:Function name="pi" />
               </Size>
             </Graphic>
           </PointSymbolizer>

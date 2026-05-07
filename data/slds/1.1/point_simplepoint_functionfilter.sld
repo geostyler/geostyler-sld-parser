@@ -7,15 +7,15 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Small populated New Yorks</se:Name>
-          <Filter xmlns="http://www.opengis.net/ogc">
-            <PropertyIsLike wildCard="*" singleChar="." escapeChar="!">
-              <Function name="strMatches">
-                <PropertyName>year</PropertyName>
-                <Literal>^( )??2019,.*</Literal>
-              </Function>
-              <Literal>true</Literal>
-            </PropertyIsLike>
-          </Filter>
+          <ogc:Filter xmlns="http://www.opengis.net/ogc">
+            <ogc:PropertyIsLike wildCard="*" singleChar="." escapeChar="!">
+              <ogc:Function name="strMatches">
+                <ogc:PropertyName>year</ogc:PropertyName>
+                <ogc:Literal>^( )??2019,.*</ogc:Literal>
+              </ogc:Function>
+              <ogc:Literal>true</ogc:Literal>
+            </ogc:PropertyIsLike>
+          </ogc:Filter>
           <se:MinScaleDenominator>10000</se:MinScaleDenominator>
           <se:MaxScaleDenominator>20000</se:MaxScaleDenominator>
           <se:PointSymbolizer>

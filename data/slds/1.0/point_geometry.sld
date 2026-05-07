@@ -16,9 +16,9 @@
                     <Abstract>A red square at the end of the line</Abstract>
                     <PointSymbolizer>
                         <Geometry>
-                            <Function name="endPoint">
-                                <PropertyName>shape</PropertyName>
-                            </Function>
+                            <ogc:Function name="endPoint">
+                                <ogc:PropertyName>shape</ogc:PropertyName>
+                            </ogc:Function>
                         </Geometry>
                         <Graphic>
                             <Mark>
@@ -29,12 +29,12 @@
                             </Mark>
                             <Size>6</Size>
                             <Rotation>
-                              <Add>
-                                <Function name="endAngle">
-                                  <PropertyName>shape</PropertyName>
-                                </Function>
-                                <Literal>180</Literal>
-                              </Add>
+                              <ogc:Add>
+                                <ogc:Function name="endAngle">
+                                  <ogc:PropertyName>shape</ogc:PropertyName>
+                                </ogc:Function>
+                                <ogc:Literal>180</ogc:Literal>
+                              </ogc:Add>
                             </Rotation>
                         </Graphic>
                     </PointSymbolizer>

@@ -11,54 +11,54 @@
       <FeatureTypeStyle>
         <Rule>
           <Name>Small populated New Yorks</Name>
-          <Filter xmlns="http://www.opengis.net/ogc">
-            <And>
-              <PropertyIsEqualTo>
-                <PropertyName>NAME</PropertyName>
-                <Literal>New York</Literal>
-              </PropertyIsEqualTo>
-              <PropertyIsEqualTo>
-                <PropertyName>TEST_BOOL</PropertyName>
-                <Literal>true</Literal>
-              </PropertyIsEqualTo>
-              <PropertyIsNull>
-                <PropertyName>TEST</PropertyName>
-              </PropertyIsNull>
-              <PropertyIsLike wildCard="*" singleChar="." escape="!">
-                <PropertyName>TEST2</PropertyName>
-                <Literal>*York*</Literal>
-              </PropertyIsLike>
-              <PropertyIsLike wildCard="*" singleChar="." escape="!">
-                <PropertyName>TEST1</PropertyName>
-                <Literal>*New*</Literal>
-              </PropertyIsLike>
-              <Not>
-                <PropertyIsGreaterThan>
-                  <PropertyName>POPULATION</PropertyName>
-                  <Literal>100000</Literal>
-                </PropertyIsGreaterThan>
-              </Not>
-              <Or>
-                <PropertyIsEqualTo>
-                  <PropertyName>TEST2</PropertyName>
-                  <Literal>1</Literal>
-                </PropertyIsEqualTo>
-                <PropertyIsEqualTo>
-                  <PropertyName>TEST2</PropertyName>
-                  <Literal>2</Literal>
-                </PropertyIsEqualTo>
-              </Or>
-              <PropertyIsBetween>
-                <PropertyName>TEST3</PropertyName>
+          <ogc:Filter xmlns="http://www.opengis.net/ogc">
+            <ogc:And>
+              <ogc:PropertyIsEqualTo>
+                <ogc:PropertyName>NAME</ogc:PropertyName>
+                <ogc:Literal>New York</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:PropertyIsEqualTo>
+                <ogc:PropertyName>TEST_BOOL</ogc:PropertyName>
+                <ogc:Literal>true</ogc:Literal>
+              </ogc:PropertyIsEqualTo>
+              <ogc:PropertyIsNull>
+                <ogc:PropertyName>TEST</ogc:PropertyName>
+              </ogc:PropertyIsNull>
+              <ogc:PropertyIsLike wildCard="*" singleChar="." escape="!">
+                <ogc:PropertyName>TEST2</ogc:PropertyName>
+                <ogc:Literal>*York*</ogc:Literal>
+              </ogc:PropertyIsLike>
+              <ogc:PropertyIsLike wildCard="*" singleChar="." escape="!">
+                <ogc:PropertyName>TEST1</ogc:PropertyName>
+                <ogc:Literal>*New*</ogc:Literal>
+              </ogc:PropertyIsLike>
+              <ogc:Not>
+                <ogc:PropertyIsGreaterThan>
+                  <ogc:PropertyName>POPULATION</ogc:PropertyName>
+                  <ogc:Literal>100000</ogc:Literal>
+                </ogc:PropertyIsGreaterThan>
+              </ogc:Not>
+              <ogc:Or>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>TEST2</ogc:PropertyName>
+                  <ogc:Literal>1</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>TEST2</ogc:PropertyName>
+                  <ogc:Literal>2</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:Or>
+              <ogc:PropertyIsBetween>
+                <ogc:PropertyName>TEST3</ogc:PropertyName>
                 <LowerBoundary>
-                  <Literal>1</Literal>
+                  <ogc:Literal>1</ogc:Literal>
                 </LowerBoundary>
                 <UpperBoundary>
-                  <Literal>5</Literal>
+                  <ogc:Literal>5</ogc:Literal>
                 </UpperBoundary>
-              </PropertyIsBetween>
-            </And>
-          </Filter>
+              </ogc:PropertyIsBetween>
+            </ogc:And>
+          </ogc:Filter>
           <MinScaleDenominator>10000</MinScaleDenominator>
           <MaxScaleDenominator>20000</MaxScaleDenominator>
           <PointSymbolizer>

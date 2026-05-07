@@ -7,40 +7,40 @@
       <se:FeatureTypeStyle>
         <se:Rule>
           <se:Name>Test</se:Name>
-          <Filter xmlns="http://www.opengis.net/ogc">
-            <And>
-              <Or>
-                <PropertyIsEqualTo>
-                  <PropertyName>ID</PropertyName>
-                  <Literal>1</Literal>
-                </PropertyIsEqualTo>
-                <PropertyIsEqualTo>
-                  <PropertyName>ID</PropertyName>
-                  <Literal>2</Literal>
-                </PropertyIsEqualTo>
-              </Or>
-              <Or>
-                <PropertyIsEqualTo>
-                  <PropertyName>STREET</PropertyName>
-                  <Literal>Main</Literal>
-                </PropertyIsEqualTo>
-                <PropertyIsEqualTo>
-                  <PropertyName>STREET</PropertyName>
-                  <Literal>Time square</Literal>
-                </PropertyIsEqualTo>
-                <And>
-                  <PropertyIsGreaterThanOrEqualTo>
-                    <PropertyName>HOUSENO</PropertyName>
-                    <Literal>1909</Literal>
-                  </PropertyIsGreaterThanOrEqualTo>
-                  <PropertyIsLessThanOrEqualTo>
-                    <PropertyName>HOUSENO</PropertyName>
-                    <Literal>19909</Literal>
-                  </PropertyIsLessThanOrEqualTo>
-                </And>
-              </Or>
-            </And>
-          </Filter>
+          <ogc:Filter xmlns="http://www.opengis.net/ogc">
+            <ogc:And>
+              <ogc:Or>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ID</ogc:PropertyName>
+                  <ogc:Literal>1</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>ID</ogc:PropertyName>
+                  <ogc:Literal>2</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+              </ogc:Or>
+              <ogc:Or>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>STREET</ogc:PropertyName>
+                  <ogc:Literal>Main</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+                <ogc:PropertyIsEqualTo>
+                  <ogc:PropertyName>STREET</ogc:PropertyName>
+                  <ogc:Literal>Time square</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+                <ogc:And>
+                  <ogc:PropertyIsGreaterThanOrEqualTo>
+                    <ogc:PropertyName>HOUSENO</ogc:PropertyName>
+                    <ogc:Literal>1909</ogc:Literal>
+                  </ogc:PropertyIsGreaterThanOrEqualTo>
+                  <ogc:PropertyIsLessThanOrEqualTo>
+                    <ogc:PropertyName>HOUSENO</ogc:PropertyName>
+                    <ogc:Literal>19909</ogc:Literal>
+                  </ogc:PropertyIsLessThanOrEqualTo>
+                </ogc:And>
+              </ogc:Or>
+            </ogc:And>
+          </ogc:Filter>
           <se:MinScaleDenominator>10000</se:MinScaleDenominator>
           <se:MaxScaleDenominator>20000</se:MaxScaleDenominator>
           <se:PointSymbolizer>

@@ -14,12 +14,12 @@
             </Fill>
             <Stroke>
               <CssParameter name="stroke-width">
-                <Function name="max">
-                  <Function name="pi" />
-                  <Function name="strLength">
-                    <Literal>Peter</Literal>
-                  </Function>
-                </Function>
+                <ogc:Function name="max">
+                  <ogc:Function name="pi" />
+                  <ogc:Function name="strLength">
+                    <ogc:Literal>Peter</ogc:Literal>
+                  </ogc:Function>
+                </ogc:Function>
             </CssParameter>
             </Stroke>
           </PolygonSymbolizer>

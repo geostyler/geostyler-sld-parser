@@ -12,34 +12,34 @@
             <se:FeatureTypeStyle>
                 <se:Rule>
                     <se:Name>Property Comparison Rule</se:Name>
-                    <Filter xmlns="http://www.opengis.net/ogc">
-                        <And>
-                            <PropertyIsEqualTo>
-                                <PropertyName>posledni_hodnota</PropertyName>
-                                <PropertyName>posledni_hodnota_sekundarni</PropertyName>
-                            </PropertyIsEqualTo>
-                            <PropertyIsGreaterThan>
-                                <PropertyName>value1</PropertyName>
-                                <PropertyName>value2</PropertyName>
-                            </PropertyIsGreaterThan>
-                            <PropertyIsLessThan>
-                                <PropertyName>count1</PropertyName>
-                                <PropertyName>count2</PropertyName>
-                            </PropertyIsLessThan>
-                            <PropertyIsGreaterThanOrEqualTo>
-                                <PropertyName>threshold1</PropertyName>
-                                <PropertyName>threshold2</PropertyName>
-                            </PropertyIsGreaterThanOrEqualTo>
-                            <Function name="lessThanOrEqualTo">
-                                <PropertyName>posledni_hodnota</PropertyName>
-                                <PropertyName>spa1h</PropertyName>
-                            </Function>
-                            <PropertyIsNotEqualTo>
-                                <PropertyName>status</PropertyName>
-                                <Literal>NULL</Literal>
-                            </PropertyIsNotEqualTo>
-                        </And>
-                    </Filter>
+                    <ogc:Filter xmlns="http://www.opengis.net/ogc">
+                        <ogc:And>
+                            <ogc:PropertyIsEqualTo>
+                                <ogc:PropertyName>posledni_hodnota</ogc:PropertyName>
+                                <ogc:PropertyName>posledni_hodnota_sekundarni</ogc:PropertyName>
+                            </ogc:PropertyIsEqualTo>
+                            <ogc:PropertyIsGreaterThan>
+                                <ogc:PropertyName>value1</ogc:PropertyName>
+                                <ogc:PropertyName>value2</ogc:PropertyName>
+                            </ogc:PropertyIsGreaterThan>
+                            <ogc:PropertyIsLessThan>
+                                <ogc:PropertyName>count1</ogc:PropertyName>
+                                <ogc:PropertyName>count2</ogc:PropertyName>
+                            </ogc:PropertyIsLessThan>
+                            <ogc:PropertyIsGreaterThanOrEqualTo>
+                                <ogc:PropertyName>threshold1</ogc:PropertyName>
+                                <ogc:PropertyName>threshold2</ogc:PropertyName>
+                            </ogc:PropertyIsGreaterThanOrEqualTo>
+                            <ogc:Function name="lessThanOrEqualTo">
+                                <ogc:PropertyName>posledni_hodnota</ogc:PropertyName>
+                                <ogc:PropertyName>spa1h</ogc:PropertyName>
+                            </ogc:Function>
+                            <ogc:PropertyIsNotEqualTo>
+                                <ogc:PropertyName>status</ogc:PropertyName>
+                                <ogc:Literal>NULL</ogc:Literal>
+                            </ogc:PropertyIsNotEqualTo>
+                        </ogc:And>
+                    </ogc:Filter>
                     <se:PointSymbolizer>
                         <se:Graphic>
                             <se:Mark>

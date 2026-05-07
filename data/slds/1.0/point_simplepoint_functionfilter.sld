@@ -11,15 +11,15 @@
       <FeatureTypeStyle>
         <Rule>
           <Name>Small populated New Yorks</Name>
-          <Filter xmlns="http://www.opengis.net/ogc">
-            <PropertyIsLike>
-              <Function name="strMatches">
-                <PropertyName>year</PropertyName>
-                <Literal>^( )??2019,.*</Literal>
-              </Function>
-              <Literal>true</Literal>
-            </PropertyIsLike>
-          </Filter>
+          <ogc:Filter xmlns="http://www.opengis.net/ogc">
+            <ogc:PropertyIsLike>
+              <ogc:Function name="strMatches">
+                <ogc:PropertyName>year</ogc:PropertyName>
+                <ogc:Literal>^( )??2019,.*</ogc:Literal>
+              </ogc:Function>
+              <ogc:Literal>true</ogc:Literal>
+            </ogc:PropertyIsLike>
+          </ogc:Filter>
           <MinScaleDenominator>10000</MinScaleDenominator>
           <MaxScaleDenominator>20000</MaxScaleDenominator>
           <PointSymbolizer>
