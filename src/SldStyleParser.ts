@@ -1390,6 +1390,9 @@ export class SldStyleParser implements StyleParser<string> {
       case 'brush://dense7':
         markSymbolizer.wellKnownName = wellKnownName;
         break;
+      case undefined:
+        markSymbolizer.wellKnownName = 'square';
+        break;
       default:
         if (WELLKNOWNNAME_TTF_REGEXP.test(wellKnownName)) {
           markSymbolizer.wellKnownName = wellKnownName;
