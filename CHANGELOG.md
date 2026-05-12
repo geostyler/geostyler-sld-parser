@@ -1,3 +1,9 @@
+## [9.0.1](https://github.com/geostyler/geostyler-sld-parser/compare/v9.0.0...v9.0.1) (2026-05-12)
+
+### Bug Fixes
+
+* use square as default wellKnownName ([550309e](https://github.com/geostyler/geostyler-sld-parser/commit/550309ea7abeddb7b5b581bd4313d74618b1223f))
+
 ## [9.0.0](https://github.com/geostyler/geostyler-sld-parser/compare/v8.5.0...v9.0.0) (2026-05-07)
 
 ### ⚠ BREAKING CHANGES
