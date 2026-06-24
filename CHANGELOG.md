@@ -1,3 +1,9 @@
+## [9.0.2](https://github.com/geostyler/geostyler-sld-parser/compare/v9.0.1...v9.0.2) (2026-06-24)
+
+### Bug Fixes
+
+* ensure browser build is included in releases ([b40d9b5](https://github.com/geostyler/geostyler-sld-parser/commit/b40d9b53d01a94b8456b89709cace5c840fbc0e0))
+
 ## [9.0.1](https://github.com/geostyler/geostyler-sld-parser/compare/v9.0.0...v9.0.1) (2026-05-12)
 
 ### Bug Fixes
