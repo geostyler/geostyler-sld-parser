@@ -51,11 +51,11 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   }
 
   if (name === 'property') {
-    return {
+    return [{
       'ogc:PropertyName': [{
         '#text': geostylerFunction.args[0]
       }]
-    };
+    }];
   }
 
   const sldFunctionArgs = geostylerFunction.args.map(arg => {
