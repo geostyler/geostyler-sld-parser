@@ -2627,20 +2627,8 @@ export class SldStyleParser implements StyleParser<string> {
       || textSymbolizer.rotate !== undefined
       || textSymbolizer.placement === 'point'
     ) {
+      // The SLD schema requires the sequence AnchorPoint, Displacement, Rotation.
       const pointPlacement: any = [];
-      if (textSymbolizer.offset) {
-        pointPlacement.push({
-          [Displacement]: [{
-            [DisplacementX]: [{
-              '#text': textSymbolizer.offset[0].toString()
-            }]
-          }, {
-            [DisplacementY]: [{
-              '#text': (-textSymbolizer.offset[1]).toString()
-            }]
-          }]
-        });
-      }
       if (textSymbolizer.anchor) {
         pointPlacement.push({
           [AnchorPoint]: [{
@@ -2650,6 +2638,19 @@ export class SldStyleParser implements StyleParser<string> {
           }, {
             [AnchorPointY]: [{
               '#text': this.getSldAnchorPointFromAnchor(textSymbolizer.anchor, 'y').toString()
+            }]
+          }]
+        });
+      }
+      if (textSymbolizer.offset) {
+        pointPlacement.push({
+          [Displacement]: [{
+            [DisplacementX]: [{
+              '#text': textSymbolizer.offset[0].toString()
+            }]
+          }, {
+            [DisplacementY]: [{
+              '#text': (-textSymbolizer.offset[1]).toString()
             }]
           }]
         });
