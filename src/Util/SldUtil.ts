@@ -345,6 +345,21 @@ export function getBase64Object(
  * Native replacement for lodash-es.
  * https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore
  *
+ * Use this for presence checks of properties where 0, '' or false are valid
+ * values, instead of a truthy check (`if (value)`) or `Number.isFinite()`
+ * (which drops GeoStylerFunction expressions).
+ *
+ * @param value The value to check.
+ * @returns Whether the value is null or undefined.
+ */
+export function isNil(value: unknown): value is null | undefined {
+  return value === undefined || value === null;
+}
+
+/**
+ * Native replacement for lodash-es.
+ * https://github.com/you-dont-need/You-Dont-Need-Lodash-Underscore
+ *
  * @param value The value to check.
  * @returns Whether the value is a number or not.
  */

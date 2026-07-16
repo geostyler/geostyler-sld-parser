@@ -53,6 +53,7 @@ import {
   getChildren,
   getParameterValue,
   getVendorOptionValue,
+  isNil,
   isNumber,
   isString,
   isSymbolizer,
@@ -186,11 +187,6 @@ export const defaultTranslations: SldStyleParserTranslations = {
 
   },
 } as const;
-
-/**
- * @returns true if the provided value is null or undefined. Returns false otherwise.
- */
-const isNil = (val: unknown): boolean => val === undefined || val === null;
 
 /**
  * This parser can be used with the GeoStyler.
