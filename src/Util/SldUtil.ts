@@ -97,10 +97,10 @@ export function sldNumberOperatorOrFunctionOrTextToGeostyler(sldElement: any):
     GeoStylerNumberFunction |
     undefined
 {
-  if (sldElement?.['#text']) {
+  if (!isNil(sldElement?.['#text'])) {
     return numberExpression(sldElement['#text']);
   }
-  if (sldElement?.Literal?.[0]?.['#text']) {
+  if (!isNil(sldElement?.Literal?.[0]?.['#text'])) {
     return sldElement?.Literal?.[0]?.['#text'];
   }
   if (sldElement?.[':@']?.['@_name']) {
