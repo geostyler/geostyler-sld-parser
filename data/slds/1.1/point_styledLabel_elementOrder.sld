@@ -23,6 +23,10 @@
             </se:Font>
             <se:LabelPlacement>
               <se:PointPlacement>
+                <se:AnchorPoint>
+                  <se:AnchorPointX>1</se:AnchorPointX>
+                  <se:AnchorPointY>1</se:AnchorPointY>
+                </se:AnchorPoint>
                 <se:Displacement>
                   <se:DisplacementX>0</se:DisplacementX>
                   <se:DisplacementY>5</se:DisplacementY>

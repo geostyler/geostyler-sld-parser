@@ -24,6 +24,10 @@
             </Font>
             <LabelPlacement>
               <PointPlacement>
+                <AnchorPoint>
+                  <AnchorPointX>1</AnchorPointX>
+                  <AnchorPointY>1</AnchorPointY>
+                </AnchorPoint>
                 <Displacement>
                   <DisplacementX>0</DisplacementX>
                   <DisplacementY>5</DisplacementY>
