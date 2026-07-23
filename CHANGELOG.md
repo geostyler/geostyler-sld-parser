@@ -1,3 +1,10 @@
+## [9.0.3](https://github.com/geostyler/geostyler-sld-parser/compare/v9.0.2...v9.0.3) (2026-07-23)
+
+### Bug Fixes
+
+* do not drop numeric properties with value 0 or expression values [#1123](https://github.com/geostyler/geostyler-sld-parser/issues/1123) ([#1124](https://github.com/geostyler/geostyler-sld-parser/issues/1124)) ([5bdcd7c](https://github.com/geostyler/geostyler-sld-parser/commit/5bdcd7cae242948f5e34d6a0a8f7c55f608f8d0c))
+* write AnchorPoint before Displacement to match the SLD schema sequence ([#1125](https://github.com/geostyler/geostyler-sld-parser/issues/1125)) ([92da27a](https://github.com/geostyler/geostyler-sld-parser/commit/92da27a3634130fa428d0781ccc5d5892db2cca0))
+
 ## [9.0.2](https://github.com/geostyler/geostyler-sld-parser/compare/v9.0.1...v9.0.2) (2026-06-24)
 
 ### Bug Fixes
