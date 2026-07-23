@@ -51,6 +51,7 @@ import text_lineplacement from '../data/styles/text_lineplacement';
 import text_lineplacement_offset from '../data/styles/text_lineplacement_offset';
 import text_lineplacement_repeat from '../data/styles/text_lineplacement_repeat';
 import text_newLine_expression from '../data/styles/text_newLine_expression';
+import zero_values from '../data/styles/zero_values';
 import unsupported_properties from '../data/styles/unsupported_properties';
 import function_markSymbolizer from '../data/styles/function_markSymbolizer';
 import function_filter from '../data/styles/function_filter';
@@ -169,6 +170,13 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (reading
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(line_perpendicularOffset);
     });
+    it('can read a SLD 1.1 with zero values (Rotation, Size, Halo, PerpendicularOffset, MinScaleDenominator)',
+      async () => {
+        const sld = fs.readFileSync('./data/slds/1.1/zero_values.sld', 'utf8');
+        const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+        expect(geoStylerStyle).toBeDefined();
+        expect(geoStylerStyle).toEqual(zero_values);
+      });
     it('can read a SLD 1.1 LineSymbolizer with GraphicStroke', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/line_graphicStroke.sld', 'utf8');
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
@@ -570,6 +578,15 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(line_perpendicularOffset);
     });
+    it('can write a SLD 1.1 with zero values (Rotation, Size, Halo, PerpendicularOffset, MinScaleDenominator)',
+      async () => {
+        const { output: sldString } = await styleParser.writeStyle(zero_values);
+        expect(sldString).toBeDefined();
+        // As string comparison between two XML-Strings is awkward and nonsens
+        // we read it again and compare the json input with the parser output
+        const { output: readStyle } = await styleParser.readStyle(sldString!);
+        expect(readStyle).toEqual(zero_values);
+      });
     it('can write a SLD 1.1 LineSymbolizer with GraphicStroke', async () => {
       const { output: sldString } = await styleParser.writeStyle(line_graphicStroke);
       expect(sldString).toBeDefined();
