@@ -53,7 +53,15 @@ import functionLabelRound from '../data/styles/function_label_round';
 import point_externalgraphic_inlineContent from '../data/styles/point_externalgraphic_inlineContent';
 import negatedFilter from '../data/styles/negated_filter';
 import symbolizer_propertyName from '../data/styles/symbolizer_propertyName';
-import { IconSymbolizer } from 'geostyler-style';
+import zero_values from '../data/styles/zero_values';
+import {
+  GeoStylerNumberFunction,
+  IconSymbolizer,
+  LineSymbolizer,
+  MarkSymbolizer,
+  Style,
+  TextSymbolizer
+} from 'geostyler-style';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -160,6 +168,13 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(line_perpendicularOffset);
     });
+    it('can read a SLD with zero values (Rotation, Size, Halo, PerpendicularOffset, MinScaleDenominator)',
+      async () => {
+        const sld = fs.readFileSync('./data/slds/1.0/zero_values.sld', 'utf8');
+        const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+        expect(geoStylerStyle).toBeDefined();
+        expect(geoStylerStyle).toEqual(zero_values);
+      });
     it('can read a SLD LineSymbolizer with GraphicStroke', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/line_graphicStroke.sld', 'utf8');
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
@@ -712,6 +727,64 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(line_perpendicularOffset);
+    });
+    it('can write a SLD with zero values (Rotation, Size, Halo, PerpendicularOffset, MinScaleDenominator)',
+      async () => {
+        const {
+          output: sldString,
+          errors
+        } = await styleParser.writeStyle(zero_values);
+        expect(sldString).toBeDefined();
+        expect(errors).toBeUndefined();
+        // As string comparison between two XML-Strings is awkward and nonsens
+        // we read it again and compare the json input with the parser output
+        const { output: readStyle } = await styleParser.readStyle(sldString!);
+        expect(readStyle).toEqual(zero_values);
+      });
+    it('keeps GeoStylerFunction expressions on numeric properties when writing', async () => {
+      const sqrtOfProperty = (propertyName: string): GeoStylerNumberFunction => ({
+        name: 'sqrt',
+        args: [{
+          name: 'property',
+          args: [propertyName]
+        }]
+      });
+      const style: Style = {
+        name: 'expressions',
+        rules: [{
+          name: 'mark',
+          symbolizers: [{
+            kind: 'Mark',
+            wellKnownName: 'circle',
+            strokeWidth: sqrtOfProperty('width')
+          }]
+        }, {
+          name: 'text',
+          symbolizers: [{
+            kind: 'Text',
+            label: '{{name}}',
+            haloWidth: sqrtOfProperty('halo')
+          }]
+        }, {
+          name: 'line',
+          symbolizers: [{
+            kind: 'Line',
+            color: '#000000',
+            perpendicularOffset: sqrtOfProperty('offset')
+          }]
+        }]
+      };
+      const {
+        output: sldString,
+        errors
+      } = await styleParser.writeStyle(style);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      const [markRule, textRule, lineRule] = readStyle!.rules;
+      expect((markRule.symbolizers[0] as MarkSymbolizer).strokeWidth).toEqual(sqrtOfProperty('width'));
+      expect((textRule.symbolizers[0] as TextSymbolizer).haloWidth).toEqual(sqrtOfProperty('halo'));
+      expect((lineRule.symbolizers[0] as LineSymbolizer).perpendicularOffset).toEqual(sqrtOfProperty('offset'));
     });
     it('can write a SLD LineSymbolizer with GraphicStroke', async () => {
       const {

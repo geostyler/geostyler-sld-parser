@@ -53,6 +53,7 @@ import {
   getChildren,
   getParameterValue,
   getVendorOptionValue,
+  isNil,
   isNumber,
   isString,
   isSymbolizer,
@@ -186,11 +187,6 @@ export const defaultTranslations: SldStyleParserTranslations = {
 
   },
 } as const;
-
-/**
- * @returns true if the provided value is null or undefined. Returns false otherwise.
- */
-const isNil = (val: unknown): boolean => val === undefined || val === null;
 
 /**
  * This parser can be used with the GeoStyler.
@@ -622,11 +618,11 @@ export class SldStyleParser implements StyleParser<string> {
   getScaleDenominatorFromRule(sldRule: any[]): ScaleDenominator | undefined {
     const scaleDenominator: ScaleDenominator = <ScaleDenominator>{};
     const min = get(sldRule, 'MinScaleDenominator.#text');
-    if (min) {
+    if (!isNil(min)) {
       scaleDenominator.min = Number(min);
     }
     const max = get(sldRule, 'MaxScaleDenominator.#text');
-    if (max) {
+    if (!isNil(max)) {
       scaleDenominator.max = Number(max);
     }
 
@@ -1516,7 +1512,7 @@ export class SldStyleParser implements StyleParser<string> {
           throw new Error(this.translate('colorMapEntriesParseFailedColorUndefined'));
         }
         let quantity = getAttribute(cm, 'quantity');
-        if (quantity) {
+        if (!isNil(quantity)) {
           quantity = numberExpression(quantity);
         }
         const label = getAttribute(cm, 'label');
@@ -1761,14 +1757,14 @@ export class SldStyleParser implements StyleParser<string> {
       }
       if (rule.scaleDenominator) {
         const { min, max } = rule.scaleDenominator;
-        if (min && Number.isFinite(min)) {
+        if (!isNil(min)) {
           sldRule[ruleTag].push({
             [MinScaleDenominator]: [{
               '#text': min
             }]
           });
         }
-        if (max && Number.isFinite(max)) {
+        if (!isNil(max)) {
           sldRule[ruleTag].push({
             [MaxScaleDenominator]: [{
               '#text': max
@@ -2163,9 +2159,9 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (markSymbolizer.strokeColor ||
-      Number.isFinite(markSymbolizer.strokeWidth) ||
-      Number.isFinite(markSymbolizer.strokeOpacity)
+    if (!isNil(markSymbolizer.strokeColor) ||
+      !isNil(markSymbolizer.strokeWidth) ||
+      !isNil(markSymbolizer.strokeOpacity)
     ) {
       const strokeCssParameters = [];
       if (markSymbolizer.strokeColor) {
@@ -2280,7 +2276,7 @@ export class SldStyleParser implements StyleParser<string> {
       }
     }
 
-    if (markSymbolizer.rotate) {
+    if (!isNil(markSymbolizer.rotate)) {
       graphic.push({
         [Rotation]: geoStylerFunctionOrTextToSld(markSymbolizer.rotate)
       });
@@ -2357,14 +2353,12 @@ export class SldStyleParser implements StyleParser<string> {
         }]
       });
     }
-    if (iconSymbolizer.size) {
+    if (!isNil(iconSymbolizer.size)) {
       graphic.push({
-        [Size]: [{
-          '#text': iconSymbolizer.size,
-        }]
+        [Size]: geoStylerFunctionOrTextToSld(iconSymbolizer.size)
       });
     }
-    if (iconSymbolizer.rotate) {
+    if (!isNil(iconSymbolizer.rotate)) {
       graphic.push({
         [Rotation]: geoStylerFunctionOrTextToSld(iconSymbolizer.rotate)
       });
@@ -2627,20 +2621,8 @@ export class SldStyleParser implements StyleParser<string> {
       || textSymbolizer.rotate !== undefined
       || textSymbolizer.placement === 'point'
     ) {
+      // The SLD schema requires the sequence AnchorPoint, Displacement, Rotation.
       const pointPlacement: any = [];
-      if (textSymbolizer.offset) {
-        pointPlacement.push({
-          [Displacement]: [{
-            [DisplacementX]: [{
-              '#text': textSymbolizer.offset[0].toString()
-            }]
-          }, {
-            [DisplacementY]: [{
-              '#text': (-textSymbolizer.offset[1]).toString()
-            }]
-          }]
-        });
-      }
       if (textSymbolizer.anchor) {
         pointPlacement.push({
           [AnchorPoint]: [{
@@ -2654,7 +2636,20 @@ export class SldStyleParser implements StyleParser<string> {
           }]
         });
       }
-      if (textSymbolizer.rotate !== undefined) {
+      if (textSymbolizer.offset) {
+        pointPlacement.push({
+          [Displacement]: [{
+            [DisplacementX]: [{
+              '#text': textSymbolizer.offset[0].toString()
+            }]
+          }, {
+            [DisplacementY]: [{
+              '#text': (-textSymbolizer.offset[1]).toString()
+            }]
+          }]
+        });
+      }
+      if (!isNil(textSymbolizer.rotate)) {
         pointPlacement.push({
           [Rotation]: geoStylerFunctionOrTextToSld(textSymbolizer.rotate)
         });
@@ -2666,14 +2661,12 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
-    if (Number.isFinite(textSymbolizer.haloWidth) || textSymbolizer.haloColor) {
+    if (!isNil(textSymbolizer.haloWidth) || !isNil(textSymbolizer.haloColor)) {
       const halo: any = [];
       const haloFillCssParameter = [];
-      if (textSymbolizer.haloWidth) {
+      if (!isNil(textSymbolizer.haloWidth)) {
         halo.push({
-          [Radius]: [{
-            '#text': textSymbolizer.haloWidth.toString()
-          }]
+          [Radius]: geoStylerFunctionOrTextToSld(textSymbolizer.haloWidth)
         });
       }
       if (textSymbolizer.haloColor) {
@@ -2686,11 +2679,9 @@ export class SldStyleParser implements StyleParser<string> {
           }
         });
       }
-      if (textSymbolizer.haloOpacity) {
+      if (!isNil(textSymbolizer.haloOpacity)) {
         haloFillCssParameter.push({
-          [CssParameter]: [{
-            '#text': textSymbolizer.haloOpacity,
-          }],
+          [CssParameter]: geoStylerFunctionOrTextToSld(textSymbolizer.haloOpacity),
           ':@': {
             '@_name': 'fill-opacity'
           }
@@ -2705,7 +2696,7 @@ export class SldStyleParser implements StyleParser<string> {
         [Halo]: halo
       });
     }
-    if (textSymbolizer.color || Number.isFinite(textSymbolizer.opacity)) {
+    if (!isNil(textSymbolizer.color) || !isNil(textSymbolizer.opacity)) {
       const fill = [{
         [CssParameter]: [{
           '#text': textSymbolizer.color || '#000000',
@@ -2714,11 +2705,9 @@ export class SldStyleParser implements StyleParser<string> {
           '@_name': 'fill'
         }
       }];
-      if (Number.isFinite(textSymbolizer.opacity)) {
+      if (!isNil(textSymbolizer.opacity)) {
         fill.push({
-          [CssParameter]: [{
-            '#text': `${textSymbolizer.opacity}`,
-          }],
+          [CssParameter]: geoStylerFunctionOrTextToSld(textSymbolizer.opacity),
           ':@': {
             '@_name': 'fill-opacity'
           },
@@ -3015,13 +3004,9 @@ export class SldStyleParser implements StyleParser<string> {
       }
       sldLineSymbolizer[0][Stroke].push(...cssParameters);
     }
-    if (lineSymbolizer.perpendicularOffset) {
+    if (!isNil(lineSymbolizer.perpendicularOffset)) {
       sldLineSymbolizer.push({
-        [PerpendicularOffset]: [
-          {
-            '#text': lineSymbolizer.perpendicularOffset
-          }
-        ]
+        [PerpendicularOffset]: geoStylerFunctionOrTextToSld(lineSymbolizer.perpendicularOffset)
       });
     }
 
