@@ -182,6 +182,13 @@ export function getTextValueInSldObject(elements: any[], parameter: string, para
   if (element?.[paramKey]?.[0]?.Function) {
     return sldFunctionToGeoStylerFunction(element?.[paramKey]);
   }
+  // … or a PropertyName
+  if (element?.[paramKey]?.[0]?.PropertyName) {
+    return {
+      name: 'property',
+      args: [element?.[paramKey]?.[0]?.PropertyName?.[0]?.['#text']]
+    };
+  }
   // … or a Literal
   if (element?.[paramKey]?.[0]?.Literal) {
     return element?.[paramKey]?.[0]?.Literal?.[0]?.['#text'];

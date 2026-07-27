@@ -57,6 +57,7 @@ import function_filter from '../data/styles/function_filter';
 import function_nested from '../data/styles/function_nested';
 import functionFilterPropertyToProperty from '../data/styles/function_filter_property_to_property';
 import functionLabelRound from '../data/styles/function_label_round';
+import symbolizer_propertyName from '../data/styles/symbolizer_propertyName';
 
 it('SldStyleParser is defined', () => {
   expect(SldStyleParser).toBeDefined();
@@ -84,6 +85,12 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (reading
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(point_simplepoint_displacement);
+    });
+    it('can read a SLD 1.1 PropertyName as a value in the symbolizers', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/symbolizer_propertyName.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(symbolizer_propertyName);
     });
     it('can read a SLD 1.1 PointSymbolizer with ExternalGraphic', async () => {
       const sld = fs.readFileSync('./data/slds/1.1/point_externalgraphic.sld', 'utf8');
@@ -465,6 +472,14 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(point_simplepoint_displacement);
+    });
+    it('can write a SLD 1.1 PropertyName as a value in the symbolizers', async () => {
+      const { output: sldString } = await styleParser.writeStyle(symbolizer_propertyName);
+      expect(sldString).toBeDefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(symbolizer_propertyName);
     });
     it('can write a SLD 1.1 PointSymbolizer with ExternalGraphic', async () => {
       const { output: sldString } = await styleParser.writeStyle(point_externalgraphic);
