@@ -12,23 +12,22 @@ const style: Style = {
           color: '#FF0000',
           radius: 3,
           rotate: {
-              name: 'add',
+            name: 'add',
+            args: [{
+              name: 'custom',
+              fnName: 'endAngle',
               args: [{
-                name: 'custom',
-                fnName: 'endAngle',
-                args: [{
-                  name: 'property',
-                  args: ['shape']
-                }],
+                name: 'property',
+                args: ['shape']
+              }],
             }, 180]
           },
           geometry: {
-             name: 'custom',
-             fnName: 'endPoint',
-             args: [{
-                 name: 'property',
-                 args: ['shape']
-             }],
+            name: 'endPoint',
+            args: [{
+              name: 'property',
+              args: ['shape']
+            }],
           }
         }
       ]
