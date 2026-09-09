@@ -7,6 +7,7 @@ import { beforeEach, expect, it, describe } from 'vitest';
 import { XMLParser } from 'fast-xml-parser';
 import { LineSymbolizer } from 'geostyler-style';
 
+import geometry from '../data/styles/geometry';
 import empty_filter from '../data/styles/empty_filter';
 import point_simplepoint from '../data/styles/point_simplepoint';
 import line_simpleline from '../data/styles/line_simpleline';
@@ -377,6 +378,13 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (reading
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(functionLabelRound);
+    });
+
+    it('can read a SLD with geometries', async () => {
+      const sld = fs.readFileSync('./data/slds/1.1/geometry.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(geometry);
     });
 
     describe('#getFilterFromOperatorAndComparison', () => {
@@ -920,6 +928,23 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle?.rules[0].symbolizers).toEqual(functionLabelRound.rules[0].symbolizers);
+    });
+
+    it('can write a SLD with geometries', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(geometry);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(geometry);
     });
 
     it('can write a non-prettified SLD 1.1 by setting flag "prettyOutput" to false', async () => {

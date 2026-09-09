@@ -59,7 +59,8 @@ import {
   isSymbolizer,
   keysByValue,
   merge,
-  numberExpression, sldFunctionToGeoStylerFunction, sldNumberOperatorOrFunctionOrTextToGeostyler
+  numberExpression,
+  sldNumberOperatorOrFunctionOrTextToGeostyler
 } from './Util/SldUtil';
 
 const SLD_VERSIONS = ['1.0.0', '1.1.0'] as const;
@@ -1476,11 +1477,7 @@ export class SldStyleParser implements StyleParser<string> {
    * Add a "Geometry" function or text from a Sld Symbolizer Geometry nested value.
    */
   addGeometrySymbolizerFromSld(symbolizer: BaseSymbolizer, sldSymbolizer: any) {
-    const geometrySld = get(sldSymbolizer, 'Geometry');
-    if (!geometrySld) {
-      return;
-    }
-    const geometry = sldFunctionToGeoStylerFunction(geometrySld);
+    const geometry = get(sldSymbolizer, 'Geometry.#text');
     if (geometry) {
       symbolizer.geometry = geometry as Expression<string>;
     }
@@ -3211,11 +3208,9 @@ export class SldStyleParser implements StyleParser<string> {
       return;
     }
     const Geometry = this.getTagName('Geometry');
-    if (geometry) {
-      sldSymbolizerProperties.unshift({
-        [Geometry]: geoStylerFunctionOrTextToSld(geometry)
-      });
-    }
+    sldSymbolizerProperties.unshift({
+      [Geometry]: geoStylerFunctionOrTextToSld(geometry)
+    });
   }
 
   /**

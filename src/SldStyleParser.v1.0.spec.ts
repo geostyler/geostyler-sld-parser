@@ -5,6 +5,7 @@ import SldStyleParser from './SldStyleParser';
 import { beforeEach, expect, it, describe } from 'vitest';
 import { XMLParser } from 'fast-xml-parser';
 
+import geometry from '../data/styles/geometry';
 import point_simplepoint from '../data/styles/point_simplepoint';
 import empty_filter from '../data/styles/empty_filter';
 import line_simpleline from '../data/styles/line_simpleline';
@@ -95,7 +96,7 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(symbolizer_propertyName);
-    })
+    });
     it('can read a SLD PointSymbolizer with ExternalGraphic', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/point_externalgraphic.sld', 'utf8');
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
@@ -347,6 +348,14 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       expect(readResult.output).toBeDefined();
       expect(readResult.output).toEqual(function_nested);
     });
+
+    it('can read a SLD with geometries', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/geometry.sld', 'utf8');
+      const readResult = await styleParser.readStyle(sld);
+      expect(readResult.output).toBeDefined();
+      expect(readResult.output).toEqual(geometry);
+    });
+
     describe(('displays error messages'), () => {
       describe('in English (default locale)', () => {
         it('unknown WellknownName', async () => {
@@ -1218,6 +1227,23 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(function_nested);
+    });
+
+    it('can write a SLD with geometries', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(geometry);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(geometry);
     });
 
     it('creates the correct order in a text symbolizer', async () => {
