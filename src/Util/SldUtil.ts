@@ -51,11 +51,11 @@ export function geoStylerFunctionToSldFunction(geostylerFunction: GeoStylerFunct
   }
 
   if (name === 'property') {
-    return {
+    return [{
       'ogc:PropertyName': [{
         '#text': geostylerFunction.args[0]
       }]
-    };
+    }];
   }
 
   const sldFunctionArgs = geostylerFunction.args.map(arg => {
@@ -181,6 +181,13 @@ export function getTextValueInSldObject(elements: any[], parameter: string, para
   // we expected a value but received an array so we check if we have a function
   if (element?.[paramKey]?.[0]?.Function) {
     return sldFunctionToGeoStylerFunction(element?.[paramKey]);
+  }
+  // … or a PropertyName
+  if (element?.[paramKey]?.[0]?.PropertyName) {
+    return {
+      name: 'property',
+      args: [element?.[paramKey]?.[0]?.PropertyName?.[0]?.['#text']]
+    };
   }
   // … or a Literal
   if (element?.[paramKey]?.[0]?.Literal) {
