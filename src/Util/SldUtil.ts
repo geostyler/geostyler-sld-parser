@@ -279,10 +279,13 @@ export function get(obj: any, path: string, sldVersion?: SldVersion): any | unde
       if (target[0]?.Literal) {
         return target[0]?.Literal?.[0]?.['#text'];
       }
-    }
-    // we expected a value but received an array so we check if we have a function
-    if (key === '#text' && target[0]?.Function) {
-      return sldFunctionToGeoStylerFunction(target);
+      // … or a PropertyName
+      if (target[0]?.PropertyName) {
+        return {
+          name: 'property',
+          args: [target[0].PropertyName[0]?.['#text']]
+        };
+      }
     }
     // handle queries for CssParameter/SvgParameter
     if (key.startsWith('$') && sldVersion) {
