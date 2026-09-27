@@ -55,6 +55,7 @@ import point_externalgraphic_inlineContent from '../data/styles/point_externalgr
 import negatedFilter from '../data/styles/negated_filter';
 import symbolizer_propertyName from '../data/styles/symbolizer_propertyName';
 import zero_values from '../data/styles/zero_values';
+import else_filter from '../data/styles/else_filter';
 import {
   GeoStylerNumberFunction,
   IconSymbolizer,
@@ -162,6 +163,12 @@ describe('SldStyleParser implements StyleParser (reading)', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(line_simpleline);
+    });
+    it('can read a SLD with an ElseFilter', async () => {
+      const sld = fs.readFileSync('./data/slds/1.0/else_filter.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(else_filter);
     });
     it('can read a SLD LineSymbolizer with Perpendicular Offset', async () => {
       const sld = fs.readFileSync('./data/slds/1.0/line_perpendicularOffset.sld', 'utf8');
@@ -720,6 +727,40 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(line_simpleline);
+    });
+    it('can write a SLD with an ElseFilter', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(else_filter);
+      expect(sldString).toBeDefined();
+      expect(sldString).toContain('<ElseFilter');
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(else_filter);
+    });
+    it('writes only the ElseFilter if an else rule also has a filter', async () => {
+      const style: Style = {
+        name: 'else rule with filter',
+        rules: [{
+          name: 'else',
+          elseRule: true,
+          filter: ['==', 'foo', 'bar'],
+          symbolizers: [{
+            kind: 'Line',
+            color: '#000000'
+          }]
+        }]
+      };
+      const { output: sldString } = await styleParser.writeStyle(style);
+      expect(sldString).toContain('<ElseFilter');
+      expect(sldString).not.toContain('<Filter');
     });
     it('can write a SLD LineSymbolizer with PerpendicularOffset', async () => {
       const {
