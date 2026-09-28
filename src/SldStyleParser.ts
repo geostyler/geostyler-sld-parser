@@ -555,11 +555,15 @@ export class SldStyleParser implements StyleParser<string> {
             const name = ruleTitle !== undefined
               ? ruleTitle
               : (ruleName !== undefined ? ruleName : '');
+            const hasElseFilter = getChildren(sldRule, 'ElseFilter').length > 0;
             const rule: Rule = <Rule>{
               name
             };
             if (filter) {
               rule.filter = filter;
+            }
+            if (hasElseFilter) {
+              rule.elseRule = true;
             }
             if (scaleDenominator) {
               rule.scaleDenominator = scaleDenominator;
@@ -1731,6 +1735,7 @@ export class SldStyleParser implements StyleParser<string> {
   getSldRulesFromRules(rules: Rule[]): any[] {
     const Name = this.getTagName('Name');
     const filterTag = this.getTagName('Filter');
+    const ElseFilter = this.getTagName('ElseFilter');
     const ruleTag = this.getTagName('Rule');
     const MinScaleDenominator = this.getTagName('MinScaleDenominator');
     const MaxScaleDenominator = this.getTagName('MaxScaleDenominator');
@@ -1746,7 +1751,12 @@ export class SldStyleParser implements StyleParser<string> {
           }]
         });
       }
-      if (rule.filter) {
+      // SLD only allows either a Filter or an ElseFilter per Rule
+      if (rule.elseRule) {
+        sldRule[ruleTag].push({
+          [ElseFilter]: []
+        });
+      } else if (rule.filter) {
         const filter = this.getSldFilterFromFilter(rule.filter);
         sldRule[ruleTag].push({
           [filterTag]: filter

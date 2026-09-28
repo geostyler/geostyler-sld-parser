@@ -51,6 +51,7 @@ const style: Style = {
   },
   {
     name: 'Red Square Point',
+    elseRule: true,
     symbolizers: [{
       kind: 'Mark',
       wellKnownName: 'square',
