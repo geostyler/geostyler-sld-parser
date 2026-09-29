@@ -29,6 +29,49 @@ export function geoStylerFunctionOrTextToSld(value: any): any {
 }
 
 /**
+ * Concatenate all elements into the next one using the sld 1.1.0 Concatenate function.
+ * @param sldElements
+ */
+export function concatenateAllSldElements(sldElements: any[]): any {
+  if (sldElements.length <= 1) {
+    return sldElements;
+  }
+  let ele1: any;
+  let ele2: any;
+  if (sldElements.length === 2) {
+    ele1 = sldElements[1];
+    ele2 = sldElements[0];
+  } else {
+    const copySldElements = [...sldElements];
+    ele1 = copySldElements.pop();
+    ele2 = concatenateAllSldElements(copySldElements)[0];
+  }
+  return [{
+    'ogc:Function': [ele1, ele2],
+    ':@': {
+      '@_name': 'Concatenate'
+    }
+  }];
+}
+
+/**
+ * Deconcatenate all sld 1.1.0 Concatenate function to an array of not concatenated elements.
+ * @param sldElement
+ */
+export function deconcatenateAllSldElements(sldElement: any): any[] {
+  const result: any[] = [];
+  const fn = sldElement.Function ?? sldElement['ogc:Function'];
+  if (fn && sldElement[':@']['@_name'] === 'Concatenate') {
+    const ele1 = deconcatenateAllSldElements(fn[0]);
+    const ele2 = deconcatenateAllSldElements(fn[1]);
+    result.push(...ele2, ...ele1);
+  } else {
+    result.push(sldElement);
+  }
+  return result;
+}
+
+/**
  * This converts a GeoStylerFunction into a fast-xml-parser representation
  * of a sld function.
  *
@@ -348,7 +391,7 @@ export function getBase64Object(
     data: baseTokens[1],
     extension: ext,
   };
-};
+}
 
 
 /**

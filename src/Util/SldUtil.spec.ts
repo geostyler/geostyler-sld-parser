@@ -1,6 +1,60 @@
 import { describe, expect, it } from 'vitest';
 
-import { isNil, sldNumberOperatorOrFunctionOrTextToGeostyler } from './SldUtil';
+import {
+  concatenateAllSldElements,
+  deconcatenateAllSldElements,
+  isNil,
+  sldNumberOperatorOrFunctionOrTextToGeostyler
+} from './SldUtil';
+
+describe('concatenateSldElements', () => {
+  it('concatenates 1 SLD elements', () => {
+    const sldElement = [{ '#text': 1 }];
+    const result = concatenateAllSldElements(sldElement);
+    expect(result).toEqual(sldElement);
+  });
+
+  it('concatenates 2 SLD elements', () => {
+    const sldElements = [{ '#text': 1 }, { '#text': 2 }];
+    const result = concatenateAllSldElements(sldElements);
+    expect(result).toEqual([{
+      'ogc:Function': sldElements.reverse(),
+      ':@': {
+        '@_name': 'Concatenate'
+      }
+    }]);
+  });
+
+  it('concatenates more SLD elements', () => {
+    const sldElements = [{ '#text': 1 }, { '#text': 2 }, { 'text': 3 }];
+    const result = concatenateAllSldElements(sldElements);
+    expect(result).toEqual([{
+      'ogc:Function': [
+        sldElements[2],
+        {
+          'ogc:Function': [
+            sldElements[1],
+            sldElements[0],
+          ],
+          ':@': {
+            '@_name': 'Concatenate'
+          }
+        }
+      ],
+      ':@': {
+        '@_name': 'Concatenate'
+      }
+    }]);
+  });
+
+  it('deconcatenate all sld elements', () => {
+    const sldElements = [{ '#text': 1 }, { '#text': 2 }, { 'text': 3 }, { 'text': 4 }];
+    const concatenatedElement = concatenateAllSldElements(sldElements)[0];
+    const result = deconcatenateAllSldElements(concatenatedElement);
+    expect(result).toEqual(sldElements);
+  });
+
+});
 
 describe('isNil', () => {
   it('is defined', () => {

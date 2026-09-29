@@ -46,7 +46,7 @@ import {
 } from 'fast-xml-parser';
 
 import {
-  Base64ImageObject, geoStylerFunctionOrTextToSld,
+  Base64ImageObject, concatenateAllSldElements, deconcatenateAllSldElements, geoStylerFunctionOrTextToSld,
   geoStylerFunctionToSldFunction,
   get,
   getAttribute, getBase64Object,
@@ -1105,6 +1105,9 @@ export class SldStyleParser implements StyleParser<string> {
    * </Label>
    * --> "{{bar}}{{john}}foo{{doe}}"
    *
+   * In case of concatenated labels, every elements are un-concatenated and then
+   * every elements are returned in the template, in the right order.
+   *
    * @param sldLabel
    */
   getTextSymbolizerLabelFromSldSymbolizer = (
@@ -1119,6 +1122,10 @@ export class SldStyleParser implements StyleParser<string> {
       const funcObj = sldLabel[0];
       const funcArgs = funcObj.Function || funcObj['ogc:Function'];
       const funcName = funcObj[':@']?.['@_name'];
+      if (funcName === 'Concatenate') {
+        const labelElements = deconcatenateAllSldElements(sldLabel[0]).reverse();
+        return this.getTextSymbolizerLabelFromSldSymbolizer(labelElements);
+      }
       const convertSldArgToGeoStyler = (arg: any): any => {
         if (arg.PropertyName || arg['ogc:PropertyName']) {
           const prop = arg.PropertyName?.[0]?.['#text'] ?? arg['ogc:PropertyName']?.[0]?.['#text'];
@@ -2816,6 +2823,10 @@ export class SldStyleParser implements StyleParser<string> {
           }]
         });
         templateReducer = tmpTemplateReducer;
+      }
+
+      if (this.isSldEnv(sldEnvGeoServer)) {
+        return concatenateAllSldElements(tokens.reverse());
       }
 
       return tokens;
