@@ -35,3 +35,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - id: get-release-tag
+        name: Determine released version 🔖
+        run: |
+          TAG_NAME=$(git tag --points-at HEAD)
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Discord notification 📯
+        if: steps.get-release-tag.outputs.tag_name != ''
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@0.3.2
+        with:
+          args: '${{ github.event.repository.name }} [${{ steps.get-release-tag.outputs.tag_name }}](${{ github.event.repository.html_url }}/releases/tag/${{ steps.get-release-tag.outputs.tag_name }}) has been released. 🚀'
