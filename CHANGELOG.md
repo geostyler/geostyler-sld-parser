@@ -1,3 +1,15 @@
+## [9.1.0](https://github.com/geostyler/geostyler-sld-parser/compare/v9.0.3...v9.1.0) (2026-09-29)
+
+### Features
+
+* add support for ElseFilter ([#1132](https://github.com/geostyler/geostyler-sld-parser/issues/1132)) ([f6aa961](https://github.com/geostyler/geostyler-sld-parser/commit/f6aa961715c0de5a32f531266b1dd861c4ce8d74))
+
+### Bug Fixes
+
+* add missing propertyName handling ([#1128](https://github.com/geostyler/geostyler-sld-parser/issues/1128)) ([8dfb08f](https://github.com/geostyler/geostyler-sld-parser/commit/8dfb08fe31ecf370a28e58f07c8f58b57673faef))
+* adjust handling of <Geometry /> ([#1130](https://github.com/geostyler/geostyler-sld-parser/issues/1130)) ([558cb43](https://github.com/geostyler/geostyler-sld-parser/commit/558cb43badf07422307d9ce6f6a91eec21d805ed))
+* wrap return for propertyName function in array ([d033cc1](https://github.com/geostyler/geostyler-sld-parser/commit/d033cc1cf40ed74c13bfc0e44fede27354a5162f))
+
 ## [9.0.3](https://github.com/geostyler/geostyler-sld-parser/compare/v9.0.2...v9.0.3) (2026-07-23)
 
 ### Bug Fixes
