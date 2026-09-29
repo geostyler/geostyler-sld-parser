@@ -53,6 +53,6 @@ jobs:
       - name: Discord notification 📯
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        uses: Ilshidur/action-discord@0.3.2
+        uses: Ilshidur/action-discord@0.4.0
         with:
           args: '${{ github.event.repository.name }} [${{ needs.release.outputs.tag_name }}](${{ github.event.repository.html_url }}/releases/tag/${{ needs.release.outputs.tag_name }}) has been released. 🚀'
