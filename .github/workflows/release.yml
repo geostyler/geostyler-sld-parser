@@ -15,6 +15,8 @@ jobs:
       id-token: write
     name: Release
     runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.get-release-tag.outputs.tag_name }}
     steps:
       - name: Checkout sources 🔰
         uses: actions/checkout@v6
@@ -35,3 +37,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - id: get-release-tag
+        name: Determine released version 🔖
+        run: |
+          TAG_NAME=$(git tag --points-at HEAD)
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+  discord-notification:
+    name: Discord notification
+    needs: release
+    if: needs.release.outputs.tag_name != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discord notification 📯
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@0.4.0
+        with:
+          args: '${{ github.event.repository.name }} [${{ needs.release.outputs.tag_name }}](${{ github.event.repository.html_url }}/releases/tag/${{ needs.release.outputs.tag_name }}) has been released. 🚀'
