@@ -46,7 +46,7 @@ import {
 } from 'fast-xml-parser';
 
 import {
-  Base64ImageObject, geoStylerFunctionOrTextToSld,
+  Base64ImageObject, deconcatenateSldElements, geoStylerFunctionOrTextToSld,
   geoStylerFunctionToSldFunction,
   get,
   getAttribute, getBase64Object,
@@ -1062,6 +1062,13 @@ export class SldStyleParser implements StyleParser<string> {
       textSymbolizer.sizeUnit = distanceUnit;
     }
 
+    if (this.isSldEnv(sldEnvGeoServer)) {
+      const wrap = getVendorOptionValue(sldTextSymbolizer, 'autoWrap');
+      if (!isNil(wrap)) {
+        textSymbolizer.wrap = wrap;
+      }
+    }
+
     this.addGeometrySymbolizerFromSld(textSymbolizer, sldTextSymbolizer);
     return textSymbolizer;
   }
@@ -1105,6 +1112,9 @@ export class SldStyleParser implements StyleParser<string> {
    * </Label>
    * --> "{{bar}}{{john}}foo{{doe}}"
    *
+   * In case of concatenated labels, every elements are delivered inside a
+   * strConcat expression.
+   *
    * @param sldLabel
    */
   getTextSymbolizerLabelFromSldSymbolizer = (
@@ -1119,6 +1129,14 @@ export class SldStyleParser implements StyleParser<string> {
       const funcObj = sldLabel[0];
       const funcArgs = funcObj.Function || funcObj['ogc:Function'];
       const funcName = funcObj[':@']?.['@_name'];
+      if (funcName === 'Concatenate') {
+        const insideElements = deconcatenateSldElements(sldLabel[0]);
+        const parsedInsideElements = insideElements.map(el => this.getTextSymbolizerLabelFromSldSymbolizer([el]));
+        return {
+          name: 'strConcat',
+          args: parsedInsideElements
+        }
+      }
       const convertSldArgToGeoStyler = (arg: any): any => {
         if (arg.PropertyName || arg['ogc:PropertyName']) {
           const prop = arg.PropertyName?.[0]?.['#text'] ?? arg['ogc:PropertyName']?.[0]?.['#text'];
@@ -2727,6 +2745,9 @@ export class SldStyleParser implements StyleParser<string> {
 
     this.addSldGeometrySymbolizer(sldTextSymbolizer, textSymbolizer);
     this.addUomEntry(sldTextSymbolizer, textSymbolizer.sizeUnit);
+    if (this.isSldEnv(sldEnvGeoServer) && textSymbolizer.wrap) {
+      this.pushGeoServerVendorOption(sldTextSymbolizer, 'autoWrap', `${textSymbolizer.wrap}`);
+    }
 
     return sldTextSymbolizer;
   }
@@ -2817,8 +2838,19 @@ export class SldStyleParser implements StyleParser<string> {
         });
         templateReducer = tmpTemplateReducer;
       }
-
       return tokens;
+    }
+    if (template.name === 'strConcat') {
+      const elements: any[] = Array.isArray(template.args) ? template.args : [template.args];
+      if (this.sldVersion === '1.1.0'|| this.isSldEnv(sldEnvGeoServer)) {
+        return [{
+          'ogc:Function': elements.map(el => this.getSldLabelFromTextSymbolizer(el)[0]),
+          ':@': {
+            '@_name': 'Concatenate'
+          }
+        }]
+      }
+      return elements.map(el => this.getSldLabelFromTextSymbolizer(el)[0])
     }
     // parse other GeoStylerFunction
     return this.geoStylerFunctionToSldFunctionRecursive(template);

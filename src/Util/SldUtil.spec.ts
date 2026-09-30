@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { isNil, sldNumberOperatorOrFunctionOrTextToGeostyler } from './SldUtil';
+import {
+  deconcatenateSldElements,
+  isNil,
+  sldNumberOperatorOrFunctionOrTextToGeostyler
+} from './SldUtil';
 
 describe('isNil', () => {
   it('is defined', () => {
@@ -48,5 +52,19 @@ describe('sldNumberOperatorOrFunctionOrTextToGeostyler', () => {
 
   it('parses a Literal value of 0', () => {
     expect(sldNumberOperatorOrFunctionOrTextToGeostyler({ Literal: [{ '#text': 0 }] })).toBe(0);
+  });
+});
+
+describe('de-concatenate SldElements', () => {
+  it('deconcatenateSldElements', () => {
+    const sldElements = [{ '#text': 1 }, { '#text': 2 }, { 'text': 3 }, { 'text': 4 }];
+    const concatenatedElement = {
+      'ogc:Function': sldElements,
+      ':@': {
+        '@_name': 'Concatenate'
+      }
+    };
+    const result = deconcatenateSldElements(concatenatedElement);
+    expect(result).toEqual(sldElements);
   });
 });

@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import burg from '../data/styles/geoserver/burg';
 import capitals from '../data/styles/geoserver/capitals';
 import default_generic from '../data/styles/geoserver/default_generic';
+import default_label from '../data/styles/geoserver/default_label';
 import default_line from '../data/styles/geoserver/default_line';
 import default_line2 from '../data/styles/geoserver/default_line2';
 import default_point from '../data/styles/geoserver/default_point';
@@ -57,6 +58,12 @@ describe('SldStyleParser implements StyleParser', () => {
       const { output: geoStylerStyle } = await styleParser.readStyle(sld);
       expect(geoStylerStyle).toBeDefined();
       expect(geoStylerStyle).toEqual(default_generic);
+    });
+    it('can read the geoserver default_label.sld', async () => {
+      const sld = fs.readFileSync('./data/slds/geoserver/default_label.sld', 'utf8');
+      const { output: geoStylerStyle } = await styleParser.readStyle(sld);
+      expect(geoStylerStyle).toBeDefined();
+      expect(geoStylerStyle).toEqual(default_label);
     });
     it('can read the geoserver default_line.sld', async () => {
       const sld = fs.readFileSync('./data/slds/geoserver/default_line.sld', 'utf8');
@@ -242,6 +249,22 @@ describe('SldStyleParser implements StyleParser', () => {
     //   const { output: readStyle} = await styleParser.readStyle(sldString!);
     //   expect(readStyle).toEqual(default_generic);
     // });
+    it('can write the geoserver default_label.sld', async () => {
+      const {
+        output: sldString,
+        errors,
+        warnings,
+        unsupportedProperties
+      } = await styleParser.writeStyle(default_label);
+      expect(sldString).toBeDefined();
+      expect(errors).toBeUndefined();
+      expect(warnings).toBeUndefined();
+      expect(unsupportedProperties).toBeUndefined();
+      // As string comparison between two XML-Strings is awkward and nonsens
+      // we read it again and compare the json input with the parser output
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      expect(readStyle).toEqual(default_label);
+    });
     it('can write the geoserver default_line.sld', async () => {
       const {
         output: sldString,
