@@ -46,7 +46,7 @@ import {
 } from 'fast-xml-parser';
 
 import {
-  Base64ImageObject, concatenateAllSldElements, deconcatenateAllSldElements, geoStylerFunctionOrTextToSld,
+  Base64ImageObject, deconcatenateSldElements, geoStylerFunctionOrTextToSld,
   geoStylerFunctionToSldFunction,
   get,
   getAttribute, getBase64Object,
@@ -1112,8 +1112,8 @@ export class SldStyleParser implements StyleParser<string> {
    * </Label>
    * --> "{{bar}}{{john}}foo{{doe}}"
    *
-   * In case of concatenated labels, every elements are un-concatenated and then
-   * every elements are returned in the template, in the right order.
+   * In case of concatenated labels, every elements are delivered inside a
+   * strConcat expression.
    *
    * @param sldLabel
    */
@@ -1130,8 +1130,12 @@ export class SldStyleParser implements StyleParser<string> {
       const funcArgs = funcObj.Function || funcObj['ogc:Function'];
       const funcName = funcObj[':@']?.['@_name'];
       if (funcName === 'Concatenate') {
-        const labelElements = deconcatenateAllSldElements(sldLabel[0]).reverse();
-        return this.getTextSymbolizerLabelFromSldSymbolizer(labelElements);
+        const insideElements = deconcatenateSldElements(sldLabel[0]);
+        const parsedInsideElements = insideElements.map(el => this.getTextSymbolizerLabelFromSldSymbolizer([el]));
+        return {
+          name: 'strConcat',
+          args: parsedInsideElements
+        }
       }
       const convertSldArgToGeoStyler = (arg: any): any => {
         if (arg.PropertyName || arg['ogc:PropertyName']) {
@@ -2834,12 +2838,19 @@ export class SldStyleParser implements StyleParser<string> {
         });
         templateReducer = tmpTemplateReducer;
       }
-
-      if (this.isSldEnv(sldEnvGeoServer)) {
-        return concatenateAllSldElements(tokens.reverse());
-      }
-
       return tokens;
+    }
+    if (template.name === 'strConcat') {
+      const elements: any[] = Array.isArray(template.args) ? template.args : [template.args];
+      if (this.sldVersion === '1.1.0'|| this.isSldEnv(sldEnvGeoServer)) {
+        return [{
+          'ogc:Function': elements.map(el => this.getSldLabelFromTextSymbolizer(el)[0]),
+          ':@': {
+            '@_name': 'Concatenate'
+          }
+        }]
+      }
+      return elements.map(el => this.getSldLabelFromTextSymbolizer(el)[0])
     }
     // parse other GeoStylerFunction
     return this.geoStylerFunctionToSldFunctionRecursive(template);

@@ -23,13 +23,9 @@
             <Label>
               <ogc:Function name="Concatenate">
                 <ogc:Literal><![CDATA[prefix: ]]></ogc:Literal>
-                <ogc:Function name="Concatenate">
-                  <ogc:PropertyName>name</ogc:PropertyName>
-                  <ogc:Function name="Concatenate">
-                    <ogc:PropertyName>title</ogc:PropertyName>
-                    <ogc:Literal><![CDATA[ entity]]></ogc:Literal>
-                  </ogc:Function>
-                </ogc:Function>
+                <ogc:PropertyName>name</ogc:PropertyName>
+                <ogc:PropertyName>title</ogc:PropertyName>
+                <ogc:Literal><![CDATA[ entity]]></ogc:Literal>
               </ogc:Function>
             </Label>
             <Font>

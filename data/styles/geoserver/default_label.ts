@@ -9,7 +9,15 @@ const style: Style = {
         {
           kind: 'Text',
           color: '#000000',
-          label: 'prefix: {{name}}{{title}} entity',
+          label: {
+            name: "strConcat",
+            args: [
+              'prefix: ',
+              '{{name}}',
+              '{{title}}',
+              ' entity',
+            ]
+          },
           font: ['Arial'],
           size: 12,
           offset: [0, -5],
