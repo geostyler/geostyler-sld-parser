@@ -1062,6 +1062,13 @@ export class SldStyleParser implements StyleParser<string> {
       textSymbolizer.sizeUnit = distanceUnit;
     }
 
+    if (this.isSldEnv(sldEnvGeoServer)) {
+      const wrap = getVendorOptionValue(sldTextSymbolizer, 'autoWrap');
+      if (!isNil(wrap)) {
+        textSymbolizer.wrap = wrap;
+      }
+    }
+
     this.addGeometrySymbolizerFromSld(textSymbolizer, sldTextSymbolizer);
     return textSymbolizer;
   }
@@ -2734,6 +2741,9 @@ export class SldStyleParser implements StyleParser<string> {
 
     this.addSldGeometrySymbolizer(sldTextSymbolizer, textSymbolizer);
     this.addUomEntry(sldTextSymbolizer, textSymbolizer.sizeUnit);
+    if (this.isSldEnv(sldEnvGeoServer) && textSymbolizer.wrap) {
+      this.pushGeoServerVendorOption(sldTextSymbolizer, 'autoWrap', `${textSymbolizer.wrap}`);
+    }
 
     return sldTextSymbolizer;
   }

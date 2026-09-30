@@ -18,8 +18,8 @@ const style: Style = {
           haloWidth: 5,
           rotate: 45,
           fontWeight: 'bold',
-          placement: 'point'
-          // wrap: 50
+          placement: 'point',
+          wrap: 50
         }
       ]
     }
