@@ -155,7 +155,8 @@ const style: Style = {
           fontStyle: 'normal',
           fontWeight: 'bold',
           size: 14,
-          placement: 'point'
+          placement: 'point',
+          wrap: 100
         }
       ]
     }

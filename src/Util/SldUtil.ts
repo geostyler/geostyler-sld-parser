@@ -152,6 +152,19 @@ export function sldFunctionToGeoStylerFunction(sldFunction: any[]): GeoStylerFun
 }
 
 /**
+ * Deconcatenate sld 1.1.0 Concatenate function to an array of not concatenated elements.
+ * @param sldElement
+ */
+export function deconcatenateSldElements(sldElement: any): any[] {
+  const result: any[] = [];
+  const fn = sldElement.Function ?? sldElement['ogc:Function'];
+  if (fn && sldElement[':@']['@_name'] === 'Concatenate') {
+    return fn;
+  }
+  return [result];
+}
+
+/**
  * Get all child objects with a given tag name.
  *
  * @param elements An array of objects as created by the fast-xml-parser.
@@ -348,7 +361,7 @@ export function getBase64Object(
     data: baseTokens[1],
     extension: ext,
   };
-};
+}
 
 
 /**
