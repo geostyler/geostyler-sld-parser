@@ -1301,6 +1301,7 @@ export class SldStyleParser implements StyleParser<string> {
     const fillOpacity = getParameterValue(fillEl, 'fill-opacity', this.readingSldVersion);
     const color = getParameterValue(fillEl, 'fill', this.readingSldVersion);
     const displacement = get(sldMarkSymbolizer, 'Graphic.Displacement');
+    const anchorPoint = get(sldMarkSymbolizer, 'Graphic.AnchorPoint');
 
     const markSymbolizer: MarkSymbolizer = {
       kind: 'Mark',
@@ -1329,6 +1330,14 @@ export class SldStyleParser implements StyleParser<string> {
     const offset = this.getOffsetFromDisplacement(displacement);
     if (!isNil(offset)) {
       markSymbolizer.offset = offset;
+    }
+    if (!isNil(anchorPoint)) {
+      const anchorX = get(anchorPoint, 'AnchorPointX.#text');
+      const anchorY = get(anchorPoint, 'AnchorPointY.#text');
+      const anchor = this.getAnchorFromSldAnchorPoint(anchorX, anchorY, true);
+      if (anchor) {
+        markSymbolizer.anchor = anchor;
+      }
     }
 
     switch (wellKnownName) {
@@ -1457,6 +1466,7 @@ export class SldStyleParser implements StyleParser<string> {
     const size: string = get(sldIconSymbolizer, 'Graphic.Size.#text');
     const rotation = get(sldIconSymbolizer, 'Graphic.Rotation');
     const displacement = get(sldIconSymbolizer, 'Graphic.Displacement');
+    const anchorPoint = get(sldIconSymbolizer, 'Graphic.AnchorPoint');
     if (!isNil(opacity)) {
       iconSymbolizer.opacity = numberExpression(opacity);
     }
@@ -1472,6 +1482,14 @@ export class SldStyleParser implements StyleParser<string> {
     const offset = this.getOffsetFromDisplacement(displacement);
     if (!isNil(offset)) {
       iconSymbolizer.offset = offset;
+    }
+    if (!isNil(anchorPoint)) {
+      const anchorX = get(anchorPoint, 'AnchorPointX.#text');
+      const anchorY = get(anchorPoint, 'AnchorPointY.#text');
+      const anchor = this.getAnchorFromSldAnchorPoint(anchorX, anchorY, true);
+      if (anchor) {
+        iconSymbolizer.anchor = anchor;
+      }
     }
 
     return iconSymbolizer;
@@ -2289,6 +2307,23 @@ export class SldStyleParser implements StyleParser<string> {
       });
     }
 
+    if (markSymbolizer.anchor) {
+      const AnchorPoint = this.getTagName('AnchorPoint');
+      const AnchorPointX = this.getTagName('AnchorPointX');
+      const AnchorPointY = this.getTagName('AnchorPointY');
+      graphic.push({
+        [AnchorPoint]: [{
+          [AnchorPointX]: [{
+            '#text': this.getSldAnchorPointFromAnchor(markSymbolizer.anchor, 'x', true).toString()
+          }]
+        }, {
+          [AnchorPointY]: [{
+            '#text': this.getSldAnchorPointFromAnchor(markSymbolizer.anchor, 'y', true).toString()
+          }]
+        }]
+      });
+    }
+
     if (markSymbolizer.offset && (this.sldVersion === '1.1.0' || this.isSldEnv(sldEnvGeoServer))) {
       graphic.push(this.getDisplacementFromOffset(markSymbolizer.offset));
     }
@@ -2370,6 +2405,23 @@ export class SldStyleParser implements StyleParser<string> {
         [Rotation]: geoStylerFunctionOrTextToSld(iconSymbolizer.rotate)
       });
     }
+    if (iconSymbolizer.anchor) {
+      const AnchorPoint = this.getTagName('AnchorPoint');
+      const AnchorPointX = this.getTagName('AnchorPointX');
+      const AnchorPointY = this.getTagName('AnchorPointY');
+      graphic.push({
+        [AnchorPoint]: [{
+          [AnchorPointX]: [{
+            '#text': this.getSldAnchorPointFromAnchor(iconSymbolizer.anchor, 'x', true).toString()
+          }]
+        }, {
+          [AnchorPointY]: [{
+            '#text': this.getSldAnchorPointFromAnchor(iconSymbolizer.anchor, 'y', true).toString()
+          }]
+        }]
+      });
+    }
+
     if (iconSymbolizer.offset && this.sldVersion === '1.1.0') {
       graphic.push({
         [Displacement]: [{
@@ -2466,20 +2518,19 @@ export class SldStyleParser implements StyleParser<string> {
   /**
    * Translates an anchor-setting into SLD-anchor-numbers
    */
-  getSldAnchorPointFromAnchor(anchor: TextSymbolizer['anchor'], dimension: 'x' | 'y'): number {
+  getSldAnchorPointFromAnchor(
+    anchor: BasePointSymbolizer['anchor'],
+    dimension: 'x' | 'y',
+    graphicAnchor: boolean = false
+  ): number {
     if (!anchor || isGeoStylerFunction(anchor)) {
       return 0;
     }
-    // As explained in https://docs.geoserver.org/main/en/user/styling/sld/reference/labeling.html#anchorpoint,
-    // we have the following translation for anchors:
-    // x-dimension
-    //   left -> 0.0
-    //   center -> 0.5
-    //   right -> 1.0
-    // y-dimension
-    //   top -> 1.0
-    //   middle -> 0.5
-    //   bottom -> 0.0
+    // Text labels use a Y-up coordinate system (GeoServer labeling convention):
+    //   top -> 1.0, bottom -> 0.0
+    // Point graphics (Mark/Icon) use a Y-down coordinate system (screen convention):
+    //   top -> 0.0, bottom -> 1.0
+    // The graphicAnchor flag switches to the Y-down convention.
 
     if (dimension === 'x') {
       if (anchor.indexOf('left') >= 0) {
@@ -2494,10 +2545,10 @@ export class SldStyleParser implements StyleParser<string> {
     }
     else {
       if (anchor.indexOf('bottom') >= 0) {
-        return 0.0;
+        return graphicAnchor ? 1.0 : 0.0;
       }
       else if (anchor.indexOf('top') >= 0) {
-        return 1.0;
+        return graphicAnchor ? 0.0 : 1.0;
       }
       else {
         return 0.5;
@@ -2508,7 +2559,11 @@ export class SldStyleParser implements StyleParser<string> {
   /**
    * Translates a SLD-anchor-number into a geostyler anchor-setting
    */
-  getAnchorFromSldAnchorPoint(anchorX: any, anchorY: any): TextSymbolizer['anchor'] | undefined {
+  getAnchorFromSldAnchorPoint(
+    anchorX: any,
+    anchorY: any,
+    graphicAnchor: boolean = false
+  ): BasePointSymbolizer['anchor'] | undefined {
 
     if (!isNumber(anchorX) || !isNumber(anchorY)) {
       return undefined;
@@ -2516,9 +2571,11 @@ export class SldStyleParser implements StyleParser<string> {
     // see comment in getSldAnchorPointFromAnchor
 
     const gsAnchorHoriz = anchorX < 0.25 ? 'left' : anchorX > 0.75 ? 'right' : '';
-    const gsAnchorVert = anchorY < 0.25 ? 'bottom' : anchorY > 0.75 ? 'top' : '';
-    const gsAnchor: TextSymbolizer['anchor'] = ((gsAnchorHoriz && gsAnchorVert) ?
-      (gsAnchorVert + '-' + gsAnchorHoriz) : (gsAnchorVert + gsAnchorHoriz)) as TextSymbolizer['anchor'];
+    const gsAnchorVert = graphicAnchor
+      ? (anchorY < 0.25 ? 'top' : anchorY > 0.75 ? 'bottom' : '')
+      : (anchorY < 0.25 ? 'bottom' : anchorY > 0.75 ? 'top' : '');
+    const gsAnchor: BasePointSymbolizer['anchor'] = ((gsAnchorHoriz && gsAnchorVert) ?
+      (gsAnchorVert + '-' + gsAnchorHoriz) : (gsAnchorVert + gsAnchorHoriz)) as BasePointSymbolizer['anchor'];
 
     // for not breaking existing tests like "can read the geoserver popshade.sld", we treat
     // a center anchor as the default and deliver undefined in this case (instead of 'center')
