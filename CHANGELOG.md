@@ -1,3 +1,15 @@
+## [9.2.0](https://github.com/geostyler/geostyler-sld-parser/compare/v9.1.0...v9.2.0) (2026-11-03)
+
+### Features
+
+* **#1137:** add anchorPoint support for Mark and Icon ([fae6658](https://github.com/geostyler/geostyler-sld-parser/commit/fae6658d3d8d2928c2d99c8b1b0a89423c6342e5)), closes [#1137](https://github.com/geostyler/geostyler-sld-parser/issues/1137)
+* add autowrap vendor option ([403f5f6](https://github.com/geostyler/geostyler-sld-parser/commit/403f5f68ebf5dc4950ff0aef8b28cf9657fbc7d9))
+* concatenate label parts for geoserver ([c06ddbe](https://github.com/geostyler/geostyler-sld-parser/commit/c06ddbe660de939439b3a839dc389f915bc1b6d1))
+
+### Bug Fixes
+
+* rework concat label ([3bdaf16](https://github.com/geostyler/geostyler-sld-parser/commit/3bdaf165219d6593676f613921487cb9103fabe1))
+
 ## [9.1.0](https://github.com/geostyler/geostyler-sld-parser/compare/v9.0.3...v9.1.0) (2026-09-29)
 
 ### Features
