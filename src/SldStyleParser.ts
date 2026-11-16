@@ -3267,9 +3267,14 @@ export class SldStyleParser implements StyleParser<string> {
     if (rasterSymbolizer.colorMap) {
       colorMap = this.getSldColorMapFromColorMap(rasterSymbolizer.colorMap);
       if (colorMap?.[0]) {
-        sldRasterSymbolizer.push({
+        const sldColorMapElement: any = {
           ColorMap: colorMap
-        });
+        };
+        // with preserveOrder, fast-xml-parser reads attributes from the element object, not from its children array
+        if (colorMap[':@']) {
+          sldColorMapElement[':@'] = colorMap[':@'];
+        }
+        sldRasterSymbolizer.push(sldColorMapElement);
       }
     }
 
