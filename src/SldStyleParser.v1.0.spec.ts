@@ -1011,7 +1011,7 @@ describe('SldStyleParser implements StyleParser (writing)', () => {
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(raster_complexraster);
     });
-    it('can write a SLD RasterSymbolizer without opacity', async () => {
+    it('can write a SLD RasterSymbolizer with colorMap type intervals', async () => {
       const { output: sldString } = await styleParser.writeStyle(raster_without_opacity);
       expect(sldString).toBeDefined();
       expect(sldString).toContain('<ColorMap type="intervals">');
