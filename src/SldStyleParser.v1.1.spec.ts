@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import SldStyleParser from './SldStyleParser';
 import { beforeEach, expect, it, describe } from 'vitest';
 import { XMLParser } from 'fast-xml-parser';
-import { LineSymbolizer } from 'geostyler-style';
+import { LineSymbolizer, RasterSymbolizer, Style } from 'geostyler-style';
 
 import geometry from '../data/styles/geometry';
 import empty_filter from '../data/styles/empty_filter';
@@ -757,6 +757,31 @@ describe('SldStyleParser with Symbology Encoding implements StyleParser (writing
       // we read it again and compare the json input with the parser output
       const { output: readStyle } = await styleParser.readStyle(sldString!);
       expect(readStyle).toEqual(raster_complexraster);
+    });
+    it('keeps the ColorMap type and extended attributes when writing', async () => {
+      const style: Style = {
+        name: 'Raster Style',
+        rules: [{
+          name: 'Values Rule',
+          symbolizers: [{
+            kind: 'Raster',
+            colorMap: {
+              type: 'values',
+              extended: true,
+              colorMapEntries: [
+                { color: '#000000', quantity: 1 },
+                { color: '#ffffff', quantity: 2 }
+              ]
+            }
+          }]
+        }]
+      };
+      const { output: sldString } = await styleParser.writeStyle(style);
+      expect(sldString).toContain('<ColorMap type="values" extended="true">');
+      const { output: readStyle } = await styleParser.readStyle(sldString!);
+      const colorMap = (readStyle?.rules[0].symbolizers[0] as RasterSymbolizer).colorMap;
+      expect(colorMap?.type).toEqual('values');
+      expect(colorMap?.extended).toEqual(true);
     });
     it('can write a SLD 1.1 style with a filter', async () => {
       const { output: sldString } = await styleParser.writeStyle(point_simplepoint_filter);
